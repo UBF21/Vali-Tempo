@@ -156,7 +156,7 @@ Console.WriteLine($"{totalSeconds:F2} s"); // Outputs: "7200.00 s"
 
 ```csharp
 var converter = new TimeConverter();
-var times = new (decimal, TimeUnit)[]
+var times = new List<(decimal, TimeUnit)>()
 {
     (1.5m, TimeUnit.Hours),
     (30m, TimeUnit.Minutes)
