@@ -1,27 +1,31 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net7.0;net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
         <RootNamespace>Vali_Time</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Title>Vali-Time</Title>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
         <Description>
-            Vali-Time is a lightweight .NET library for converting and managing time units, including milliseconds, seconds, minutes, and hours. It offers a precise and flexible API for time conversions, summations, breakdowns, and human-readable formatting. With support for full precision calculations, optional rounding, and cultural formatting, Vali-Time is ideal for handling time-related operations in .NET applications, integrating seamlessly with dependency injection frameworks.
+            Vali-Time is a lightweight .NET library for converting and managing time units, including milliseconds, seconds, minutes, hours, days, weeks, months, and years. It offers a precise and flexible API for time conversions, summations, breakdowns, and human-readable formatting. ValiDate extends the library with date arithmetic, period boundaries, validations, and a comprehensive Quarter API. With support for full precision calculations, optional rounding, cultural formatting, and seamless dependency injection integration, Vali-Time is ideal for any .NET application requiring accurate time and date handling.
         </Description>
-        <PackageProjectUrl>#</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/UBF21/Vali-Time</PackageProjectUrl>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/UBF21/Vali-Time</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageReleaseNotes>
-            Vali-FileSize v1.0.0 introduces a lightweight and efficient solution for file size management in .NET applications:
-            - Support for conversions across multiple units (bytes, kilobytes, megabytes, gigabytes, terabytes, and petabytes), providing precise and flexible size handling.
-            - Addition of human-readable formatting with customizable decimal precision and cultural support, making file sizes easy to display and understand.
-            - Introduction of automatic unit detection, allowing developers to effortlessly determine the most appropriate unit for any given size, enhancing usability in diverse scenarios.
-            Designed for seamless integration with .NET Standard 2.0 and above, Vali-FileSize ensures compatibility and reliability for modern .NET development.
+            Vali-Time v1.0.0 — initial release:
+            - Time unit conversions with full decimal precision: milliseconds, seconds, minutes, hours, days, weeks, months, and years.
+            - SumTimes: aggregate multiple time values across different units into a single result.
+            - FormatTime: human-readable output with configurable decimal places and CultureInfo support.
+            - GetBestUnit: automatic detection of the most appropriate time unit for a given value.
+            - ToTimeSpan: interoperability bridge to System.TimeSpan.
+            - Breakdown: decompose a duration into its constituent units (hours, minutes, seconds, milliseconds).
+            - ValiDate: date arithmetic (Add, Subtract, Diff), period boundaries (StartOf, EndOf), validations (IsBefore, IsAfter, IsWeekend, IsSamePeriod), and an extended Quarter API (QuarterName, ProgressInQuarter, DaysRemainingInQuarter, and more).
+            - Designed for seamless integration with .NET dependency injection via IValiTime and IValiDate interfaces.
         </PackageReleaseNotes>
-        <PackageTags>Time;converter;formatting;utility;dotnet</PackageTags>
+        <PackageTags>Time;converter;formatting;utility;dotnet;date;calendar;quarter;range</PackageTags>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
         <Version>1.0.0</Version>
@@ -31,10 +35,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
         <None Include="logo-Vali-Time.png">
             <Pack>True</Pack>
             <PackagePath></PackagePath>
         </None>
     </ItemGroup>
-    
+
 </Project>

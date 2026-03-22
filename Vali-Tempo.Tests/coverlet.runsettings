@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura,lcov</Format>
+          <Exclude>[*.Tests]*,[xunit.*]*,[FluentAssertions]*</Exclude>
+          <Include>[Vali_Time]*,[Vali_Range]*,[Vali_Calendar]*,[Vali_Duration]*,[Vali_CountDown]*,[Vali_Age]*,[Vali_Schedule]*,[Vali_Holiday]*,[Vali_TimeZone]*</Include>
+          <ExcludeByAttribute>GeneratedCodeAttribute,ExcludeFromCodeCoverageAttribute</ExcludeByAttribute>
+          <SingleHit>false</SingleHit>
+          <UseSourceLink>true</UseSourceLink>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

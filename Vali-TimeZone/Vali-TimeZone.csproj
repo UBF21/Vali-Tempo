@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <RootNamespace>Vali_TimeZone</RootNamespace>
+    <Title>Vali-TimeZone</Title>
+    <PackageId>Vali-TimeZone</PackageId>
+    <Product>Vali-TimeZone</Product>
+    <Version>1.0.0</Version>
+    <Authors>Felipe Rafael Montenegro Morriberon</Authors>
+    <Description>Vali-TimeZone is a .NET library for timezone-aware date and time operations. Provides conversion between timezones, UTC offset calculations, DST detection, local/UTC interoperability, and a curated list of IANA-compatible timezone identifiers for 30+ countries.</Description>
+    <PackageTags>timezone;utc;dst;datetime;conversion;iana;dotnet</PackageTags>
+    <PackageReleaseNotes>Vali-TimeZone v1.0.0 — initial release: ValiTimeZone class with Convert, ToUtc, FromUtc, GetOffset, IsDst, FindZone, AllZones, and DateTimeOffset interoperability.</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/UBF21/Vali-TimeZone</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/UBF21/Vali-TimeZone</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+  </ItemGroup>
+</Project>

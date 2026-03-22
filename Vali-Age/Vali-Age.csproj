@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <RootNamespace>Vali_Age</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Title>Vali-Age</Title>
+        <Authors>Felipe Rafael Montenegro Morriberon</Authors>
+        <Description>Vali-Age is a .NET library for age and relative time calculations. Provides exact age breakdowns (years, months, days), birthday detection, next birthday calculation, relative time formatting ("3 days ago", "in 2 weeks"), and age validation against thresholds.</Description>
+        <PackageProjectUrl>https://github.com/UBF21/Vali-Age</PackageProjectUrl>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/UBF21/Vali-Age</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageReleaseNotes>Vali-Age v1.0.0 — initial release: ValiAge with Years, Exact, Format, Relative, IsAtLeast, IsBirthday, NextBirthday, DaysUntilBirthday, and AgeResult struct.</PackageReleaseNotes>
+        <PackageTags>age;birthday;relative-time;date;dotnet</PackageTags>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+        <Version>1.0.0</Version>
+        <PackageId>Vali-Age</PackageId>
+        <Product>Vali-Age</Product>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
+    </ItemGroup>
+
+</Project>

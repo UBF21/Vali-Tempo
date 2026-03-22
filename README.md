@@ -1,200 +1,149 @@
-# <img src="https://github.com/UBF21/Vali-Time/blob/main/Vali-Time/logo-Vali-Time.png?raw=true" alt="Logo de Vali Time" style="width: 46px; height: 46px; max-width: 300px;"> Vali-Time - Time Unit Conversion and Management for .NET
+# Vali-Tempo
 
+[![NuGet](https://img.shields.io/nuget/v/Vali-Tempo.svg)](https://www.nuget.org/packages/Vali-Tempo)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-8%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
 
-## Introduction 🚀
+> A modular .NET ecosystem of utilities for time, dates, timezones, calendars, and more — built for precision and composability.
 
-Welcome to Vali-Time, a lightweight .NET library designed to simplify time unit conversions and management. Whether you're working with milliseconds, seconds, minutes, or hours, Vali-Time provides a fluent and intuitive API to convert times, sum multiple values, break down times into components, and format them into human-readable strings. With automatic unit detection and cultural formatting support, this library is perfect for applications requiring accurate time handling and integrates seamlessly into any .NET project.
+## Package Index
 
-## Installation 📦
+| Package | Description | Folder |
+|---------|-------------|--------|
+| [Vali-Time](./Vali-Time) | Time unit conversions, date arithmetic, and quarter utilities | [Vali-Time/](./Vali-Time) |
+| [Vali-Range](./Vali-Range) | Date range creation, querying, iteration, and set operations | [Vali-Range/](./Vali-Range) |
+| [Vali-Calendar](./Vali-Calendar) | Workday calculations, calendar weeks, and holiday integration | [Vali-Calendar/](./Vali-Calendar) |
+| [Vali-Duration](./Vali-Duration) | Immutable duration value type with arithmetic operators | [Vali-Duration/](./Vali-Duration) |
+| [Vali-CountDown](./Vali-CountDown) | Countdown timers and deadline tracking | [Vali-CountDown/](./Vali-CountDown) |
+| [Vali-Age](./Vali-Age) | Age calculation from birthdates with precision control | [Vali-Age/](./Vali-Age) |
+| [Vali-Schedule](./Vali-Schedule) | Recurring schedule definition and occurrence generation | [Vali-Schedule/](./Vali-Schedule) |
+| [Vali-Holiday](./Vali-Holiday) | Holiday provider implementations (35+ countries) | [Vali-Holiday/](./Vali-Holiday) |
+| [Vali-TimeZone](./Vali-TimeZone) | Timezone conversion and discovery | [Vali-TimeZone/](./Vali-TimeZone) |
+| **Vali-Tempo** | Meta-package — installs the entire Vali-Tempo ecosystem | [Vali-Tempo/](./Vali-Tempo) |
 
-To add **Vali-Time** to your .NET project, install it via NuGet with the following command:
+## Installation
 
-```sh
+```bash
+# Meta-package (everything included)
+dotnet add package Vali-Tempo
+
+# Or install only what you need:
 dotnet add package Vali-Time
+dotnet add package Vali-Range
+dotnet add package Vali-Calendar
+dotnet add package Vali-Duration
+dotnet add package Vali-CountDown
+dotnet add package Vali-Age
+dotnet add package Vali-Schedule
+dotnet add package Vali-Holiday
+dotnet add package Vali-TimeZone
 ```
 
-Ensure your project targets a compatible .NET version (e.g., .NET Standard 2.0 or later). Vali-Time is lightweight and has minimal dependencies, making it an easy addition to your application.
+## Dependency Injection
 
-## Usage 🛠️
-
-Vali-Time focuses on converting time between units, summing times, breaking them down, and formatting them for display. The library provides a simple class, TimeConverter, with methods to perform these operations with precision and flexibility.
-
-### Basic Example
-
-Here’s how you can convert and format a time value:
+Register all packages with a single call using the meta-package:
 
 ```csharp
-using Vali_Time.Converters;
+// Program.cs
+builder.Services.AddValiTempo();
+```
+
+This registers all services with singleton lifetime:
+- `IValiTime` → `ValiTime`
+- `IValiDate` → `ValiDate`
+- `IValiRange` → `ValiRange`
+- `IValiCalendar` → `ValiCalendar`
+- `IValiCountdown` → `ValiCountdown`
+- `IValiAge` → `ValiAge`
+- `IValiHoliday` → `ValiHoliday`
+- `IValiTimeZone` → `ValiTimeZone`
+
+## Quick Example — Using Multiple Modules Together
+
+```csharp
+using Vali_Time.Core;
 using Vali_Time.Enums;
+using Vali_Range.Core;
+using Vali_Range.Models;
+using Vali_Calendar.Core;
+using Vali_Duration.Models;
+using Vali_Holiday.Core;
+using Vali_TimeZone.Core;
 
-var converter = new TimeConverter();
+// --- Vali-Time: convert and format a duration ---
+var valiTime = new ValiTime();
+decimal hours = valiTime.Convert(7200m, TimeUnit.Seconds, TimeUnit.Hours);
+string label  = valiTime.FormatTime(hours, TimeUnit.Hours); // "2.00 h"
 
-// Convert 1.5 hours to seconds
-decimal seconds = converter.Convert(1.5m, TimeUnit.Hours, TimeUnit.Seconds);
-Console.WriteLine(seconds); // Outputs: 5400
+// --- Vali-Duration: measure elapsed time from a Stopwatch ---
+var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+// ... work ...
+stopwatch.Stop();
+ValiDuration elapsed = ValiDuration.FromTimeSpan(stopwatch.Elapsed);
+Console.WriteLine(elapsed.Format()); // e.g. "342.00 ms"
 
-// Format a time in minutes
-string formattedTime = converter.FormatTime(123.456m, TimeUnit.Minutes);
-Console.WriteLine(formattedTime); // Outputs: "123.46 min"
+// --- Vali-Range: define a reporting window ---
+var range = new ValiRange();
+DateRange thisQuarter = range.ThisQuarter();
+Console.WriteLine(thisQuarter); // "2025-01-01 → 2025-03-31"
+
+// --- Vali-Calendar: find the delivery date in 5 workdays ---
+var calendar = new ValiCalendar();
+DateTime orderDate    = new DateTime(2025, 3, 20);
+DateTime deliveryDate = calendar.AddWorkdays(orderDate, 5);
+Console.WriteLine(deliveryDate.ToString("yyyy-MM-dd")); // "2025-03-27"
+
+// --- Vali-TimeZone: get current time in a specific timezone ---
+var timeZone = new ValiTimeZone();
+DateTime nowInLima = timeZone.Now("America/Lima");
+Console.WriteLine(timeZone.FormatWithZone(nowInLima, "America/Lima"));
+
+// --- Vali-Holiday: check if today is a holiday in Peru ---
+var holiday = new ValiHoliday();
+bool isHoliday = holiday.IsHoliday(nowInLima, "PE");
+Console.WriteLine($"Holiday in Peru: {isHoliday}");
+
+// --- Combine: count workdays within the quarter range ---
+int workdaysInQuarter = calendar.WorkdaysBetween(thisQuarter.Start, thisQuarter.End);
+Console.WriteLine($"Workdays this quarter: {workdaysInQuarter}");
 ```
 
-## Key Methods 📝
+## Ecosystem Architecture
 
-**Vali-Time** offers a straightforward API for time management. Below are the key methods provided by the **TimeConverter** class:
-
-### Convert 🏗️
-
-Converts a file size from one unit to another with precision:
-
-```csharp
-var converter = new TimeConverter();
-
-// Convert 2.5 minutes to seconds with 2 decimal places
-decimal seconds = converter.Convert(2.5m, TimeUnit.Minutes, TimeUnit.Seconds, decimalPlaces: 2);
-Console.WriteLine(seconds); // Outputs: 150.00
 ```
-### SumTimes 🎨
-
-Sums multiple time values in different units and returns the result in a specified unit:
-
-```csharp
-var converter = new ValiFileSize();
-
-// Format 1,234,567 bytes as megabytes
-string formatted = converter.FormatSize(1234567, FileSizeUnit.Megabytes, decimalPlaces: 3);
-Console.WriteLine(formatted); // Outputs: "1.177 MB"
-```
-### FormatTime 🎨
-
-Formats a time value into a human-readable string with customizable decimal places and cultural formatting:
-
-```csharp
-var converter = new TimeConverter();
-
-// Format 1234.567 seconds as minutes
-string formatted = converter.FormatTime(1234.567m, TimeUnit.Minutes, decimalPlaces: 3);
-Console.WriteLine(formatted); // Outputs: "20.576 min"
+Vali-Tempo (meta-package)
+│
+├── Vali-Time        — IValiTime, IValiDate          (foundation)
+├── Vali-Range       — IValiRange, DateRange
+├── Vali-Calendar    — IValiCalendar, CalendarWeek
+├── Vali-Duration    — ValiDuration (struct)
+├── Vali-CountDown   — IValiCountdown
+├── Vali-Age         — IValiAge, AgeResult
+├── Vali-Schedule    — IValiSchedule, ScheduleConfig
+├── Vali-Holiday     — IValiHoliday, IHolidayProvider (35+ countries)
+└── Vali-TimeZone    — IValiTimeZone, ValiZoneInfo
 ```
 
-### GetBestUnit 🔍
+- **Vali-Time** is the foundation: `TimeUnit` enum, `ValiTime` (unit conversions), `ValiDate` (date arithmetic).
+- **Vali-Range** builds on `TimeUnit` to offer `DateRange` and `ValiRange` with set-theory operations.
+- **Vali-Calendar** uses `ValiDate` conventions and accepts an `IHolidayProvider` (from **Vali-Holiday**) to make workday logic country-aware.
+- **Vali-Duration** is a standalone value type that uses `TimeUnit` for its `As()` conversion method.
+- **Vali-TimeZone** provides IANA-compatible timezone resolution, conversion, and formatting.
+- **Vali-Tempo** is a convenience meta-package that pulls in all of the above.
 
-Automatically determines the most appropriate unit for a given time in seconds:
+## Individual Package READMEs
 
-```csharp
-var converter = new TimeConverter();
+- [Vali-Time README](./Vali-Time/README.md)
+- [Vali-Range README](./Vali-Range/README.md)
+- [Vali-Calendar README](./Vali-Calendar/README.md)
+- [Vali-Duration README](./Vali-Duration/README.md)
+- [Vali-CountDown README](./Vali-CountDown/README.md)
+- [Vali-Age README](./Vali-Age/README.md)
+- [Vali-Schedule README](./Vali-Schedule/README.md)
+- [Vali-Holiday README](./Vali-Holiday/README.md)
+- [Vali-TimeZone README](./Vali-TimeZone/README.md)
+- [Vali-Tempo (meta-package) README](./Vali-Tempo/README.md)
 
-// Find the best unit for 7200 seconds
-var (time, unit) = converter.GetBestUnit(7200m);
-string bestFormat = converter.FormatTime(time, unit);
-Console.WriteLine(bestFormat); // Outputs: "2.00 h"
-```
+## License
 
-### Breakdown 🧩
-
-Breaks down a time in seconds into a dictionary of units (hours, minutes, seconds, milliseconds):
-
-```csharp
-var converter = new TimeConverter();
-
-// Breakdown 3665.678 seconds
-var breakdown = converter.Breakdown(3665.678m);
-Console.WriteLine($"{breakdown[TimeUnit.Hours]}h {breakdown[TimeUnit.Minutes]}m {breakdown[TimeUnit.Seconds]}s {breakdown[TimeUnit.Milliseconds]}ms");
-// Outputs: "1h 1m 5s 678ms"
-```
-
-## Working with Advanced Features 🧩
-
-**Vali-Time** supports advanced use cases like cultural formatting and precise time management:
-
-### Cultural Formatting
-
-Format times according to specific cultures:
-
-```csharp
-using System.Globalization;
-
-var converter = new TimeConverter();
-var germanCulture = new CultureInfo("de-DE");
-
-string formatted = converter.FormatTime(1234.567m, TimeUnit.Seconds, 2, germanCulture);
-Console.WriteLine(formatted); // Outputs: "1234,57 s" (uses comma as decimal separator)
-```
-
-### Combining Features
-
-Convert, sum, and format times in one flow:
-
-```csharp
-var converter = new TimeConverter();
-var times = new (decimal, TimeUnit)[]
-{
-    (1.5m, TimeUnit.Hours),
-    (30m, TimeUnit.Minutes)
-};
-decimal totalSeconds = converter.Add(TimeUnit.Seconds, times);
-var (bestTime, bestUnit) = converter.GetBestUnit(totalSeconds);
-string result = converter.FormatTime(bestTime, bestUnit);
-Console.WriteLine(result); // Outputs: "2.00 h"
-```
-
-## Comparison: Without vs. With Vali-FileSize ⚖️
-
-### Without Vali-Time (Manual Conversion)
-
-Manually handling time conversions can be error-prone and cumbersome:
-
-```csharp
-decimal hours = 1.5m;
-decimal seconds = hours * 3600;
-decimal totalSeconds = seconds + (30m * 60);
-Console.WriteLine($"{totalSeconds:F2} s"); // Outputs: "7200.00 s"
-```
-
-### With Vali-Time (Simplified Conversion)
-
-**Vali-Time** streamlines the process with a clean and precise API:
-
-```csharp
-var converter = new TimeConverter();
-var times = new List<(decimal, TimeUnit)>()
-{
-    (1.5m, TimeUnit.Hours),
-    (30m, TimeUnit.Minutes)
-};
-decimal totalSeconds = converter.Add(TimeUnit.Seconds, times);
-string formatted = converter.FormatTime(totalSeconds, TimeUnit.Seconds);
-Console.WriteLine(formatted); // Outputs: "7200.00 s"
-```
-## Features and Enhancements 🌟
-
-### Recent Updates
-
-- Initial release (v1.0.0) with support for conversions across milliseconds, seconds, minutes, and hours.
--Added (or SumTimes) for summing multiple time values with precision.
-- Introduced Breakdown for decomposing time into detailed components..
-- Included FormatTime with customizable decimal precision and cultural support.
-- Ensured robust validation with negative time checks and comprehensive exception handling.
-
-### Planned Features
-
-- Support for additional units like days, weeks, and months.
-- Enhanced formatting options, such as combined unit strings (e.g., "1h 30min 45s").
-- Integration with **TimeSpan** for broader compatibility.
-
-Follow the project on GitHub for updates on new features and improvements!
-
-## Donations 💖
-
-If you find ***Vali-Time*** useful and would like to support its development, consider making a donation:
-
-- **For Latin America**: [Donate via MercadoPago](https://link.mercadopago.com.pe/felipermm)
-- **For International Donations**: [Donate via PayPal](https://paypal.me/felipeRMM?country.x=PE&locale.x=es_XC)
-
-
-Your contributions help keep this project alive and improve its development! 🚀
-
-## License 📜
-This project is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
-
-## Contributions 🤝
-Feel free to open issues and submit pull requests to improve this library!
+Apache-2.0 © 2025 Felipe Rafael Montenegro Morriberon

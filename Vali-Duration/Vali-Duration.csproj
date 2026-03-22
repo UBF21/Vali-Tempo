@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <RootNamespace>Vali_Duration</RootNamespace>
+    <Title>Vali-Duration</Title>
+    <PackageId>Vali-Duration</PackageId>
+    <Product>Vali-Duration</Product>
+    <Version>1.0.0</Version>
+    <Authors>Felipe Rafael Montenegro Morriberon</Authors>
+    <Description>Vali-Duration is a lightweight .NET library providing a high-precision decimal-based duration value type. Supports arithmetic operators (+, -, *, /), comparison operators, implicit conversions to/from TimeSpan, unit-based factories and conversions, and human-readable formatting.</Description>
+    <PackageTags>duration;time;decimal;precision;timespan;dotnet</PackageTags>
+    <PackageReleaseNotes>Vali-Duration v1.0.0 — initial release: ValiDuration struct with decimal precision, all arithmetic and comparison operators, TimeSpan interop, unit factories (FromHours, FromMinutes, etc.), As(TimeUnit) conversion, and Format() output.</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/UBF21/Vali-Duration</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/UBF21/Vali-Duration</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
+  </ItemGroup>
+</Project>
