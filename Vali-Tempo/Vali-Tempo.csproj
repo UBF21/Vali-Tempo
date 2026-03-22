@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <PackageId>Vali-Tempo</PackageId>
+    <Title>Vali-Tempo</Title>
+    <Version>1.0.0</Version>
+    <Authors>Felipe Rafael Montenegro Morriberon</Authors>
+    <Product>Vali-Tempo</Product>
+    <Description>Vali-Tempo is the all-in-one meta-package for the Vali-Tempo ecosystem. Installing it gives you every module — Vali-Time, Vali-Range, Vali-Calendar, Vali-CountDown, Vali-Age, Vali-Holiday, Vali-TimeZone, Vali-Schedule, and Vali-Duration — with a single NuGet reference and a single DI registration call.</Description>
+    <PackageTags>vali;vali-tempo;time;date;calendar;holiday;schedule;range;age;countdown;timezone;dotnet</PackageTags>
+    <PackageProjectUrl>https://github.com/UBF21/Vali-Tempo</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/UBF21/Vali-Tempo</RepositoryUrl>
+    <PackageReleaseNotes>Vali-Tempo v1.0.0 — meta-package for the Vali-Tempo ecosystem. Registers all Vali services via AddValiTempo().</PackageReleaseNotes>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
+    <ProjectReference Include="..\Vali-Range\Vali-Range.csproj" />
+    <ProjectReference Include="..\Vali-Calendar\Vali-Calendar.csproj" />
+    <ProjectReference Include="..\Vali-CountDown\Vali-CountDown.csproj" />
+    <ProjectReference Include="..\Vali-Age\Vali-Age.csproj" />
+    <ProjectReference Include="..\Vali-Holiday\Vali-Holiday.csproj" />
+    <ProjectReference Include="..\Vali-TimeZone\Vali-TimeZone.csproj" />
+  </ItemGroup>
+</Project>

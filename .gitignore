@@ -1,6 +1,59 @@
-bin/
-obj/
+# Build outputs
+[Oo]bj/
+[Bb]in/
 *.user
 *.suo
-*.sln.ide
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+*.snupkg
+[Pp]ackages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+.nuget/
+
+# Visual Studio / Rider
+.vs/
 .idea/
+*.swp
+*~
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# dotnet
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+orleans.codegen.cs
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# Coverage
+coverage*/
+*.coverage
+*.coveragexml
+lcov.info
+coverage.cobertura.xml
+
+# Benchmarks output
+BenchmarkDotNet.Artifacts/
+
+# Logs
+*.log
