@@ -20,7 +20,7 @@
         <PackageProjectUrl>https://github.com/UBF21/Vali-Tempo</PackageProjectUrl>
 
         <!-- License -->
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 
         <!-- Discoverability -->
