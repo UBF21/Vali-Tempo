@@ -507,8 +507,9 @@ public class ValiDate : IValiDate
     /// </returns>
     public DateTime NextQuarterStart(DateTime date)
     {
-        DateTime currentStart = QuarterStartDate(date);
-        return currentStart.AddMonths(3);
+        var start = QuarterStartDate(date);
+        if (start.Year == 9999 && start.Month >= 10) return DateTime.MaxValue.Date;
+        return start.AddMonths(3);
     }
 
     /// <summary>
@@ -520,8 +521,9 @@ public class ValiDate : IValiDate
     /// </returns>
     public DateTime PreviousQuarterStart(DateTime date)
     {
-        DateTime currentStart = QuarterStartDate(date);
-        return currentStart.AddMonths(-3);
+        var start = QuarterStartDate(date);
+        if (start <= new DateTime(1, 3, 1)) return DateTime.MinValue;
+        return start.AddMonths(-3);
     }
 
     // =========================================================================
@@ -581,7 +583,8 @@ public class ValiDate : IValiDate
     {
         DayOfWeek firstDay = weekStart == WeekStart.Monday ? DayOfWeek.Monday : DayOfWeek.Sunday;
         int diff = (7 + (date.DayOfWeek - firstDay)) % 7;
-        return date.Date.AddDays(-diff);
+        int safeDiff = (int)Math.Min(diff, (date.Date - DateTime.MinValue.Date).TotalDays);
+        return date.Date.AddDays(-safeDiff);
     }
 
     /// <summary>

@@ -61,8 +61,12 @@ public sealed class ValiTimeZone : IValiTimeZone
     public TimeSpan GetOffset(string zoneId, DateTime? at = null)
     {
         var zone = ResolveZone(zoneId);
-        var dt = DateTime.SpecifyKind(at ?? DateTime.UtcNow, DateTimeKind.Unspecified);
-        return zone.GetUtcOffset(dt);
+        var utcInstant = at.HasValue
+            ? DateTime.SpecifyKind(at.Value, DateTimeKind.Utc)
+            : DateTime.UtcNow;
+        // Convert UTC to zone's local time, then get offset
+        var localTime = TimeZoneInfo.ConvertTimeFromUtc(utcInstant, zone);
+        return zone.GetUtcOffset(localTime);
     }
 
     /// <inheritdoc />
@@ -82,9 +86,15 @@ public sealed class ValiTimeZone : IValiTimeZone
     /// <inheritdoc />
     public decimal OffsetDiff(string zoneId1, string zoneId2, DateTime? at = null)
     {
-        var instant = DateTime.SpecifyKind(at ?? DateTime.UtcNow, DateTimeKind.Unspecified);
-        var offset1 = ResolveZone(zoneId1).GetUtcOffset(instant).TotalHours;
-        var offset2 = ResolveZone(zoneId2).GetUtcOffset(instant).TotalHours;
+        var utcInstant = at.HasValue
+            ? DateTime.SpecifyKind(at.Value, DateTimeKind.Utc)
+            : DateTime.UtcNow;
+        var zone1 = ResolveZone(zoneId1);
+        var zone2 = ResolveZone(zoneId2);
+        var local1 = TimeZoneInfo.ConvertTimeFromUtc(utcInstant, zone1);
+        var local2 = TimeZoneInfo.ConvertTimeFromUtc(utcInstant, zone2);
+        var offset1 = zone1.GetUtcOffset(local1).TotalHours;
+        var offset2 = zone2.GetUtcOffset(local2).TotalHours;
         return (decimal)(offset1 - offset2);
     }
 
@@ -141,7 +151,16 @@ public sealed class ValiTimeZone : IValiTimeZone
             try { return TimeZoneInfo.FindSystemTimeZoneById(zoneId); }
             catch (TimeZoneNotFoundException)
             {
-                return TimeZoneInfo.FindSystemTimeZoneById(info.StandardName);
+                // On Windows fall back to the Windows timezone name
+                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+                        System.Runtime.InteropServices.OSPlatform.Windows))
+                {
+                    try { return TimeZoneInfo.FindSystemTimeZoneById(info.StandardName); }
+                    catch (TimeZoneNotFoundException) { }
+                }
+                throw new TimeZoneNotFoundException(
+                    $"Timezone '{zoneId}' not found on this platform. " +
+                    $"Ensure the IANA timezone database is installed.");
             }
         }
         return TimeZoneInfo.FindSystemTimeZoneById(zoneId);

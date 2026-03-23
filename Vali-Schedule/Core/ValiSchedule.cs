@@ -177,6 +177,9 @@ public class ValiSchedule : IValiSchedule
             && (_config.DaysOfWeek == null || _config.DaysOfWeek.Count == 0))
             throw new InvalidOperationException(
                 "Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.");
+        if (_config.Type == RecurrenceType.Custom && _config.CustomPredicate == null)
+            throw new InvalidOperationException(
+                "A custom predicate must be set via WithCustomPredicate() before calling Build() with RecurrenceType.Custom.");
         return this;
     }
 
@@ -458,8 +461,9 @@ public class ValiSchedule : IValiSchedule
             RecurrenceType.Weekly =>
                 (_config.DaysOfWeek == null || _config.DaysOfWeek.Count == 0)
                     ? throw new InvalidOperationException("Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.")
-                    : _config.DaysOfWeek.Contains(date.DayOfWeek)
-                      && (int)((date - effectiveStart.Date).Days / 7) % _config.Interval == 0,
+                    : _config.DaysOfWeek != null && _config.DaysOfWeek.Count > 0
+                      && _config.DaysOfWeek.Contains(date.DayOfWeek)
+                      && IsInValidWeekInterval(date, effectiveStart),
 
             RecurrenceType.Monthly =>
                 date.Day == Math.Min(_config.DayOfMonth ?? effectiveStart.Day,
@@ -540,4 +544,19 @@ public class ValiSchedule : IValiSchedule
     /// <returns>The difference in months as a non-negative integer.</returns>
     private static int MonthDiff(DateTime from, DateTime to)
         => (to.Year - from.Year) * 12 + (to.Month - from.Month);
+
+    /// <summary>
+    /// Determines whether <paramref name="date"/> falls on a valid weekly interval
+    /// anchored to the first occurrence of the same day-of-week on or after
+    /// <paramref name="effectiveStart"/>, avoiding drift from raw-start-date division.
+    /// </summary>
+    private bool IsInValidWeekInterval(DateTime date, DateTime effectiveStart)
+    {
+        // Find the first occurrence of this day-of-week on or after effectiveStart
+        int diff = ((int)date.DayOfWeek - (int)effectiveStart.DayOfWeek + 7) % 7;
+        DateTime anchor = effectiveStart.Date.AddDays(diff);
+        if (anchor > date.Date) return false;
+        int weeksFromAnchor = (date.Date - anchor).Days / 7;
+        return weeksFromAnchor % _config.Interval == 0;
+    }
 }

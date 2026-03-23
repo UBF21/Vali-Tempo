@@ -136,6 +136,7 @@ public class ValiCountdown : IValiCountdown
         {
             return new Dictionary<TimeUnit, decimal>
             {
+                [TimeUnit.Days]         = 0m,
                 [TimeUnit.Hours]        = 0m,
                 [TimeUnit.Minutes]      = 0m,
                 [TimeUnit.Seconds]      = 0m,
@@ -145,13 +146,14 @@ public class ValiCountdown : IValiCountdown
 
         long remaining = span.Ticks;
         long days    = remaining / TimeSpan.TicksPerDay;    remaining %= TimeSpan.TicksPerDay;
-        long hours   = days * 24 + remaining / TimeSpan.TicksPerHour; remaining %= TimeSpan.TicksPerHour;
+        long hours   = remaining / TimeSpan.TicksPerHour;   remaining %= TimeSpan.TicksPerHour;
         long minutes = remaining / TimeSpan.TicksPerMinute; remaining %= TimeSpan.TicksPerMinute;
         long seconds = remaining / TimeSpan.TicksPerSecond; remaining %= TimeSpan.TicksPerSecond;
         long ms      = remaining / TimeSpan.TicksPerMillisecond;
 
         return new Dictionary<TimeUnit, decimal>
         {
+            [TimeUnit.Days]         = days,
             [TimeUnit.Hours]        = hours,
             [TimeUnit.Minutes]      = minutes,
             [TimeUnit.Seconds]      = seconds,

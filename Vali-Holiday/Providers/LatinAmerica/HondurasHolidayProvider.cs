@@ -58,13 +58,6 @@ public class HondurasHolidayProvider : BaseHolidayProvider
             description: "Honduras declaró su independencia de España el 15 de septiembre de 1821, junto con las demás naciones de Centroamérica."),
 
         new HolidayInfo(
-            "hn_morazan_birthday", 10, 3, "HN",
-            "Natalicio de Francisco Morazán",
-            Names("Natalicio de Francisco Morazán", "Francisco Morazán's Birthday", "Aniversário de Francisco Morazán", "Anniversaire de Francisco Morazán", "Geburtstag von Francisco Morazán"),
-            HolidayType.Civic,
-            description: "Conmemoración del nacimiento del prócer centroamericano Francisco Morazán, el 3 de octubre de 1792. Se observa el tercer lunes de octubre; la fecha del 3 de octubre corresponde a su natalicio histórico."),
-
-        new HolidayInfo(
             "hn_columbus_day", 10, 12, "HN",
             "Día del Descubrimiento de América",
             Names("Día del Descubrimiento de América", "Columbus Day", "Dia do Descobrimento da América", "Jour de la Découverte de l'Amérique", "Kolumbustag"),
@@ -98,6 +91,8 @@ public class HondurasHolidayProvider : BaseHolidayProvider
         var goodFriday   = EasterCalculator.GoodFriday(year);
         var holySaturday = EasterCalculator.HolySaturday(year);
 
+        var morazanBirthday = NthMonday(year, 10, 3);
+
         return new[]
         {
             new HolidayInfo(
@@ -119,7 +114,21 @@ public class HondurasHolidayProvider : BaseHolidayProvider
                 "Sábado de Gloria",
                 Names("Sábado de Gloria", "Holy Saturday", "Sábado de Aleluia", "Samedi Saint", "Karsamstag"),
                 HolidayType.Religious, isMovable: true,
-                description: "Día de vigilia entre la muerte y la resurrección de Jesucristo; último día de duelo de la Semana Santa.")
+                description: "Día de vigilia entre la muerte y la resurrección de Jesucristo; último día de duelo de la Semana Santa."),
+
+            new HolidayInfo(
+                "hn_morazan_birthday", morazanBirthday.Month, morazanBirthday.Day, "HN",
+                "Natalicio de Francisco Morazán",
+                Names("Natalicio de Francisco Morazán", "Francisco Morazán's Birthday", "Aniversário de Francisco Morazán", "Anniversaire de Francisco Morazán", "Geburtstag von Francisco Morazán"),
+                HolidayType.Civic, isMovable: true,
+                description: "Conmemoración del nacimiento del prócer centroamericano Francisco Morazán, el 3 de octubre de 1792. Se observa el tercer lunes de octubre.")
         };
+    }
+
+    private static DateTime NthMonday(int year, int month, int n)
+    {
+        var d = new DateTime(year, month, 1);
+        int diff = ((int)DayOfWeek.Monday - (int)d.DayOfWeek + 7) % 7;
+        return d.AddDays(diff + (n - 1) * 7);
     }
 }

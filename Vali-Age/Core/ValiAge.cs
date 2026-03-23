@@ -96,7 +96,16 @@ public class ValiAge : IValiAge
         DateTime afterYears = birthDate.Date.AddYears(years);
 
         int months = 0;
-        while (afterYears.AddMonths(months + 1) <= reference) months++;
+        while (afterYears.AddMonths(months + 1) <= reference)
+        {
+            // Verify the increment isn't due to month-length clamping
+            var candidate = afterYears.AddMonths(months + 1);
+            // If the day was clamped (birthday day > candidate's days in month) AND
+            // the candidate date equals reference exactly, don't count it as a full month
+            bool clamped = afterYears.Day > DateTime.DaysInMonth(candidate.Year, candidate.Month);
+            if (clamped && candidate.Date == reference.Date) break;
+            months++;
+        }
 
         DateTime afterMonths = afterYears.AddMonths(months);
         int days      = (reference.Date - afterMonths.Date).Days;
@@ -146,7 +155,7 @@ public class ValiAge : IValiAge
     ///   <item><description>Less than 60 minutes: <c>"X minutes ago"</c> / <c>"in X minutes"</c></description></item>
     ///   <item><description>Less than 24 hours: <c>"X hours ago"</c> / <c>"in X hours"</c></description></item>
     ///   <item><description>Less than 7 days: <c>"X days ago"</c> / <c>"in X days"</c></description></item>
-    ///   <item><description>Less than 30 days: <c>"X weeks ago"</c> / <c>"in X weeks"</c></description></item>
+    ///   <item><description>Less than ~30.4 days (one average month): <c>"X weeks ago"</c> / <c>"in X weeks"</c></description></item>
     ///   <item><description>Less than 12 months: <c>"X months ago"</c> / <c>"in X months"</c></description></item>
     ///   <item><description>12 months or more: <c>"X years ago"</c> / <c>"in X years"</c></description></item>
     /// </list>
@@ -169,7 +178,7 @@ public class ValiAge : IValiAge
     ///   <item><description>Less than 60 minutes: <c>"X minutes ago"</c> / <c>"in X minutes"</c></description></item>
     ///   <item><description>Less than 24 hours: <c>"X hours ago"</c> / <c>"in X hours"</c></description></item>
     ///   <item><description>Less than 7 days: <c>"X days ago"</c> / <c>"in X days"</c></description></item>
-    ///   <item><description>Less than 30 days: <c>"X weeks ago"</c> / <c>"in X weeks"</c></description></item>
+    ///   <item><description>Less than ~30.4 days (one average month): <c>"X weeks ago"</c> / <c>"in X weeks"</c></description></item>
     ///   <item><description>Less than 12 months: <c>"X months ago"</c> / <c>"in X months"</c></description></item>
     ///   <item><description>12 months or more: <c>"X years ago"</c> / <c>"in X years"</c></description></item>
     /// </list>
@@ -314,6 +323,9 @@ public class ValiAge : IValiAge
     /// <returns>A <see cref="DateTime"/> representing the next birthday after <paramref name="reference"/>.</returns>
     public DateTime NextBirthday(DateTime birthDate, DateTime reference)
     {
+        if (reference.Year >= DateTime.MaxValue.Year)
+            throw new ArgumentOutOfRangeException(nameof(reference),
+                "Cannot compute next birthday for reference dates in year 9999.");
         var thisYear = BirthdayInYear(birthDate, reference.Year);
         return thisYear > reference.Date ? thisYear : BirthdayInYear(birthDate, reference.Year + 1);
     }

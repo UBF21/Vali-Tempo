@@ -42,32 +42,11 @@ public class ColombiaHolidayProvider : BaseHolidayProvider
             description: "Celebración del inicio del año calendario. Fecha fija, sin traslado."),
 
         new HolidayInfo(
-            "co_epiphany", 1, 6, "CO",
-            "Día de Reyes",
-            Names("Día de Reyes", "Epiphany", "Dia de Reis", "Épiphanie", "Heilige Drei Könige"),
-            HolidayType.Religious,
-            description: "Conmemoración de la adoración de los Reyes Magos al niño Jesús. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
-
-        new HolidayInfo(
-            "co_san_jose", 3, 19, "CO",
-            "San José",
-            Names("San José", "Saint Joseph's Day", "São José", "Saint Joseph", "Heiliger Josef"),
-            HolidayType.Religious,
-            description: "Festividad en honor a San José, esposo de la Virgen María y padre adoptivo de Jesucristo. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
-
-        new HolidayInfo(
             "co_labor_day", 5, 1, "CO",
             "Día del Trabajo",
             Names("Día del Trabajo", "Labour Day", "Dia do Trabalho", "Fête du Travail", "Tag der Arbeit"),
             HolidayType.National,
             description: "Conmemoración internacional de los derechos de los trabajadores. Fecha fija, sin traslado."),
-
-        new HolidayInfo(
-            "co_san_pedro_pablo", 6, 29, "CO",
-            "San Pedro y San Pablo",
-            Names("San Pedro y San Pablo", "Saints Peter and Paul", "São Pedro e São Paulo", "Saint Pierre et Paul", "Peter und Paul"),
-            HolidayType.Religious,
-            description: "Festividad católica en honor a los apóstoles Pedro y Pablo. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
 
         new HolidayInfo(
             "co_independence", 7, 20, "CO",
@@ -82,34 +61,6 @@ public class ColombiaHolidayProvider : BaseHolidayProvider
             Names("Batalla de Boyacá", "Battle of Boyacá", "Batalha de Boyacá", "Bataille de Boyacá", "Schlacht von Boyacá"),
             HolidayType.Civic,
             description: "Conmemoración de la victoria patriota del 7 de agosto de 1819 que selló la independencia de la Nueva Granada (actual Colombia). Fecha fija, sin traslado."),
-
-        new HolidayInfo(
-            "co_assumption", 8, 15, "CO",
-            "Asunción de la Virgen",
-            Names("Asunción de la Virgen", "Assumption of Mary", "Assunção de Nossa Senhora", "Assomption de la Vierge", "Mariä Himmelfahrt"),
-            HolidayType.Religious,
-            description: "Dogma católico que celebra la elevación de la Virgen María al cielo. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
-
-        new HolidayInfo(
-            "co_columbus_day", 10, 12, "CO",
-            "Día de la Raza",
-            Names("Día de la Raza", "Columbus Day", "Dia da Raça", "Jour de Christophe Colomb", "Kolumbustag"),
-            HolidayType.Civic,
-            description: "Conmemoración del 12 de octubre de 1492, fecha del primer avistamiento de tierra americana por Cristóbal Colón. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
-
-        new HolidayInfo(
-            "co_all_saints", 11, 1, "CO",
-            "Día de Todos los Santos",
-            Names("Día de Todos los Santos", "All Saints' Day", "Dia de Todos os Santos", "Toussaint", "Allerheiligen"),
-            HolidayType.Religious,
-            description: "Festividad católica en honor a todos los santos. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
-
-        new HolidayInfo(
-            "co_cartagena", 11, 11, "CO",
-            "Independencia de Cartagena",
-            Names("Independencia de Cartagena", "Cartagena Independence Day", "Independência de Cartagena", "Indépendance de Carthagène", "Unabhängigkeit von Cartagena"),
-            HolidayType.Civic,
-            description: "Conmemoración de la declaración de independencia de la Provincia de Cartagena de Indias el 11 de noviembre de 1811. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
 
         new HolidayInfo(
             "co_immaculate", 12, 8, "CO",
@@ -140,6 +91,14 @@ public class ColombiaHolidayProvider : BaseHolidayProvider
         var ascension = EasterCalculator.Ascension(year);
         var corpusChristi = EasterCalculator.CorpusChristi(year);
         var sacredHeart = EasterCalculator.SacredHeart(year);
+
+        var epiphany    = NextMonday(year, 1, 6);
+        var sanJose     = NextMonday(year, 3, 19);
+        var sanPedro    = NextMonday(year, 6, 29);
+        var assumption  = NextMonday(year, 8, 15);
+        var columbusDay = NextMonday(year, 10, 12);
+        var allSaints   = NextMonday(year, 11, 1);
+        var cartagena   = NextMonday(year, 11, 11);
 
         return new[]
         {
@@ -176,7 +135,63 @@ public class ColombiaHolidayProvider : BaseHolidayProvider
                 "Sagrado Corazón de Jesús",
                 Names("Sagrado Corazón de Jesús", "Sacred Heart of Jesus", "Sagrado Coração de Jesus", "Sacré-Cœur de Jésus", "Heiligstes Herz Jesu"),
                 HolidayType.Religious, isMovable: true,
-                description: "Festividad en honor al Sagrado Corazón de Jesús, 68 días después de Pascua. Sujeto a traslado al lunes siguiente según la Ley Emiliani.")
+                description: "Festividad en honor al Sagrado Corazón de Jesús, 68 días después de Pascua. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
+
+            new HolidayInfo(
+                "co_epiphany", epiphany.Month, epiphany.Day, "CO",
+                "Día de Reyes",
+                Names("Día de Reyes", "Epiphany", "Dia de Reis", "Épiphanie", "Heilige Drei Könige"),
+                HolidayType.Religious, isMovable: true,
+                description: "Conmemoración de la adoración de los Reyes Magos al niño Jesús. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
+
+            new HolidayInfo(
+                "co_san_jose", sanJose.Month, sanJose.Day, "CO",
+                "San José",
+                Names("San José", "Saint Joseph's Day", "São José", "Saint Joseph", "Heiliger Josef"),
+                HolidayType.Religious, isMovable: true,
+                description: "Festividad en honor a San José, esposo de la Virgen María y padre adoptivo de Jesucristo. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
+
+            new HolidayInfo(
+                "co_san_pedro_pablo", sanPedro.Month, sanPedro.Day, "CO",
+                "San Pedro y San Pablo",
+                Names("San Pedro y San Pablo", "Saints Peter and Paul", "São Pedro e São Paulo", "Saint Pierre et Paul", "Peter und Paul"),
+                HolidayType.Religious, isMovable: true,
+                description: "Festividad católica en honor a los apóstoles Pedro y Pablo. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
+
+            new HolidayInfo(
+                "co_assumption", assumption.Month, assumption.Day, "CO",
+                "Asunción de la Virgen",
+                Names("Asunción de la Virgen", "Assumption of Mary", "Assunção de Nossa Senhora", "Assomption de la Vierge", "Mariä Himmelfahrt"),
+                HolidayType.Religious, isMovable: true,
+                description: "Dogma católico que celebra la elevación de la Virgen María al cielo. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
+
+            new HolidayInfo(
+                "co_columbus_day", columbusDay.Month, columbusDay.Day, "CO",
+                "Día de la Raza",
+                Names("Día de la Raza", "Columbus Day", "Dia da Raça", "Jour de Christophe Colomb", "Kolumbustag"),
+                HolidayType.Civic, isMovable: true,
+                description: "Conmemoración del 12 de octubre de 1492, fecha del primer avistamiento de tierra americana por Cristóbal Colón. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
+
+            new HolidayInfo(
+                "co_all_saints", allSaints.Month, allSaints.Day, "CO",
+                "Día de Todos los Santos",
+                Names("Día de Todos los Santos", "All Saints' Day", "Dia de Todos os Santos", "Toussaint", "Allerheiligen"),
+                HolidayType.Religious, isMovable: true,
+                description: "Festividad católica en honor a todos los santos. Sujeto a traslado al lunes siguiente según la Ley Emiliani."),
+
+            new HolidayInfo(
+                "co_cartagena", cartagena.Month, cartagena.Day, "CO",
+                "Independencia de Cartagena",
+                Names("Independencia de Cartagena", "Cartagena Independence Day", "Independência de Cartagena", "Indépendance de Carthagène", "Unabhängigkeit von Cartagena"),
+                HolidayType.Civic, isMovable: true,
+                description: "Conmemoración de la declaración de independencia de la Provincia de Cartagena de Indias el 11 de noviembre de 1811. Sujeto a traslado al lunes siguiente según la Ley Emiliani.")
         };
+    }
+
+    private static DateTime NextMonday(int year, int month, int day)
+    {
+        var d = new DateTime(year, month, day);
+        int diff = ((int)DayOfWeek.Monday - (int)d.DayOfWeek + 7) % 7;
+        return d.AddDays(diff);
     }
 }

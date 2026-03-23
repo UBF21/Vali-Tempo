@@ -40,18 +40,26 @@ public abstract class BaseHolidayProvider : IHolidayProvider
     protected virtual IEnumerable<HolidayInfo> GetMovableHolidays(int year)
         => Enumerable.Empty<HolidayInfo>();
 
-    /// <inheritdoc/>
-    /// <remarks>
+    /// <summary>
     /// Combines fixed and movable holidays and sorts them by month, then by day.
-    /// </remarks>
-    public IEnumerable<HolidayInfo> GetHolidays(int year)
+    /// Used internally to build the cache; external callers should use
+    /// <see cref="GetHolidays(int)"/> which delegates to the cache.
+    /// </summary>
+    private IEnumerable<HolidayInfo> BuildHolidays(int year)
         => GetFixedHolidays()
             .Concat(GetMovableHolidays(year))
             .OrderBy(h => h.Month)
             .ThenBy(h => h.Day);
 
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Returns the cached holiday list for the given year, building and caching it on first access.
+    /// </remarks>
+    public IEnumerable<HolidayInfo> GetHolidays(int year)
+        => GetCachedHolidays(year);
+
     private IReadOnlyList<HolidayInfo> GetCachedHolidays(int year)
-        => _holidayListCache.GetOrAdd(year, y => GetHolidays(y).ToList().AsReadOnly());
+        => _holidayListCache.GetOrAdd(year, y => BuildHolidays(y).ToList().AsReadOnly());
 
     private HashSet<(int Month, int Day)> GetHolidaySet(int year)
         => _holidayCache.GetOrAdd(year, y => GetCachedHolidays(y).Select(h => (h.Month, h.Day)).ToHashSet());
