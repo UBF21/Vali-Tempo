@@ -1,5 +1,9 @@
 # Vali-Time
 
+[![NuGet](https://img.shields.io/nuget/v/Vali-Time.svg)](https://www.nuget.org/packages/Vali-Time)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-6%20%7C%207%20%7C%208%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
+
 > Precise time unit conversions, date arithmetic, period boundaries, and a full Quarter API for .NET.
 
 ## Features

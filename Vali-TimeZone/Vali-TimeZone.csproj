@@ -1,25 +1,54 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-    <RootNamespace>Vali_TimeZone</RootNamespace>
-    <Title>Vali-TimeZone</Title>
-    <PackageId>Vali-TimeZone</PackageId>
-    <Product>Vali-TimeZone</Product>
-    <Version>1.0.0</Version>
-    <Authors>Felipe Rafael Montenegro Morriberon</Authors>
-    <Description>Vali-TimeZone is a .NET library for timezone-aware date and time operations. Provides conversion between timezones, UTC offset calculations, DST detection, local/UTC interoperability, and a curated list of IANA-compatible timezone identifiers for 30+ countries.</Description>
-    <PackageTags>timezone;utc;dst;datetime;conversion;iana;dotnet</PackageTags>
-    <PackageReleaseNotes>Vali-TimeZone v1.0.0 — initial release: ValiTimeZone class with Convert, ToUtc, FromUtc, GetOffset, IsDst, FindZone, AllZones, and DateTimeOffset interoperability.</PackageReleaseNotes>
-    <PackageProjectUrl>https://github.com/UBF21/Vali-TimeZone</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/UBF21/Vali-TimeZone</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
-  </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <RootNamespace>Vali_TimeZone</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Package identity -->
+        <PackageId>Vali-TimeZone</PackageId>
+        <Title>Vali-TimeZone</Title>
+        <Product>Vali-TimeZone</Product>
+        <Version>1.0.0</Version>
+        <Authors>Felipe Rafael Montenegro Morriberon</Authors>
+        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+
+        <!-- Repository -->
+        <RepositoryUrl>https://github.com/UBF21/Vali-TimeZone</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/UBF21/Vali-TimeZone</PackageProjectUrl>
+
+        <!-- License -->
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+        <!-- Discoverability -->
+        <PackageTags>timezone;utc;dst;datetime;conversion;iana;dotnet</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!-- Source Link / Symbols -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <Description>Vali-TimeZone is a .NET library for timezone-aware date and time operations. Provides conversion between timezones, UTC offset calculations, DST detection, local/UTC interoperability, and a curated list of IANA-compatible timezone identifiers for 30+ countries.</Description>
+        <PackageReleaseNotes>Vali-TimeZone v1.0.0 — initial release: ValiTimeZone class with Convert, ToUtc, FromUtc, GetOffset, IsDst, FindZone, AllZones, ZonesForCountry, IsValidZone, Now, Today, IsSameInstant, FormatWithZone, and DateTimeOffset interoperability.</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
+
 </Project>
