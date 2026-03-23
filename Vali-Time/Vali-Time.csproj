@@ -16,12 +16,12 @@
         <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
 
         <!-- Repository -->
-        <RepositoryUrl>https://github.com/UBF21/Vali-Time</RepositoryUrl>
+        <RepositoryUrl>https://github.com/UBF21/Vali-Tempo</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageProjectUrl>https://github.com/UBF21/Vali-Time</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/UBF21/Vali-Tempo</PackageProjectUrl>
 
         <!-- License -->
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 
         <!-- Discoverability -->
