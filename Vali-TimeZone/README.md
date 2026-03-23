@@ -1,7 +1,7 @@
 # Vali-TimeZone
 
 [![NuGet](https://img.shields.io/nuget/v/Vali-TimeZone.svg)](https://www.nuget.org/packages/Vali-TimeZone)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-6%20%7C%207%20%7C%208%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
 
 **Vali-TimeZone** is the timezone-aware module of the Vali-Tempo ecosystem. It provides conversion between timezones, UTC offset calculations, DST detection, and a curated catalog of IANA-compatible timezone identifiers for 30+ countries.
@@ -62,6 +62,13 @@ var zones = tz.ZonesForCountry("CL");
 // Program.cs
 builder.Services.AddValiTimeZone();
 
+// Optional: provide a custom IClock (defaults to DateTime.UtcNow)
+// builder.Services.AddSingleton<IClock, MyCustomClock>();
+```
+
+`ValiTimeZone` accepts an optional `IClock` in its constructor. When registered via `AddValiTimeZone()`, it automatically resolves `IClock` from the container if one is registered, or falls back to `SystemClock.Instance`.
+
+```csharp
 // Service constructor
 public class MyService(IValiTimeZone timeZone)
 {
@@ -158,4 +165,4 @@ Each curated entry exposes:
 
 ## License
 
-Apache-2.0 © 2025 Felipe Rafael Montenegro Morriberon
+MIT © 2025 Felipe Rafael Montenegro Morriberon

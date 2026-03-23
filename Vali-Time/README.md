@@ -1,7 +1,7 @@
 # Vali-Time
 
 [![NuGet](https://img.shields.io/nuget/v/Vali-Time.svg)](https://www.nuget.org/packages/Vali-Time)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-6%20%7C%207%20%7C%208%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
 
 > Precise time unit conversions, date arithmetic, period boundaries, and a full Quarter API for .NET.
@@ -371,6 +371,64 @@ Console.WriteLine($"{name}: {prog:P1} complete, {remaining} days remaining");
 // "Q2 2025: 54.9% complete, 42 days remaining"
 ```
 
+#### WeekYear
+
+Returns the ISO 8601 week-numbering year for the date. Near year boundaries, this can differ from `date.Year`.
+
+```csharp
+var dec30 = new DateTime(2024, 12, 30); // ISO week 1 of 2025
+
+int weekYear   = valiDate.WeekYear(dec30);   // 2025
+int weekNumber = valiDate.WeekOfYear(dec30); // 1
+
+// With Sunday-start the calendar year is always returned
+var valiDateSun = new ValiDate(WeekStart.Sunday);
+int yearSun = valiDateSun.WeekYear(dec30); // 2024
+```
+
+#### DayOfQuarter
+
+Returns the 1-based day number within the current quarter.
+
+```csharp
+var date = new DateTime(2025, 5, 20);
+
+int day = valiDate.DayOfQuarter(date); // 50 (50th day of Q2)
+```
+
+#### TryNextQuarterStart
+
+Safely returns the first day of the next quarter. Returns `false` for Q4 of year 9999.
+
+```csharp
+var date = new DateTime(2025, 5, 20);
+if (valiDate.TryNextQuarterStart(date, out var nextQ))
+    Console.WriteLine(nextQ); // 2025-07-01
+
+var endOfTime = new DateTime(9999, 10, 1);
+bool hasNext = valiDate.TryNextQuarterStart(endOfTime, out _); // false
+```
+
+#### ProgressInYear
+
+Returns the fraction of the year elapsed (0.0 = Jan 1, approaches 1.0 on Dec 31).
+
+```csharp
+decimal p1 = valiDate.ProgressInYear(new DateTime(2025, 1, 1));   // 0.0
+decimal p2 = valiDate.ProgressInYear(new DateTime(2025, 7, 1));   // ~0.4959
+decimal p3 = valiDate.ProgressInYear(new DateTime(2025, 12, 31)); // ~0.9973
+```
+
+#### ProgressInMonth
+
+Returns the fraction of the month elapsed (0.0 = 1st, approaches 1.0 on the last day).
+
+```csharp
+decimal p1 = valiDate.ProgressInMonth(new DateTime(2025, 5, 1));  // 0.0
+decimal p2 = valiDate.ProgressInMonth(new DateTime(2025, 5, 15)); // ~0.4516
+decimal p3 = valiDate.ProgressInMonth(new DateTime(2025, 5, 31)); // ~0.9677
+```
+
 ## Dependency Injection
 
 ```csharp
@@ -386,4 +444,4 @@ services.AddSingleton<IValiDate>(_ => new ValiDate(WeekStart.Sunday));
 
 ## License
 
-Apache-2.0
+MIT

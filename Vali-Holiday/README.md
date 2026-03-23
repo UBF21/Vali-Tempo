@@ -5,9 +5,10 @@
 
 - **35 countries** built-in across Latin America, Europe, Canada, and Australia
 - **HolidayProviderFactory** — create pre-configured instances with `CreateAll()`, `CreateLatinAmerica()`, `CreateEurope()`, or `CreateOther()`
-- **IsHoliday** — check whether a date is a public holiday in any supported country
+- **IsHoliday** — check whether a date is a national public holiday (regional holidays excluded)
 - **GetHolidays** — all holidays for a year in one or multiple countries
-- **GetNextHoliday / GetPreviousHoliday** — navigate holidays forward and backward from any date
+- **GetNextHolidayWithYear / GetPreviousHolidayWithYear** — navigate holidays forward and backward, returning both the holiday and the year it falls in
+- **GetNextHoliday / GetPreviousHoliday** _(deprecated)_ — use `GetNextHolidayWithYear` instead
 - **IsLongWeekend** — detect holidays on Monday or Friday that extend the weekend
 - **HolidaysThisMonth** — filter holidays by month
 - **Multilingual names** — `GetName(holiday, "en")` supports `"es"`, `"en"`, `"pt"`, `"fr"`, `"de"`
@@ -36,8 +37,9 @@ var holidays = HolidayProviderFactory.CreateAll();
 bool isHoliday = holidays.IsHoliday(DateTime.Today, "PE");
 
 // What is the next holiday in Chile?
-var next = holidays.GetNextHoliday(DateTime.Today, "CL");
-Console.WriteLine($"{next?.Name} — {next?.Month:D2}/{next?.Day:D2}");
+var next = holidays.GetNextHolidayWithYear(DateTime.Today, "CL");
+if (next is not null)
+    Console.WriteLine($"{next.Value.Holiday.Name} — {next.Value.Year}");
 ```
 
 ## Supported Countries
@@ -132,21 +134,32 @@ var andean = holidays.GetHolidays(2025, "PE", "CL", "BO");
 
 ---
 
-### `GetNextHoliday` / `GetPreviousHoliday`
+### `GetNextHolidayWithYear` / `GetPreviousHolidayWithYear`
 
-Searches up to one year ahead or back. Returns `null` if no holiday is found in that window.
+Returns the next or previous holiday together with the **calendar year** it falls in. This is essential for movable holidays (Easter-based dates) whose month/day changes every year. Searches up to one year ahead or back. Returns `null` if no holiday is found in that window.
+
+```csharp
+(HolidayInfo Holiday, int Year)? GetNextHolidayWithYear(DateTime date, string countryCode);
+(HolidayInfo Holiday, int Year)? GetPreviousHolidayWithYear(DateTime date, string countryCode);
+```
+
+```csharp
+var next = holidays.GetNextHolidayWithYear(DateTime.Today, "AR");
+if (next is not null)
+    Console.WriteLine($"Next holiday: {next.Value.Holiday.Name} in {next.Value.Year}");
+
+var prev = holidays.GetPreviousHolidayWithYear(DateTime.Today, "MX");
+```
+
+---
+
+### `GetNextHoliday` / `GetPreviousHoliday` _(deprecated)_
+
+> **Obsolete.** Use `GetNextHolidayWithYear` / `GetPreviousHolidayWithYear` instead. These overloads return only the `HolidayInfo` without the resolved year, which makes movable holidays ambiguous. They will be removed in a future version.
 
 ```csharp
 HolidayInfo? GetNextHoliday(DateTime date, string countryCode);
 HolidayInfo? GetPreviousHoliday(DateTime date, string countryCode);
-```
-
-```csharp
-var next = holidays.GetNextHoliday(DateTime.Today, "AR");
-if (next is not null)
-    Console.WriteLine($"Next holiday: {next.Name} on {next.Month:D2}/{next.Day:D2}");
-
-var prev = holidays.GetPreviousHoliday(DateTime.Today, "MX");
 ```
 
 ---
@@ -323,8 +336,8 @@ for (var d = new DateTime(2025, 1, 1); d.Year == 2025; d = d.AddDays(1))
 {
     if (holidays.IsLongWeekend(d, "CL"))
     {
-        var info = holidays.GetNextHoliday(d, "CL");
-        Console.WriteLine($"  {d:yyyy-MM-dd} ({d.DayOfWeek}) — {info?.Name}");
+        var info = holidays.GetNextHolidayWithYear(d, "CL");
+        Console.WriteLine($"  {d:yyyy-MM-dd} ({d.DayOfWeek}) — {info?.Holiday.Name}");
     }
 }
 ```
@@ -354,5 +367,5 @@ public class PayrollService(ValiHoliday holidays)
 
 ## License
 
-Licensed under the [Apache-2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
+Licensed under the [MIT License](../LICENSE).
 Copyright © 2025 Felipe Rafael Montenegro Morriberon. All rights reserved.
