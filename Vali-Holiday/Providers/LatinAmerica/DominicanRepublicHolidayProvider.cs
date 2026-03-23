@@ -226,13 +226,22 @@ public sealed class DominicanRepublicHolidayProvider : BaseHolidayProvider
     {
         const string cc = "DO";
 
+        var goodFriday = EasterCalculator.GoodFriday(year);
+        var corpusChristi = EasterCalculator.CorpusChristi(year);
+
+        // Labor Day: May 1, or following Monday if not Monday
+        var may1 = new DateTime(year, 5, 1);
+        var laborDayObs = may1.DayOfWeek == DayOfWeek.Monday
+            ? may1
+            : may1.AddDays(((int)DayOfWeek.Monday - (int)may1.DayOfWeek + 7) % 7);
+
         return new[]
         {
             // Good Friday — Easter - 2 days
             new HolidayInfo(
                 id: "do_good_friday",
-                month: EasterCalculator.GoodFriday(year).Month,
-                day: EasterCalculator.GoodFriday(year).Day,
+                month: goodFriday.Month,
+                day: goodFriday.Day,
                 countryCode: cc,
                 name: "Viernes Santo",
                 names: Names(
@@ -244,6 +253,40 @@ public sealed class DominicanRepublicHolidayProvider : BaseHolidayProvider
                 type: HolidayType.Religious,
                 isMovable: true,
                 description: "Commemorates the crucifixion of Jesus Christ, 2 days before Easter Sunday."),
+
+            // Corpus Christi — Easter + 60 days
+            new HolidayInfo(
+                id: "do_corpus_christi",
+                month: corpusChristi.Month,
+                day: corpusChristi.Day,
+                countryCode: cc,
+                name: "Corpus Christi",
+                names: Names(
+                    es: "Corpus Christi",
+                    en: "Corpus Christi",
+                    pt: "Corpus Christi",
+                    fr: "Fête-Dieu",
+                    de: "Fronleichnam"),
+                type: HolidayType.Religious,
+                isMovable: true,
+                description: "Catholic feast honouring the Body and Blood of Christ in the Eucharist, 60 days after Easter Sunday."),
+
+            // Labor Day observed — following Monday if May 1 is not Monday
+            new HolidayInfo(
+                id: "do_labour_day_obs",
+                month: laborDayObs.Month,
+                day: laborDayObs.Day,
+                countryCode: cc,
+                name: "Día del Trabajo (Observancia)",
+                names: Names(
+                    es: "Día del Trabajo (Observancia)",
+                    en: "Labour Day (Observed)",
+                    pt: "Dia do Trabalho (Observado)",
+                    fr: "Fête du Travail (Observée)",
+                    de: "Tag der Arbeit (Beobachtet)"),
+                type: HolidayType.National,
+                isMovable: true,
+                description: "Observed Labour Day: the following Monday when 1 May does not fall on a Monday."),
         };
     }
 }

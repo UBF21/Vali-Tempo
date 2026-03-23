@@ -12,7 +12,7 @@ public interface IValiHoliday
     /// </summary>
     /// <param name="provider">The provider to register.</param>
     /// <returns>The current <see cref="IValiHoliday"/> instance for fluent chaining.</returns>
-    ValiHoliday Register(IHolidayProvider provider);
+    IValiHoliday Register(IHolidayProvider provider);
 
     /// <summary>
     /// Returns the registered <see cref="IHolidayProvider"/> for the given country code.

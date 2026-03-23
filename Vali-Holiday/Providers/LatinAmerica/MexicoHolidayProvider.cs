@@ -58,20 +58,6 @@ public class MexicoHolidayProvider : BaseHolidayProvider
             description: "Celebración del inicio del año calendario. Fecha fija obligatoria por el Artículo 74 de la LFT."),
 
         new HolidayInfo(
-            "mx_constitution_day", 2, 5, "MX",
-            "Día de la Constitución",
-            Names("Día de la Constitución", "Constitution Day", "Dia da Constituição", "Jour de la Constitution", "Tag der Verfassung"),
-            HolidayType.Civic,
-            description: "Conmemoración de la promulgación de la Constitución Política de los Estados Unidos Mexicanos del 5 de febrero de 1917. Se observa el primer lunes de febrero (regla de lunes más cercano, LFT Art. 74)."),
-
-        new HolidayInfo(
-            "mx_juarez_birthday", 3, 21, "MX",
-            "Natalicio de Benito Juárez",
-            Names("Natalicio de Benito Juárez", "Benito Juárez's Birthday", "Aniversário de Benito Juárez", "Anniversaire de Benito Juárez", "Geburtstag von Benito Juárez"),
-            HolidayType.Civic,
-            description: "Conmemoración del natalicio del Benemérito de las Américas, Benito Pablo Juárez García, nacido el 21 de marzo de 1806 en Guelatao, Oaxaca. Se observa el tercer lunes de marzo (regla de lunes más cercano, LFT Art. 74)."),
-
-        new HolidayInfo(
             "mx_labor_day", 5, 1, "MX",
             "Día del Trabajo",
             Names("Día del Trabajo", "Labour Day", "Dia do Trabalho", "Fête du Travail", "Tag der Arbeit"),
@@ -84,13 +70,6 @@ public class MexicoHolidayProvider : BaseHolidayProvider
             Names("Día de la Independencia", "Independence Day", "Dia da Independência", "Fête de l'Indépendance", "Unabhängigkeitstag"),
             HolidayType.Civic,
             description: "Conmemoración del Grito de Independencia dado por Miguel Hidalgo y Costilla la madrugada del 16 de septiembre de 1810 en Dolores, Guanajuato, que inició la Guerra de Independencia de México. Fecha fija obligatoria."),
-
-        new HolidayInfo(
-            "mx_revolution_day", 11, 20, "MX",
-            "Día de la Revolución Mexicana",
-            Names("Día de la Revolución Mexicana", "Revolution Day", "Dia da Revolução Mexicana", "Jour de la Révolution Mexicaine", "Tag der Mexikanischen Revolution"),
-            HolidayType.Civic,
-            description: "Conmemoración del inicio de la Revolución Mexicana el 20 de noviembre de 1910, encabezada por Francisco I. Madero contra la dictadura de Porfirio Díaz. Se observa el tercer lunes de noviembre (regla de lunes más cercano, LFT Art. 74)."),
 
         new HolidayInfo(
             "mx_christmas", 12, 25, "MX",
@@ -132,9 +111,45 @@ public class MexicoHolidayProvider : BaseHolidayProvider
 
     /// <inheritdoc/>
     /// <remarks>
-    /// Mexico does not observe Easter-based holidays as mandatory non-working days
-    /// under the LFT. This method returns an empty sequence.
+    /// Returns the three floating-Monday mandatory holidays under Artículo 74 of the
+    /// Ley Federal del Trabajo: Constitution Day (first Monday of February), Juárez
+    /// Birthday (third Monday of March), and Revolution Day (third Monday of November).
     /// </remarks>
     protected override IEnumerable<HolidayInfo> GetMovableHolidays(int year)
-        => Enumerable.Empty<HolidayInfo>();
+    {
+        var constitutionDay = NthMonday(year, 2, 1);
+        var juarezBirthday  = NthMonday(year, 3, 3);
+        var revolutionDay   = NthMonday(year, 11, 3);
+
+        return new[]
+        {
+            new HolidayInfo(
+                "mx_constitution_day", constitutionDay.Month, constitutionDay.Day, "MX",
+                "Día de la Constitución",
+                Names("Día de la Constitución", "Constitution Day", "Dia da Constituição", "Jour de la Constitution", "Tag der Verfassung"),
+                HolidayType.Civic, isMovable: true,
+                description: "Conmemoración de la promulgación de la Constitución Política de los Estados Unidos Mexicanos del 5 de febrero de 1917. Se observa el primer lunes de febrero (regla de lunes más cercano, LFT Art. 74)."),
+
+            new HolidayInfo(
+                "mx_juarez_birthday", juarezBirthday.Month, juarezBirthday.Day, "MX",
+                "Natalicio de Benito Juárez",
+                Names("Natalicio de Benito Juárez", "Benito Juárez's Birthday", "Aniversário de Benito Juárez", "Anniversaire de Benito Juárez", "Geburtstag von Benito Juárez"),
+                HolidayType.Civic, isMovable: true,
+                description: "Conmemoración del natalicio del Benemérito de las Américas, Benito Pablo Juárez García, nacido el 21 de marzo de 1806 en Guelatao, Oaxaca. Se observa el tercer lunes de marzo (regla de lunes más cercano, LFT Art. 74)."),
+
+            new HolidayInfo(
+                "mx_revolution_day", revolutionDay.Month, revolutionDay.Day, "MX",
+                "Día de la Revolución Mexicana",
+                Names("Día de la Revolución Mexicana", "Revolution Day", "Dia da Revolução Mexicana", "Jour de la Révolution Mexicaine", "Tag der Mexikanischen Revolution"),
+                HolidayType.Civic, isMovable: true,
+                description: "Conmemoración del inicio de la Revolución Mexicana el 20 de noviembre de 1910, encabezada por Francisco I. Madero contra la dictadura de Porfirio Díaz. Se observa el tercer lunes de noviembre (regla de lunes más cercano, LFT Art. 74)."),
+        };
+    }
+
+    private static DateTime NthMonday(int year, int month, int n)
+    {
+        var d = new DateTime(year, month, 1);
+        int diff = ((int)DayOfWeek.Monday - (int)d.DayOfWeek + 7) % 7;
+        return d.AddDays(diff + (n - 1) * 7);
+    }
 }

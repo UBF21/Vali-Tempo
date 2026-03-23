@@ -372,7 +372,7 @@ public class ValiTime : IValiTime
     }
 
     private static readonly Regex TokenRegex = new(
-        @"(\d+(?:\.\d+)?)\s*(ms|milliseconds?|s|sec(?:onds?)?|m|min(?:utes?)?|h|hr|hours?|d|days?|w|weeks?)",
+        @"(\d+(?:\.\d+)?)\s*(ms|milliseconds?|mo|months?|s|sec(?:onds?)?|m|min(?:utes?)?|h|hr|hours?|d|days?|w|weeks?|yr|years?)",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private static decimal ParseLabelledTokens(string input)
@@ -397,6 +397,8 @@ public class ValiTime : IValiTime
                 "h" or "hr" or "hour" or "hours"                  => value * Constants.SecondsInHour,
                 "d" or "day" or "days"                            => value * Constants.SecondsInDay,
                 "w" or "week" or "weeks"                          => value * Constants.SecondsInWeek,
+                "mo" or "month" or "months"                       => value * Constants.SecondsInMonth,
+                "yr" or "year" or "years"                         => value * Constants.SecondsInYear,
                 _ => throw new FormatException($"Unrecognised time unit token: '{unitToken}'.")
             };
         }

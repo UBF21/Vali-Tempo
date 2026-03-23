@@ -76,6 +76,12 @@ public readonly struct ValiDuration : IEquatable<ValiDuration>, IComparable<Vali
     /// <returns>A new <see cref="ValiDuration"/> equal to <paramref name="w"/> weeks.</returns>
     public static ValiDuration FromWeeks(decimal w) => new(w * 604800m);
 
+    /// <summary>Creates a <see cref="ValiDuration"/> from an approximate number of months (1 month ≈ 30.4375 days).</summary>
+    public static ValiDuration FromMonths(decimal months) => new(months * 2629800m);
+
+    /// <summary>Creates a <see cref="ValiDuration"/> from an approximate number of years (1 year ≈ 365.25 days).</summary>
+    public static ValiDuration FromYears(decimal years) => new(years * 31557600m);
+
     /// <summary>
     /// Gets a <see cref="ValiDuration"/> representing a zero-length duration.
     /// </summary>

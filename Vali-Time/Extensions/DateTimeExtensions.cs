@@ -42,7 +42,11 @@ public static class DateTimeExtensions
     /// </returns>
     public static DateTime EndOfWeek(this DateTime date, WeekStart weekStart = WeekStart.Monday)
     {
-        return date.StartOfWeek(weekStart).AddDays(6) + new TimeSpan(0, 23, 59, 59, 999);
+        var start = date.StartOfWeek(weekStart);
+        var candidate = start.Date >= DateTime.MaxValue.AddDays(-6).Date
+            ? DateTime.MaxValue
+            : start.AddDays(6);
+        return candidate == DateTime.MaxValue ? DateTime.MaxValue : candidate.Date + TimeSpan.FromTicks(TimeSpan.TicksPerDay - 1);
     }
 
     // =========================================================================
@@ -69,7 +73,7 @@ public static class DateTimeExtensions
     public static DateTime EndOfMonth(this DateTime date)
     {
         int lastDay = DateTime.DaysInMonth(date.Year, date.Month);
-        return new DateTime(date.Year, date.Month, lastDay) + new TimeSpan(0, 23, 59, 59, 999);
+        return new DateTime(date.Year, date.Month, lastDay) + TimeSpan.FromTicks(TimeSpan.TicksPerDay - 1);
     }
 
     // =========================================================================
@@ -95,7 +99,7 @@ public static class DateTimeExtensions
     /// </returns>
     public static DateTime EndOfYear(this DateTime date)
     {
-        return new DateTime(date.Year, 12, 31) + new TimeSpan(0, 23, 59, 59, 999);
+        return new DateTime(date.Year, 12, 31) + TimeSpan.FromTicks(TimeSpan.TicksPerDay - 1);
     }
 
     // =========================================================================
@@ -128,7 +132,7 @@ public static class DateTimeExtensions
     {
         int lastMonth = date.QuarterOfYear() * 3;
         int lastDay   = DateTime.DaysInMonth(date.Year, lastMonth);
-        return new DateTime(date.Year, lastMonth, lastDay) + new TimeSpan(0, 23, 59, 59, 999);
+        return new DateTime(date.Year, lastMonth, lastDay) + TimeSpan.FromTicks(TimeSpan.TicksPerDay - 1);
     }
 
     // =========================================================================
@@ -253,6 +257,6 @@ public static class DateTimeExtensions
     /// <returns>A <see cref="DateTime"/> set to 23:59:59.999 on the same calendar day.</returns>
     public static DateTime EndOfDay(this DateTime date)
     {
-        return date.Date + new TimeSpan(0, 23, 59, 59, 999);
+        return date.Date + TimeSpan.FromTicks(TimeSpan.TicksPerDay - 1);
     }
 }

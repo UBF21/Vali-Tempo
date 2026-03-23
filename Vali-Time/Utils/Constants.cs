@@ -9,7 +9,7 @@ public  static class Constants
    /// <summary>
     /// Represents the number of seconds in a minute (60). Used for converting between seconds and minutes.
     /// </summary>
-    public const int SecondsInMinute = 60;
+    public const decimal SecondsInMinute = 60m;
 
     /// <summary>
     /// Represents the number of milliseconds in a second (1000). Used for converting between milliseconds and seconds.
@@ -19,7 +19,7 @@ public  static class Constants
     /// <summary>
     /// Represents the number of seconds in an hour (3600). Used for converting between seconds and hours.
     /// </summary>
-    public const int SecondsInHour = 3600;
+    public const decimal SecondsInHour = 3600m;
 
     /// <summary>
     /// Represents the string prefix for milliseconds ("ms"). Used in time formatting.

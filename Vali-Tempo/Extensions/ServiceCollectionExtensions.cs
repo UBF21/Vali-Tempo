@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Vali_Age.Extensions;
 using Vali_Calendar.Extensions;
 using Vali_CountDown.Extensions;
+using Vali_Duration.Extensions;
 using Vali_Holiday.Extensions;
 using Vali_Range.Extensions;
 using Vali_Schedule.Extensions;
@@ -48,6 +49,7 @@ public static class ServiceCollectionExtensions
         services.AddValiHoliday();
         services.AddValiTimeZone();
         services.AddValiSchedule();
+        services.AddValiDuration();
         return services;
     }
 

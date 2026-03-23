@@ -74,9 +74,9 @@ public class IrelandHolidayProvider : BaseHolidayProvider
     {
         var easterMonday = EasterCalculator.Easter(year).AddDays(1);
 
-        // St. Brigid's Day: 1 Feb if Monday, otherwise first Monday of February
+        // St. Brigid's Day: 1 Feb if Friday, otherwise first Monday of February
         var feb1 = new DateTime(year, 2, 1);
-        var stBrigid = feb1.DayOfWeek == DayOfWeek.Monday
+        var stBrigid = feb1.DayOfWeek == DayOfWeek.Friday
             ? feb1
             : feb1.AddDays(((int)DayOfWeek.Monday - (int)feb1.DayOfWeek + 7) % 7);
 

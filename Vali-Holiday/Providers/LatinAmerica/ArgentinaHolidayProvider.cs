@@ -88,25 +88,11 @@ public class ArgentinaHolidayProvider : BaseHolidayProvider
             description: "Conmemoración de la Declaración de la Independencia de las Provincias Unidas en Sud América el 9 de julio de 1816 en el Congreso de Tucumán."),
 
         new HolidayInfo(
-            "ar_san_martin", 8, 17, "AR",
-            "Paso a la Inmortalidad del General José de San Martín",
-            Names("Paso a la Inmortalidad del General José de San Martín", "General José de San Martín Memorial Day", "Dia da Imortalidade do General José de San Martín", "Jour du Général José de San Martín", "Gedenktag für General José de San Martín"),
-            HolidayType.Civic,
-            description: "Conmemoración del fallecimiento del Libertador José de San Martín el 17 de agosto de 1850 en Boulogne-sur-Mer, Francia. Se observa el tercer lunes de agosto (regla de traslado)."),
-
-        new HolidayInfo(
             "ar_diversity_day", 10, 12, "AR",
             "Día del Respeto a la Diversidad Cultural",
             Names("Día del Respeto a la Diversidad Cultural", "Day of Respect for Cultural Diversity", "Dia do Respeito à Diversidade Cultural", "Jour du Respect de la Diversité Culturelle", "Tag des Respekts für kulturelle Vielfalt"),
             HolidayType.Civic,
             description: "Reconoce la pluralidad cultural de Argentina y los derechos de los pueblos originarios. Reemplazó al 'Día de la Raza' por Decreto 1584/2010. Se traslada al lunes siguiente si no cae en lunes."),
-
-        new HolidayInfo(
-            "ar_sovereignty", 11, 20, "AR",
-            "Día de la Soberanía Nacional",
-            Names("Día de la Soberanía Nacional", "National Sovereignty Day", "Dia da Soberania Nacional", "Jour de la Souveraineté Nationale", "Tag der Nationalen Souveränität"),
-            HolidayType.Civic,
-            description: "Conmemoración de la Batalla de la Vuelta de Obligado del 20 de noviembre de 1845, donde fuerzas argentinas resistieron la intervención anglofrancesa. Se traslada al cuarto lunes de noviembre."),
 
         new HolidayInfo(
             "ar_immaculate", 12, 8, "AR",
@@ -136,6 +122,9 @@ public class ArgentinaHolidayProvider : BaseHolidayProvider
         var holyThursday = EasterCalculator.HolyThursday(year);
         var goodFriday = EasterCalculator.GoodFriday(year);
         var easter = EasterCalculator.Easter(year);
+
+        var sanMartin  = NthMonday(year, 8, 3);
+        var sovereignty = NthMonday(year, 11, 4);
 
         return new[]
         {
@@ -172,7 +161,28 @@ public class ArgentinaHolidayProvider : BaseHolidayProvider
                 "Pascua",
                 Names("Pascua", "Easter Sunday", "Páscoa", "Pâques", "Ostersonntag"),
                 HolidayType.Religious, isMovable: true,
-                description: "Celebración de la Resurrección de Jesucristo. Día de mayor importancia en el calendario litúrgico cristiano.")
+                description: "Celebración de la Resurrección de Jesucristo. Día de mayor importancia en el calendario litúrgico cristiano."),
+
+            new HolidayInfo(
+                "ar_san_martin", sanMartin.Month, sanMartin.Day, "AR",
+                "Paso a la Inmortalidad del General José de San Martín",
+                Names("Paso a la Inmortalidad del General José de San Martín", "General José de San Martín Memorial Day", "Dia da Imortalidade do General José de San Martín", "Jour du Général José de San Martín", "Gedenktag für General José de San Martín"),
+                HolidayType.Civic, isMovable: true,
+                description: "Conmemoración del fallecimiento del Libertador José de San Martín el 17 de agosto de 1850 en Boulogne-sur-Mer, Francia. Se observa el tercer lunes de agosto (regla de traslado)."),
+
+            new HolidayInfo(
+                "ar_sovereignty", sovereignty.Month, sovereignty.Day, "AR",
+                "Día de la Soberanía Nacional",
+                Names("Día de la Soberanía Nacional", "National Sovereignty Day", "Dia da Soberania Nacional", "Jour de la Souveraineté Nationale", "Tag der Nationalen Souveränität"),
+                HolidayType.Civic, isMovable: true,
+                description: "Conmemoración de la Batalla de la Vuelta de Obligado del 20 de noviembre de 1845, donde fuerzas argentinas resistieron la intervención anglofrancesa. Se traslada al cuarto lunes de noviembre.")
         };
+    }
+
+    private static DateTime NthMonday(int year, int month, int n)
+    {
+        var d = new DateTime(year, month, 1);
+        int diff = ((int)DayOfWeek.Monday - (int)d.DayOfWeek + 7) % 7;
+        return d.AddDays(diff + (n - 1) * 7);
     }
 }

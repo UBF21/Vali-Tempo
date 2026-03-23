@@ -49,7 +49,7 @@ public class ValiHoliday : IValiHoliday
     /// </summary>
     /// <param name="provider">The provider to register.</param>
     /// <returns>The current <see cref="ValiHoliday"/> instance for fluent chaining.</returns>
-    public ValiHoliday Register(IHolidayProvider provider)
+    public IValiHoliday Register(IHolidayProvider provider)
     {
         _providers[provider.CountryCode.ToUpperInvariant()] = provider;
         return this;

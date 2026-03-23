@@ -32,17 +32,26 @@ public class ValiRange : IValiRange
     /// Converts a <paramref name="amount"/> expressed in <paramref name="unit"/> into a <see cref="TimeSpan"/>.
     /// For calendar-sensitive units (Months, Years) an average-day approximation is used.
     /// </summary>
+    private const decimal MaxTicksDecimal = (decimal)long.MaxValue;
+
+    private static long ClampTicks(decimal ticks)
+    {
+        if (ticks > MaxTicksDecimal) return long.MaxValue;
+        if (ticks < 0m) return 0L;
+        return (long)ticks;
+    }
+
     private static TimeSpan ToTimeSpan(decimal amount, TimeUnit unit) =>
         unit switch
         {
-            TimeUnit.Milliseconds => TimeSpan.FromTicks((long)(amount * TimeSpan.TicksPerMillisecond)),
-            TimeUnit.Seconds      => TimeSpan.FromTicks((long)(amount * TimeSpan.TicksPerSecond)),
-            TimeUnit.Minutes      => TimeSpan.FromTicks((long)(amount * TimeSpan.TicksPerMinute)),
-            TimeUnit.Hours        => TimeSpan.FromTicks((long)(amount * TimeSpan.TicksPerHour)),
-            TimeUnit.Days         => TimeSpan.FromTicks((long)(amount * TimeSpan.TicksPerDay)),
-            TimeUnit.Weeks        => TimeSpan.FromTicks((long)(amount * TimeSpan.TicksPerDay * 7)),
-            TimeUnit.Months       => TimeSpan.FromTicks((long)(amount * TimeSpan.TicksPerDay * 30.4375m)),
-            TimeUnit.Years        => TimeSpan.FromTicks((long)(amount * TimeSpan.TicksPerDay * 365.25m)),
+            TimeUnit.Milliseconds => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerMillisecond)),
+            TimeUnit.Seconds      => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerSecond)),
+            TimeUnit.Minutes      => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerMinute)),
+            TimeUnit.Hours        => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerHour)),
+            TimeUnit.Days         => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerDay)),
+            TimeUnit.Weeks        => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerDay * 7)),
+            TimeUnit.Months       => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerDay * 30.4375m)),
+            TimeUnit.Years        => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerDay * 365.25m)),
             _                     => throw new ArgumentOutOfRangeException(nameof(unit), unit, "Unrecognised TimeUnit value.")
         };
 
