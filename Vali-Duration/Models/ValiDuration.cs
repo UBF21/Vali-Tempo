@@ -157,6 +157,13 @@ public readonly struct ValiDuration : IEquatable<ValiDuration>, IComparable<Vali
     /// </returns>
     public string Format(int decimalPlaces = 2)
     {
+        if (_seconds < 0m)
+        {
+            // Format the absolute value, then prepend the minus sign.
+            string inner = (-this).Format(decimalPlaces);
+            return "-" + inner;
+        }
+
         if (_seconds >= 604800m) return $"{As(TimeUnit.Weeks).ToString($"F{decimalPlaces}")} w";
         if (_seconds >= 86400m)  return $"{As(TimeUnit.Days).ToString($"F{decimalPlaces}")} d";
         if (_seconds >= 3600m)   return $"{As(TimeUnit.Hours).ToString($"F{decimalPlaces}")} h";
@@ -191,6 +198,11 @@ public readonly struct ValiDuration : IEquatable<ValiDuration>, IComparable<Vali
     /// <returns>A new <see cref="ValiDuration"/> divided by <paramref name="divisor"/>.</returns>
     /// <exception cref="DivideByZeroException">Thrown when <paramref name="divisor"/> is zero.</exception>
     public static ValiDuration operator /(ValiDuration d, decimal divisor) => new(d._seconds / divisor);
+
+    /// <summary>Negates a duration, returning a duration of equal magnitude with the opposite sign.</summary>
+    /// <param name="d">The duration to negate.</param>
+    /// <returns>A new <see cref="ValiDuration"/> with the negated value of <paramref name="d"/>.</returns>
+    public static ValiDuration operator -(ValiDuration d) => new(-d._seconds);
 
     // ── Comparison operators ─────────────────────────────────────────────────
 

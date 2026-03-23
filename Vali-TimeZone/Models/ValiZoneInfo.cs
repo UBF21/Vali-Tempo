@@ -81,5 +81,9 @@ public sealed class ValiZoneInfo
     /// <returns>
     /// A string in the format <c>"[PE] America/Lima (UTC-05:00)"</c>.
     /// </returns>
-    public override string ToString() => $"[{CountryCode}] {Id} (UTC{BaseOffset:hh\\:mm})";
+    public override string ToString()
+    {
+        var sign = BaseOffset >= TimeSpan.Zero ? "+" : "-";
+        return $"[{CountryCode}] {Id} (UTC{sign}{Math.Abs(BaseOffset.Hours):D2}:{Math.Abs(BaseOffset.Minutes):D2})";
+    }
 }

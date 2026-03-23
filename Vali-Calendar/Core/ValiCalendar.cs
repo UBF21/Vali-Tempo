@@ -12,8 +12,6 @@ namespace Vali_Calendar.Core;
 /// </summary>
 public class ValiCalendar : IValiCalendar
 {
-    private static readonly System.Globalization.GregorianCalendar GregorianCal = new();
-
     private readonly WeekStart _defaultWeekStart;
     private readonly IHolidayProvider? _holidayProvider;
 
@@ -60,7 +58,7 @@ public class ValiCalendar : IValiCalendar
         }
         else
         {
-            weekNumber = GregorianCal.GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
+            weekNumber = new System.Globalization.GregorianCalendar().GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             year = date.Year;
         }
 
@@ -166,6 +164,9 @@ public class ValiCalendar : IValiCalendar
     /// <param name="to">The end date.</param>
     public int WorkdaysBetween(DateTime from, DateTime to)
     {
+        if (from.Date > to.Date)
+            throw new ArgumentException("from must be less than or equal to to.", nameof(from));
+
         int count = 0;
         for (var d = from.Date; d <= to.Date; d = d.AddDays(1))
         {

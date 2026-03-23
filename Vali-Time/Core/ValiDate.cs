@@ -410,31 +410,31 @@ public class ValiDate : IValiDate
     }
 
     /// <summary>
-    /// Returns the number of days elapsed since the beginning of the quarter, including today.
+    /// Returns the number of days elapsed since the beginning of the quarter, not counting today.
     /// </summary>
     /// <param name="date">The reference date.</param>
     /// <returns>
-    /// The number of days from the first day of the quarter up to and including
-    /// <paramref name="date"/>.
+    /// The number of days from the first day of the quarter up to (but not including)
+    /// <paramref name="date"/>. Returns 0 on the first day of the quarter.
     /// </returns>
     public int DaysElapsedInQuarter(DateTime date)
     {
         DateTime start = QuarterStartDate(date);
-        return (date.Date - start).Days + 1;
+        return (date.Date - start).Days;
     }
 
     /// <summary>
-    /// Returns the number of days remaining until the end of the quarter, including today.
+    /// Returns the number of days remaining until the end of the quarter, not counting today.
     /// </summary>
     /// <param name="date">The reference date.</param>
     /// <returns>
-    /// The number of days from <paramref name="date"/> up to and including the last day of
-    /// the quarter.
+    /// The number of days from (but not including) <paramref name="date"/> to the last day of
+    /// the quarter. Returns 0 on the last day of the quarter.
     /// </returns>
     public int DaysRemainingInQuarter(DateTime date)
     {
         DateTime end = QuarterEndDate(date);
-        return (end - date.Date).Days + 1;
+        return (end - date.Date).Days;
     }
 
     /// <summary>
@@ -540,7 +540,20 @@ public class ValiDate : IValiDate
     private decimal MonthsDiff(DateTime from, DateTime to)
     {
         int months = (to.Year - from.Year) * 12 + (to.Month - from.Month);
-        decimal dayFraction = (decimal)(to.Day - from.Day) / DateTime.DaysInMonth(to.Year, to.Month);
+        int dayDiff = to.Day - from.Day;
+
+        // If dayDiff is negative, borrow one month and express the remainder
+        // as a fraction of the previous month's day count.
+        if (dayDiff < 0)
+        {
+            months -= 1;
+            // Number of days in the month just before 'to'
+            DateTime prevMonth = to.AddMonths(-1);
+            int daysInPrevMonth = DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month);
+            dayDiff += daysInPrevMonth;
+        }
+
+        decimal dayFraction = (decimal)dayDiff / DateTime.DaysInMonth(to.Year, to.Month);
         return months + dayFraction;
     }
 

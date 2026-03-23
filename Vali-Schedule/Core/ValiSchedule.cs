@@ -27,6 +27,8 @@ namespace Vali_Schedule.Core;
 /// </remarks>
 public class ValiSchedule : IValiSchedule
 {
+    private const int MaxScanDays = 1825; // 5-year lookahead/lookback window
+
     private readonly ScheduleConfig _config = new();
 
     // ── Fluent builder ───────────────────────────────────────────────────────
@@ -193,11 +195,32 @@ public class ValiSchedule : IValiSchedule
     {
         var candidate = reference.Date;
         int count = 0;
-        while (count < 1825) // max 5 years lookahead
+        int occurrenceCount = 0;
+
+        // Pre-count occurrences from StartDate up to (but not including) reference
+        // so that the AfterOccurrences budget stays accurate when reference > StartDate.
+        if (_config.EndType == RecurrenceEnd.AfterOccurrences && _config.MaxOccurrences.HasValue)
+        {
+            var preScan = _config.StartDate.Date;
+            while (preScan < reference.Date)
+            {
+                if (IsValidOccurrence(preScan)) occurrenceCount++;
+                preScan = preScan.AddDays(1);
+            }
+        }
+
+        while (count < MaxScanDays) // max 5 years lookahead
         {
             if (IsValidOccurrence(candidate))
             {
                 if (!IsWithinEnd(candidate)) return null;
+
+                occurrenceCount++;
+                if (_config.EndType == RecurrenceEnd.AfterOccurrences
+                    && _config.MaxOccurrences.HasValue
+                    && occurrenceCount > _config.MaxOccurrences.Value)
+                    return null;
+
                 return _config.TimeOfDay.HasValue
                     ? candidate.Add(_config.TimeOfDay.Value.ToTimeSpan())
                     : candidate;
@@ -223,7 +246,7 @@ public class ValiSchedule : IValiSchedule
     {
         var candidate = reference.Date.AddDays(-1);
         int count = 0;
-        while (count < 1825) // max 5 years lookback
+        while (count < MaxScanDays) // max 5 years lookback
         {
             if (candidate < _config.StartDate.Date) return null;
             if (IsValidOccurrence(candidate) && IsWithinEnd(candidate))
@@ -273,7 +296,7 @@ public class ValiSchedule : IValiSchedule
             }
         }
 
-        while (yielded < limit && count < 1825)
+        while (yielded < limit && count < MaxScanDays)
         {
             if (IsValidOccurrence(candidate))
             {
@@ -362,7 +385,8 @@ public class ValiSchedule : IValiSchedule
                 && (int)((date - _config.StartDate.Date).Days / 7) % _config.Interval == 0,
 
             RecurrenceType.Monthly =>
-                date.Day == (_config.DayOfMonth ?? _config.StartDate.Day)
+                date.Day == Math.Min(_config.DayOfMonth ?? _config.StartDate.Day,
+                                     DateTime.DaysInMonth(date.Year, date.Month))
                 && MonthDiff(_config.StartDate, date) % _config.Interval == 0,
 
             RecurrenceType.Yearly =>

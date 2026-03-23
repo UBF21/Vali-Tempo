@@ -13,7 +13,36 @@ namespace Vali_Tempo.Benchmarks.Benchmarks;
 [SimpleJob]
 public class ScheduleBenchmarks
 {
-    private static readonly DateTime Start = new(2025, 1, 1);
+    private static readonly DateTime Start        = new(2025, 1, 1);
+    private static readonly DateTime WeeklyStart  = new(2025, 1, 6); // first Monday of 2025
+    private static readonly DateTime RangeEnd     = new(2025, 12, 31);
+
+    private ValiSchedule _dailySchedule      = null!;
+    private ValiSchedule _weeklySchedule     = null!;
+    private ValiSchedule _rangeSchedule      = null!;
+    private ValiSchedule _customSchedule     = null!;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        _dailySchedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(Start);
+
+        _weeklySchedule = new ValiSchedule()
+            .Every(1, TimeUnit.Weeks)
+            .On(DayOfWeek.Monday)
+            .StartingFrom(WeeklyStart);
+
+        _rangeSchedule = new ValiSchedule()
+            .Every(1, TimeUnit.Weeks)
+            .On(DayOfWeek.Monday, DayOfWeek.Thursday)
+            .StartingFrom(WeeklyStart);
+
+        _customSchedule = new ValiSchedule()
+            .StartingFrom(Start)
+            .WithCustomPredicate(d => d.DayOfWeek == DayOfWeek.Wednesday);
+    }
 
     /// <summary>
     /// Generates 100 occurrences of a daily schedule starting on 2025-01-01.
@@ -22,12 +51,8 @@ public class ScheduleBenchmarks
     [Benchmark]
     public int Occurrences_Daily_100()
     {
-        var schedule = new ValiSchedule()
-            .Every(1, TimeUnit.Days)
-            .StartingFrom(Start);
-
         int count = 0;
-        foreach (var _ in schedule.Occurrences(Start, 100))
+        foreach (var _ in _dailySchedule.Occurrences(Start, 100))
             count++;
         return count;
     }
@@ -39,15 +64,8 @@ public class ScheduleBenchmarks
     [Benchmark]
     public int Occurrences_Weekly_52()
     {
-        // 2025-01-06 is the first Monday of 2025
-        var start = new DateTime(2025, 1, 6);
-        var schedule = new ValiSchedule()
-            .Every(1, TimeUnit.Weeks)
-            .On(DayOfWeek.Monday)
-            .StartingFrom(start);
-
         int count = 0;
-        foreach (var _ in schedule.Occurrences(start, 52))
+        foreach (var _ in _weeklySchedule.Occurrences(WeeklyStart, 52))
             count++;
         return count;
     }
@@ -60,16 +78,8 @@ public class ScheduleBenchmarks
     [Benchmark]
     public int OccurrencesInRange_OneYear()
     {
-        var start = new DateTime(2025, 1, 6); // first Monday of 2025
-        var end = new DateTime(2025, 12, 31);
-
-        var schedule = new ValiSchedule()
-            .Every(1, TimeUnit.Weeks)
-            .On(DayOfWeek.Monday, DayOfWeek.Thursday)
-            .StartingFrom(start);
-
         int count = 0;
-        foreach (var _ in schedule.OccurrencesInRange(start, end))
+        foreach (var _ in _rangeSchedule.OccurrencesInRange(WeeklyStart, RangeEnd))
             count++;
         return count;
     }
@@ -81,12 +91,8 @@ public class ScheduleBenchmarks
     [Benchmark]
     public int CustomPredicate_Wednesdays_50()
     {
-        var schedule = new ValiSchedule()
-            .StartingFrom(Start)
-            .WithCustomPredicate(d => d.DayOfWeek == DayOfWeek.Wednesday);
-
         int count = 0;
-        foreach (var _ in schedule.Occurrences(Start, 50))
+        foreach (var _ in _customSchedule.Occurrences(Start, 50))
             count++;
         return count;
     }

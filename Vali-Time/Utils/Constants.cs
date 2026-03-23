@@ -7,31 +7,6 @@ namespace Vali_Time.Utils;
 public  static class Constants
 {
    /// <summary>
-    /// Represents the integer value one (1). Used as a multiplier or base value in calculations.
-    /// </summary>
-    public const int One = 1;
-
-    /// <summary>
-    /// Represents the decimal value one (1.0). Used as a multiplier or base value in precise decimal calculations.
-    /// </summary>
-    public const decimal OneDecimal = 1m;
-
-    /// <summary>
-    /// Represents the default number of decimal places (2) for formatting time values.
-    /// </summary>
-    public const int Two = 2;
-
-    /// <summary>
-    /// Represents the integer value zero (0). Used as a default or initial value in calculations.
-    /// </summary>
-    public const int Zero = 0;
-
-    /// <summary>
-    /// Represents the decimal value zero (0.0). Used as a default or initial value in precise decimal calculations.
-    /// </summary>
-    public const decimal ZeroDecimal = 0m;
-
-    /// <summary>
     /// Represents the number of seconds in a minute (60). Used for converting between seconds and minutes.
     /// </summary>
     public const int SecondsInMinute = 60;
