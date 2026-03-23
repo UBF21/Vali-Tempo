@@ -5,23 +5,53 @@
         <RootNamespace>Vali_Schedule</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Title>Vali-Schedule</Title>
-        <Authors>Felipe Rafael Montenegro Morriberon</Authors>
-        <Description>Vali-Schedule is a .NET library for defining and querying recurring time schedules. Supports daily, weekly, monthly, and custom recurrence patterns with next/previous occurrence calculation and occurrence enumeration.</Description>
-        <PackageProjectUrl>https://github.com/UBF21/Vali-Time</PackageProjectUrl>
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-        <RepositoryUrl>https://github.com/UBF21/Vali-Time</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>schedule;recurrence;cron;recurring;calendar;dotnet</PackageTags>
-        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
-        <Version>1.0.0</Version>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Package identity -->
         <PackageId>Vali-Schedule</PackageId>
+        <Title>Vali-Schedule</Title>
         <Product>Vali-Schedule</Product>
+        <Version>1.0.0</Version>
+        <Authors>Felipe Rafael Montenegro Morriberon</Authors>
+        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+
+        <!-- Repository -->
+        <RepositoryUrl>https://github.com/UBF21/Vali-Schedule</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/UBF21/Vali-Schedule</PackageProjectUrl>
+
+        <!-- License -->
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+        <!-- Discoverability -->
+        <PackageTags>schedule;recurrence;cron;recurring;calendar;dotnet</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!-- Source Link / Symbols -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <Description>Vali-Schedule is a .NET library for defining and querying recurring time schedules. Supports daily, weekly, monthly, yearly, and custom recurrence patterns with fluent builder API, next/previous occurrence calculation, and occurrence enumeration.</Description>
+        <PackageReleaseNotes>Vali-Schedule v1.0.0 — initial release: ValiSchedule fluent builder with Every, On, At, StartingFrom, EndsAfter, EndsOn, WithCustomPredicate; NextOccurrence, PreviousOccurrence, OccursOn, Occurrences, OccurrencesInRange.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
     </ItemGroup>
 
 </Project>

@@ -5,29 +5,55 @@
         <RootNamespace>Vali_Calendar</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Package identity -->
+        <PackageId>Vali-Calendar</PackageId>
         <Title>Vali-Calendar</Title>
+        <Product>Vali-Calendar</Product>
+        <Version>1.0.0</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
-        <Description>Vali-Calendar is a .NET library for calendar-based operations. Provides workday calculations, ISO week numbers, CalendarWeek struct, month/year utilities, and business-day arithmetic without requiring external holiday providers.</Description>
-        <PackageProjectUrl>https://github.com/UBF21/Vali-Calendar</PackageProjectUrl>
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+
+        <!-- Repository -->
         <RepositoryUrl>https://github.com/UBF21/Vali-Calendar</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageReleaseNotes>Vali-Calendar v1.0.0 — initial release: ValiCalendar with WorkdaysBetween, AddWorkdays, WorkdaysInMonth, WorkdaysInYear, NextWorkday, PreviousWorkday, WeekOf, WeeksInMonth, CalendarWeek struct, and month/year helpers.</PackageReleaseNotes>
-        <PackageTags>calendar;workdays;week;month;business-days;dotnet</PackageTags>
+        <PackageProjectUrl>https://github.com/UBF21/Vali-Calendar</PackageProjectUrl>
+
+        <!-- License -->
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
-        <Version>1.0.0</Version>
-        <PackageId>Vali-Calendar</PackageId>
-        <Product>Vali-Calendar</Product>
+
+        <!-- Discoverability -->
+        <PackageTags>calendar;workdays;week;month;business-days;dotnet</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!-- Source Link / Symbols -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <Description>Vali-Calendar is a .NET library for calendar-based operations. Provides workday calculations, ISO week numbers, CalendarWeek struct, month/year utilities, and business-day arithmetic without requiring external holiday providers.</Description>
+        <PackageReleaseNotes>Vali-Calendar v1.0.0 — initial release: ValiCalendar with WorkdaysBetween, AddWorkdays, WorkdaysInMonth, WorkdaysInYear, NextWorkday, PreviousWorkday, WeekOf, WeeksInMonth, CalendarWeek struct, and month/year helpers.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
         <ProjectReference Include="..\Vali-Holiday\Vali-Holiday.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
     </ItemGroup>
 
 </Project>

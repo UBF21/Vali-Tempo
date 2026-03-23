@@ -18,5 +18,8 @@
     <ProjectReference Include="..\Vali-Calendar\Vali-Calendar.csproj" />
     <ProjectReference Include="..\Vali-Duration\Vali-Duration.csproj" />
     <ProjectReference Include="..\Vali-Age\Vali-Age.csproj" />
+    <ProjectReference Include="..\Vali-Range\Vali-Range.csproj" />
+    <ProjectReference Include="..\Vali-CountDown\Vali-CountDown.csproj" />
+    <ProjectReference Include="..\Vali-TimeZone\Vali-TimeZone.csproj" />
   </ItemGroup>
 </Project>

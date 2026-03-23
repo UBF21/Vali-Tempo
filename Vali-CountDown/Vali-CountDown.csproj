@@ -5,28 +5,54 @@
         <RootNamespace>Vali_CountDown</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Package identity -->
+        <PackageId>Vali-CountDown</PackageId>
         <Title>Vali-CountDown</Title>
+        <Product>Vali-CountDown</Product>
+        <Version>1.0.0</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
-        <Description>Vali-CountDown is a .NET library for deadline and countdown tracking. Provides expiry detection, time-until/elapsed calculations, progress percentage, time breakdowns, and human-readable countdown formatting.</Description>
-        <PackageProjectUrl>https://github.com/UBF21/Vali-CountDown</PackageProjectUrl>
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+
+        <!-- Repository -->
         <RepositoryUrl>https://github.com/UBF21/Vali-CountDown</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageReleaseNotes>Vali-CountDown v1.0.0 — initial release: ValiCountdown with IsExpired, TimeUntil, TimeElapsed, Progress, ProgressPercent, Breakdown, Format, and IsWithin.</PackageReleaseNotes>
-        <PackageTags>countdown;deadline;timer;progress;dotnet</PackageTags>
+        <PackageProjectUrl>https://github.com/UBF21/Vali-CountDown</PackageProjectUrl>
+
+        <!-- License -->
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
-        <Version>1.0.0</Version>
-        <PackageId>Vali-CountDown</PackageId>
-        <Product>Vali-CountDown</Product>
+
+        <!-- Discoverability -->
+        <PackageTags>countdown;deadline;timer;progress;dotnet</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!-- Source Link / Symbols -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <Description>Vali-CountDown is a .NET library for deadline and countdown tracking. Provides expiry detection, time-until/elapsed calculations, progress percentage, time breakdowns, and human-readable countdown formatting.</Description>
+        <PackageReleaseNotes>Vali-CountDown v1.0.0 — initial release: ValiCountdown with IsExpired, TimeUntil, TimeElapsed, Progress, ProgressPercent, Breakdown, Format, and IsWithin.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
     </ItemGroup>
 
 </Project>

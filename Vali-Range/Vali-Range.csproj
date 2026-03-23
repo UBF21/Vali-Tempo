@@ -5,28 +5,54 @@
         <RootNamespace>Vali_Range</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Package identity -->
+        <PackageId>Vali-Range</PackageId>
         <Title>Vali-Range</Title>
+        <Product>Vali-Range</Product>
+        <Version>1.0.0</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
-        <Description>Vali-Range is a lightweight .NET library for working with date ranges. It provides a precise and flexible API for creating, querying, and iterating date ranges, including overlap detection, intersections, unions, and calendar-based splits.</Description>
-        <PackageProjectUrl>https://github.com/UBF21/Vali-Range</PackageProjectUrl>
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+
+        <!-- Repository -->
         <RepositoryUrl>https://github.com/UBF21/Vali-Range</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageReleaseNotes>Vali-Range v1.0.0 — initial release: DateRange struct, ValiRange class with Create, Contains, Overlaps, Intersection, Union, Expand, Shrink, Shift, EachDay, EachWeek, EachMonth, SplitByMonth, SplitByQuarter, and calendar-period helpers (ThisMonth, ThisWeek, ThisQuarter, ThisYear).</PackageReleaseNotes>
-        <PackageTags>date;range;calendar;interval;dotnet</PackageTags>
+        <PackageProjectUrl>https://github.com/UBF21/Vali-Range</PackageProjectUrl>
+
+        <!-- License -->
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
-        <Version>1.0.0</Version>
-        <PackageId>Vali-Range</PackageId>
-        <Product>Vali-Range</Product>
+
+        <!-- Discoverability -->
+        <PackageTags>date;range;calendar;interval;dotnet</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!-- Source Link / Symbols -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <Description>Vali-Range is a lightweight .NET library for working with date ranges. It provides a precise and flexible API for creating, querying, and iterating date ranges, including overlap detection, intersections, unions, and calendar-based splits.</Description>
+        <PackageReleaseNotes>Vali-Range v1.0.0 — initial release: DateRange struct, ValiRange class with Create, Contains, Overlaps, Intersection, Union, Expand, Shrink, Shift, EachDay, EachWeek, EachMonth, SplitByMonth, SplitByQuarter, and calendar-period helpers (ThisMonth, ThisWeek, ThisQuarter, ThisYear).</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
     </ItemGroup>
 
 </Project>

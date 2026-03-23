@@ -5,15 +5,41 @@
         <RootNamespace>Vali_Time</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Package identity -->
+        <PackageId>Vali-Time</PackageId>
         <Title>Vali-Time</Title>
+        <Product>Vali-Time</Product>
+        <Version>1.0.0</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
+        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+
+        <!-- Repository -->
+        <RepositoryUrl>https://github.com/UBF21/Vali-Time</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://github.com/UBF21/Vali-Time</PackageProjectUrl>
+
+        <!-- License -->
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+        <!-- Discoverability -->
+        <PackageTags>Time;converter;formatting;utility;dotnet;date;calendar;quarter;range</PackageTags>
+        <PackageIcon>logo-Vali-Time.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!-- Source Link / Symbols -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
         <Description>
             Vali-Time is a lightweight .NET library for converting and managing time units, including milliseconds, seconds, minutes, hours, days, weeks, months, and years. It offers a precise and flexible API for time conversions, summations, breakdowns, and human-readable formatting. ValiDate extends the library with date arithmetic, period boundaries, validations, and a comprehensive Quarter API. With support for full precision calculations, optional rounding, cultural formatting, and seamless dependency injection integration, Vali-Time is ideal for any .NET application requiring accurate time and date handling.
         </Description>
-        <PackageProjectUrl>https://github.com/UBF21/Vali-Time</PackageProjectUrl>
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-        <RepositoryUrl>https://github.com/UBF21/Vali-Time</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
+
         <PackageReleaseNotes>
             Vali-Time v1.0.0 — initial release:
             - Time unit conversions with full decimal precision: milliseconds, seconds, minutes, hours, days, weeks, months, and years.
@@ -25,23 +51,21 @@
             - ValiDate: date arithmetic (Add, Subtract, Diff), period boundaries (StartOf, EndOf), validations (IsBefore, IsAfter, IsWeekend, IsSamePeriod), and an extended Quarter API (QuarterName, ProgressInQuarter, DaysRemainingInQuarter, and more).
             - Designed for seamless integration with .NET dependency injection via IValiTime and IValiDate interfaces.
         </PackageReleaseNotes>
-        <PackageTags>Time;converter;formatting;utility;dotnet;date;calendar;quarter;range</PackageTags>
-        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
-        <Version>1.0.0</Version>
-        <PackageIcon>logo-Vali-Time.png</PackageIcon>
-        <PackageId>Vali-Time</PackageId>
-        <Product>Vali-Time</Product>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>
         <None Include="logo-Vali-Time.png">
             <Pack>True</Pack>
             <PackagePath></PackagePath>
+        </None>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
         </None>
     </ItemGroup>
 
