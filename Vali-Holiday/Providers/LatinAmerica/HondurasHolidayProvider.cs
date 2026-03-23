@@ -23,9 +23,7 @@ public class HondurasHolidayProvider : BaseHolidayProvider
     /// <inheritdoc/>
     /// <remarks>
     /// Returns all fixed Honduran national holidays. Dates are established by law and do not
-    /// vary by year, with the exception of the Natalicio de Francisco Morazán, which is observed
-    /// on the third Monday of October; it is listed here on its fixed calendar date (October 3)
-    /// as a reference anchor — actual observance may shift to the nearest Monday.
+    /// vary by year.
     /// </remarks>
     protected override IEnumerable<HolidayInfo> GetFixedHolidays() => new[]
     {

@@ -103,11 +103,43 @@ public interface IValiDateQuarter
     int WeeksInQuarter(DateTime date);
 
     /// <summary>
-    /// Returns the first day of the quarter that immediately follows the quarter containing the specified date.
+    /// Returns the 1-based day number of <paramref name="date"/> within its current quarter.
+    /// Returns 1 on the first day of the quarter and <see cref="DaysInQuarter"/> on the last day.
     /// </summary>
     /// <param name="date">The date to evaluate.</param>
-    /// <returns>A <see cref="DateTime"/> representing the start of the next quarter.</returns>
+    int DayOfQuarter(DateTime date);
+
+    /// <summary>
+    /// Returns the first day of the quarter that immediately follows the quarter containing the specified date.
+    /// </summary>
+    /// <remarks>
+    /// When the specified date falls within Q4 of year 9999 (the maximum representable year),
+    /// there is no next quarter. In that case, <see cref="DateTime.MaxValue"/>.<c>Date</c>
+    /// (December 31, 9999) is returned as a sentinel value. Callers that need to distinguish
+    /// this sentinel from a real date should use <see cref="TryNextQuarterStart"/> instead.
+    /// </remarks>
+    /// <param name="date">The date to evaluate.</param>
+    /// <returns>
+    /// A <see cref="DateTime"/> representing the start of the next quarter, or
+    /// <see cref="DateTime.MaxValue"/>.<c>Date</c> when no next quarter exists.
+    /// </returns>
     DateTime NextQuarterStart(DateTime date);
+
+    /// <summary>
+    /// Tries to return the first day of the quarter that immediately follows the quarter
+    /// containing the specified date.
+    /// </summary>
+    /// <param name="date">The date to evaluate.</param>
+    /// <param name="result">
+    /// When this method returns <c>true</c>, contains the first day of the next quarter.
+    /// When this method returns <c>false</c> (no next quarter exists), contains
+    /// <see cref="DateTime.MaxValue"/>.<c>Date</c>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if a next quarter exists and <paramref name="result"/> holds its start date;
+    /// <c>false</c> if the current date is in Q4 of year 9999 and no next quarter can be represented.
+    /// </returns>
+    bool TryNextQuarterStart(DateTime date, out DateTime result);
 
     /// <summary>
     /// Returns the first day of the quarter that immediately precedes the quarter containing the specified date.

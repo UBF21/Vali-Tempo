@@ -1,3 +1,4 @@
+using Vali_Time.Abstractions;
 using Vali_TimeZone.Data;
 using Vali_TimeZone.Models;
 
@@ -10,6 +11,20 @@ namespace Vali_TimeZone.Core;
 /// </summary>
 public sealed class ValiTimeZone : IValiTimeZone
 {
+    private readonly IClock _clock;
+
+    /// <summary>
+    /// Initialises a new <see cref="ValiTimeZone"/> instance.
+    /// </summary>
+    /// <param name="clock">
+    /// Optional <see cref="IClock"/> used by <see cref="Now"/> and <see cref="Today"/> to
+    /// obtain the current instant. When <see langword="null"/>, <see cref="SystemClock.Instance"/>
+    /// is used as the fallback.
+    /// </param>
+    public ValiTimeZone(IClock? clock = null)
+    {
+        _clock = clock ?? SystemClock.Instance;
+    }
     // ====================================================================
     // Conversion
     // ====================================================================
@@ -136,7 +151,7 @@ public sealed class ValiTimeZone : IValiTimeZone
     /// reflecting the local time in the specified timezone without a UTC/Local designation.
     /// Use <see cref="ToDateTimeOffset"/> if you need an offset-aware value.
     /// </remarks>
-    public DateTime Now(string zoneId) => FromUtc(DateTime.UtcNow, zoneId);
+    public DateTime Now(string zoneId) => FromUtc(_clock.Now.ToUniversalTime(), zoneId);
 
     /// <inheritdoc />
     /// <remarks>

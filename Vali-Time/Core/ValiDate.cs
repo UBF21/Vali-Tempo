@@ -302,6 +302,8 @@ public class ValiDate : IValiDate
     /// follows ISO 8601. When the week starts on <see cref="WeekStart.Sunday"/>, the
     /// Gregorian calendar with <see cref="CalendarWeekRule.FirstDay"/> and
     /// <see cref="DayOfWeek.Sunday"/> is used instead.
+    /// Near ISO year boundaries the returned week number may belong to a different year than
+    /// <c>date.Year</c>. Use <see cref="WeekYear"/> to obtain the year that owns the week.
     /// </remarks>
     /// <param name="date">The date whose week number is required.</param>
     /// <param name="weekStart">
@@ -323,6 +325,15 @@ public class ValiDate : IValiDate
         return calendar.GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
     }
 
+    /// <inheritdoc/>
+    public int WeekYear(DateTime date, WeekStart? weekStart = null)
+    {
+        WeekStart ws = weekStart ?? _defaultWeekStart;
+        return ws == WeekStart.Monday
+            ? System.Globalization.ISOWeek.GetYear(date)
+            : date.Year;
+    }
+
     /// <summary>
     /// Returns the day-of-year number for the given date (1 = January 1st).
     /// </summary>
@@ -331,6 +342,20 @@ public class ValiDate : IValiDate
     public int DayOfYear(DateTime date)
     {
         return date.DayOfYear;
+    }
+
+    /// <inheritdoc/>
+    public decimal ProgressInYear(DateTime date)
+    {
+        int daysInYear = DateTime.IsLeapYear(date.Year) ? 366 : 365;
+        return (decimal)(date.DayOfYear - 1) / daysInYear;
+    }
+
+    /// <inheritdoc/>
+    public decimal ProgressInMonth(DateTime date)
+    {
+        int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
+        return (decimal)(date.Day - 1) / daysInMonth;
     }
 
     // =========================================================================
@@ -423,6 +448,10 @@ public class ValiDate : IValiDate
         return (date.Date - start).Days;
     }
 
+    /// <inheritdoc/>
+    public int DayOfQuarter(DateTime date)
+        => DaysElapsedInQuarter(date) + 1;
+
     /// <summary>
     /// Returns the number of days remaining until the end of the quarter, not counting today.
     /// </summary>
@@ -501,15 +530,35 @@ public class ValiDate : IValiDate
     /// <summary>
     /// Returns the first day of the quarter immediately following the one containing the given date.
     /// </summary>
+    /// <remarks>
+    /// When the specified date falls within Q4 of year 9999 (the maximum representable year),
+    /// there is no next quarter. In that case, <see cref="DateTime.MaxValue"/>.<c>Date</c>
+    /// (December 31, 9999) is returned as a sentinel value. Callers that need to distinguish
+    /// this sentinel from a real date should use <see cref="TryNextQuarterStart"/> instead.
+    /// </remarks>
     /// <param name="date">The reference date.</param>
     /// <returns>
-    /// A <see cref="DateTime"/> set to midnight on the first day of the next quarter.
+    /// A <see cref="DateTime"/> set to midnight on the first day of the next quarter, or
+    /// <see cref="DateTime.MaxValue"/>.<c>Date</c> when no next quarter exists.
     /// </returns>
     public DateTime NextQuarterStart(DateTime date)
     {
         var start = QuarterStartDate(date);
         if (start.Year == 9999 && start.Month >= 10) return DateTime.MaxValue.Date;
         return start.AddMonths(3);
+    }
+
+    /// <inheritdoc/>
+    public bool TryNextQuarterStart(DateTime date, out DateTime result)
+    {
+        var start = QuarterStartDate(date);
+        if (start.Year == 9999 && start.Month >= 10)
+        {
+            result = DateTime.MaxValue.Date;
+            return false;
+        }
+        result = start.AddMonths(3);
+        return true;
     }
 
     /// <summary>

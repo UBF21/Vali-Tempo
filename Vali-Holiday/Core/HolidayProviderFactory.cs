@@ -57,10 +57,10 @@ public static class HolidayProviderFactory
 
     /// <summary>
     /// Creates a <see cref="ValiHoliday"/> instance containing only the
-    /// built-in Other providers (Canada and Australia).
+    /// built-in Other providers (USA, Canada, and Australia).
     /// </summary>
     /// <returns>
-    /// A <see cref="ValiHoliday"/> with Canada and Australia providers registered.
+    /// A <see cref="ValiHoliday"/> with USA, Canada, and Australia providers registered.
     /// </returns>
     public static ValiHoliday CreateOther() => new ValiHoliday(GetOtherProviders());
 
@@ -111,7 +111,7 @@ public static class HolidayProviderFactory
 
     /// <summary>
     /// Returns the enumerable of all built-in European country providers.
-    /// Covers 18 countries: Spain, USA, United Kingdom, Germany, France, Italy, Portugal,
+    /// Covers 16 countries: Spain, United Kingdom, Germany, France, Italy, Portugal,
     /// Netherlands, Belgium, Switzerland, Austria, Poland, Sweden, Norway, Denmark,
     /// Finland, and Ireland.
     /// </summary>
@@ -121,7 +121,6 @@ public static class HolidayProviderFactory
     public static IEnumerable<IHolidayProvider> GetEuropeProviders() => new IHolidayProvider[]
     {
         new SpainHolidayProvider(),
-        new UsaHolidayProvider(),
         new UnitedKingdomHolidayProvider(),
         new GermanyHolidayProvider(),
         new FranceHolidayProvider(),
@@ -141,14 +140,15 @@ public static class HolidayProviderFactory
 
     /// <summary>
     /// Returns the enumerable of built-in providers for countries outside Latin America
-    /// and Europe: Canada and Australia.
+    /// and Europe: USA, Canada, and Australia.
     /// </summary>
     /// <returns>
     /// An <see cref="IEnumerable{T}"/> of <see cref="IHolidayProvider"/> instances for
-    /// Canada and Australia.
+    /// USA, Canada, and Australia.
     /// </returns>
     public static IEnumerable<IHolidayProvider> GetOtherProviders() => new IHolidayProvider[]
     {
+        new UsaHolidayProvider(),
         new CanadaHolidayProvider(),
         new AustraliaHolidayProvider(),
     };

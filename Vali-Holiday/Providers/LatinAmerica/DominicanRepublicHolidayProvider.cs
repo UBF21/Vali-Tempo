@@ -220,7 +220,8 @@ public sealed class DominicanRepublicHolidayProvider : BaseHolidayProvider
 
     /// <inheritdoc/>
     /// <returns>
-    /// One movable holiday: Good Friday.
+    /// Up to three movable holidays: Good Friday (Easter−2 days), Corpus Christi (Easter+60 days),
+    /// and Labour Day Observed (the following Monday when 1 May does not fall on a Monday).
     /// </returns>
     protected override IEnumerable<HolidayInfo> GetMovableHolidays(int year)
     {

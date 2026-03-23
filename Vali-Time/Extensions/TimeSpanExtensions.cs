@@ -61,10 +61,17 @@ public static class TimeSpanExtensions
     /// <param name="unit">The unit in which to express the duration.</param>
     /// <param name="decimalPlaces">
     /// The number of decimal places to include in the output. Defaults to <c>2</c>.
+    /// Must be zero or greater.
     /// </param>
     /// <returns>A string such as <c>"1.50 h"</c> or <c>"90.00 min"</c>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="decimalPlaces"/> is negative.
+    /// </exception>
     public static string Format(this TimeSpan ts, TimeUnit unit, int decimalPlaces = 2)
     {
+        if (decimalPlaces < 0)
+            throw new ArgumentOutOfRangeException(nameof(decimalPlaces), "Decimal places cannot be negative.");
+
         decimal value = decimal.Round(ts.To(unit), decimalPlaces);
 
         string abbreviation = unit switch
@@ -109,12 +116,13 @@ public static class TimeSpanExtensions
     public static (decimal value, TimeUnit unit) BestUnit(this TimeSpan ts)
     {
         decimal seconds = ts.To(TimeUnit.Seconds);
+        decimal absSeconds = Math.Abs(seconds);
 
-        if (seconds >= 604800m) return (ts.To(TimeUnit.Weeks),        TimeUnit.Weeks);
-        if (seconds >= 86400m)  return (ts.To(TimeUnit.Days),         TimeUnit.Days);
-        if (seconds >= 3600m)   return (ts.To(TimeUnit.Hours),        TimeUnit.Hours);
-        if (seconds >= 60m)     return (ts.To(TimeUnit.Minutes),      TimeUnit.Minutes);
-        if (seconds >= 1m)      return (ts.To(TimeUnit.Seconds),      TimeUnit.Seconds);
+        if (absSeconds >= 604800m) return (ts.To(TimeUnit.Weeks),        TimeUnit.Weeks);
+        if (absSeconds >= 86400m)  return (ts.To(TimeUnit.Days),         TimeUnit.Days);
+        if (absSeconds >= 3600m)   return (ts.To(TimeUnit.Hours),        TimeUnit.Hours);
+        if (absSeconds >= 60m)     return (ts.To(TimeUnit.Minutes),      TimeUnit.Minutes);
+        if (absSeconds >= 1m)      return (ts.To(TimeUnit.Seconds),      TimeUnit.Seconds);
 
         return (ts.To(TimeUnit.Milliseconds), TimeUnit.Milliseconds);
     }

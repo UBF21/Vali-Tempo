@@ -140,10 +140,26 @@ public interface IValiDate : IValiDateQuarter
     /// <summary>
     /// Returns the ISO or locale week number of the year for the specified date.
     /// </summary>
+    /// <remarks>
+    /// Near ISO year boundaries the returned week number may belong to a different year than
+    /// <c>date.Year</c>. Use <see cref="WeekYear"/> to obtain the year that owns the week.
+    /// For example, 2024-12-30 returns ISO week 1 but belongs to year 2025.
+    /// </remarks>
     /// <param name="date">The date to evaluate.</param>
     /// <param name="weekStart">The day considered the start of the week; defaults to Monday when null.</param>
     /// <returns>The week number within the year.</returns>
     int WeekOfYear(DateTime date, WeekStart? weekStart = null);
+
+    /// <summary>
+    /// Returns the year that owns the calendar week containing <paramref name="date"/>.
+    /// For <see cref="WeekStart.Monday"/> (ISO 8601), the year returned may differ from
+    /// <c>date.Year</c> near year boundaries (e.g. 2024-12-30 belongs to ISO week 1 of 2025).
+    /// For <see cref="WeekStart.Sunday"/> (US calendar), returns <c>date.Year</c>.
+    /// </summary>
+    /// <param name="date">The date to evaluate.</param>
+    /// <param name="weekStart">The day the week starts on. Uses the instance default if not specified.</param>
+    /// <returns>The year that owns the calendar week containing <paramref name="date"/>.</returns>
+    int WeekYear(DateTime date, WeekStart? weekStart = null);
 
     /// <summary>
     /// Returns the one-based day number within the year for the specified date.
@@ -151,6 +167,22 @@ public interface IValiDate : IValiDateQuarter
     /// <param name="date">The date to evaluate.</param>
     /// <returns>A value between 1 and 366 representing the day of the year.</returns>
     int DayOfYear(DateTime date);
+
+    /// <summary>
+    /// Returns the fraction of the current year elapsed up to (but not including) <paramref name="date"/>,
+    /// in the range [0.0, &lt;1.0).
+    /// Returns 0.0 on January 1 and approaches 1.0 on December 31 (exclusive).
+    /// </summary>
+    /// <param name="date">The date to evaluate.</param>
+    decimal ProgressInYear(DateTime date);
+
+    /// <summary>
+    /// Returns the fraction of the current month elapsed up to (but not including) <paramref name="date"/>,
+    /// in the range [0.0, &lt;1.0).
+    /// Returns 0.0 on the first day of the month and approaches 1.0 on the last day (exclusive).
+    /// </summary>
+    /// <param name="date">The date to evaluate.</param>
+    decimal ProgressInMonth(DateTime date);
 
     // Quarter methods are inherited from IValiDateQuarter.
 }

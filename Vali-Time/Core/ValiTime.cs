@@ -116,6 +116,7 @@ public class ValiTime : IValiTime
     public (decimal time, TimeUnit unit) GetBestUnit(decimal seconds)
     {
         if (seconds < 0) throw new ArgumentException("Time cannot be negative.", nameof(seconds));
+        if (seconds == 0m) return (0m, TimeUnit.Seconds);
         if (seconds >= Constants.SecondsInYear) return (SecondsToYears(seconds), TimeUnit.Years);
         if (seconds >= Constants.SecondsInMonth) return (SecondsToMonths(seconds), TimeUnit.Months);
         if (seconds >= Constants.SecondsInWeek) return (SecondsToWeeks(seconds), TimeUnit.Weeks);
@@ -138,12 +139,8 @@ public class ValiTime : IValiTime
     {
         if (time < 0) throw new ArgumentException("Time cannot be negative.", nameof(time));
         decimal seconds = Convert(time, unit, TimeUnit.Seconds);
-        decimal maxSeconds = (decimal)TimeSpan.MaxValue.TotalSeconds;
-        if (seconds > maxSeconds) seconds = maxSeconds;
-        const decimal TicksPerSecond = TimeSpan.TicksPerSecond;
-        var ticks = seconds * TicksPerSecond;
-        const decimal maxTicks = long.MaxValue;  // ~9.2e18
-        ticks = ticks < 0m ? 0m : ticks > maxTicks ? maxTicks : ticks;
+        const decimal maxTicks = (decimal)long.MaxValue;
+        decimal ticks = Math.Min(seconds * TimeSpan.TicksPerSecond, maxTicks);
         return TimeSpan.FromTicks((long)ticks);
     }
 
@@ -243,9 +240,12 @@ public class ValiTime : IValiTime
     /// The value of <paramref name="ts"/> expressed in <paramref name="unit"/> as a <see cref="decimal"/>,
     /// calculated directly from ticks for maximum precision.
     /// </returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="ts"/> is negative.</exception>
     /// <exception cref="NotSupportedException">Thrown if an unsupported unit is provided.</exception>
     public decimal FromTimeSpan(TimeSpan ts, TimeUnit unit)
     {
+        if (ts < TimeSpan.Zero)
+            throw new ArgumentException("TimeSpan cannot be negative.", nameof(ts));
         return unit switch
         {
             TimeUnit.Milliseconds => (decimal)ts.Ticks / TimeSpan.TicksPerMillisecond,
@@ -305,10 +305,13 @@ public class ValiTime : IValiTime
     /// </param>
     /// <returns>The total time represented by <paramref name="input"/>, expressed in seconds.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="input"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="input"/> is empty or whitespace.</exception>
     /// <exception cref="FormatException">Thrown if the string cannot be parsed into a recognised time pattern.</exception>
     public decimal ParseTime(string input)
     {
         if (input == null) throw new ArgumentNullException(nameof(input));
+        if (string.IsNullOrWhiteSpace(input))
+            throw new ArgumentException("Input cannot be empty or whitespace.", nameof(input));
 
         string trimmed = input.Trim().ToLowerInvariant();
 
@@ -372,7 +375,7 @@ public class ValiTime : IValiTime
     }
 
     private static readonly Regex TokenRegex = new(
-        @"(\d+(?:\.\d+)?)\s*(ms|milliseconds?|mo|months?|s|sec(?:onds?)?|m|min(?:utes?)?|h|hr|hours?|d|days?|w|weeks?|yr|years?)",
+        @"(\d+(?:\.\d+)?)\s*(ms|milliseconds?|mo|months?|s|sec(?:onds)?|m|min(?:utes)?|h|hr|hours?|d|days?|w|weeks?|yr|years?)",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private static decimal ParseLabelledTokens(string input)
@@ -416,9 +419,14 @@ public class ValiTime : IValiTime
     /// <param name="min">The lower bound.</param>
     /// <param name="max">The upper bound.</param>
     /// <returns>The clamped value in <paramref name="unit"/>.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="min"/> is greater than <paramref name="max"/>.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="min"/> is negative, <paramref name="max"/> is negative,
+    /// or <paramref name="min"/> is greater than <paramref name="max"/>.
+    /// </exception>
     public decimal Clamp(decimal time, TimeUnit unit, decimal min, decimal max)
     {
+        if (min < 0m) throw new ArgumentException("min cannot be negative.", nameof(min));
+        if (max < 0m) throw new ArgumentException("max cannot be negative.", nameof(max));
         if (min > max) throw new ArgumentException("min cannot be greater than max.");
         decimal inSeconds = ConvertAny(time, unit, TimeUnit.Seconds);
         decimal minSeconds = ConvertAny(min, unit, TimeUnit.Seconds);
