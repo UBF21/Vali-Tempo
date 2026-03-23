@@ -92,7 +92,7 @@ internal static class TimeZoneData
 
             ["America/Panama"] = new(
                 "America/Panama",
-                "(UTC-05:00) Eastern Time (US & Canada)",
+                "(UTC-05:00) Panama",
                 "SA Pacific Standard Time",
                 TimeSpan.FromHours(-5), false, "PA", "Panama"),
 
@@ -128,7 +128,7 @@ internal static class TimeZoneData
 
             ["America/Santo_Domingo"] = new(
                 "America/Santo_Domingo",
-                "(UTC-04:00) Atlantic Time (Canada)",
+                "(UTC-04:00) Santo Domingo",
                 "SA Western Standard Time",
                 TimeSpan.FromHours(-4), false, "DO", "Dominican Republic"),
 

@@ -29,10 +29,10 @@ public interface IValiDateQuarter
     DateTime QuarterEnd(DateTime date);
 
     /// <summary>
-    /// Returns the abbreviated name of the quarter in which the specified date falls (e.g., "Q1").
+    /// Returns the abbreviated name of the quarter in which the specified date falls (e.g., "Q1 2025").
     /// </summary>
     /// <param name="date">The date to evaluate.</param>
-    /// <returns>A short string representing the quarter name.</returns>
+    /// <returns>A short string representing the quarter name including the year (e.g., "Q1 2025").</returns>
     string QuarterName(DateTime date);
 
     /// <summary>
@@ -50,10 +50,10 @@ public interface IValiDateQuarter
     int DaysInQuarter(DateTime date);
 
     /// <summary>
-    /// Returns the number of days that have elapsed since the start of the quarter up to and including the specified date.
+    /// Returns the number of days that have elapsed since the start of the quarter up to but not including the specified date.
     /// </summary>
     /// <param name="date">The date to evaluate.</param>
-    /// <returns>The number of days elapsed within the quarter.</returns>
+    /// <returns>The number of days elapsed within the quarter, returning 0 on the first day of the quarter.</returns>
     int DaysElapsedInQuarter(DateTime date);
 
     /// <summary>
@@ -67,7 +67,10 @@ public interface IValiDateQuarter
     /// Returns the progress through the current quarter as a decimal fraction between 0 and 1.
     /// </summary>
     /// <param name="date">The date to evaluate.</param>
-    /// <returns>A decimal between 0 and 1 representing the proportion of the quarter that has elapsed.</returns>
+    /// <returns>
+    /// A decimal value between 0.0 and &lt; 1.0 representing the proportion of the quarter that has elapsed.
+    /// The value approaches 1.0 as the last day of the quarter but does not reach exactly 1.0 on that day.
+    /// </returns>
     decimal ProgressInQuarter(DateTime date);
 
     /// <summary>

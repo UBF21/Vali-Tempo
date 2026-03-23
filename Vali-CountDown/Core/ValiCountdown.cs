@@ -103,6 +103,8 @@ public class ValiCountdown : IValiCountdown
     /// <param name="reference">The reference point in time used to calculate progress.</param>
     public decimal Progress(DateTime start, DateTime end, DateTime reference)
     {
+        if (end <= start)
+            throw new ArgumentException("end must be strictly after start.", nameof(end));
         if (reference <= start) return 0m;
         if (reference >= end)   return 1m;
 

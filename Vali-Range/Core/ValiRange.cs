@@ -1,4 +1,5 @@
 using Vali_Range.Models;
+using Vali_Time.Abstractions;
 using Vali_Time.Enums;
 
 namespace Vali_Range.Core;
@@ -9,6 +10,20 @@ namespace Vali_Range.Core;
 /// </summary>
 public class ValiRange : IValiRange
 {
+    private readonly IClock _clock;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="ValiRange"/>.
+    /// </summary>
+    /// <param name="clock">
+    /// Optional clock abstraction. Defaults to <see cref="SystemClock.Instance"/> when <c>null</c>.
+    /// Inject a test double to control time in unit tests.
+    /// </param>
+    public ValiRange(IClock? clock = null)
+    {
+        _clock = clock ?? SystemClock.Instance;
+    }
+
     // =========================================================================
     // PRIVATE HELPERS
     // =========================================================================
@@ -100,7 +115,7 @@ public class ValiRange : IValiRange
     /// <returns>A <see cref="DateRange"/> whose <c>End</c> is <see cref="DateTime.Now"/> and <c>Start</c> is <paramref name="amount"/> units earlier.</returns>
     public DateRange LastUnits(decimal amount, TimeUnit unit)
     {
-        DateTime now   = DateTime.Now;
+        DateTime now   = _clock.Now;
         DateTime start = SubtractUnit(now, amount, unit);
         return new DateRange(start, now);
     }
@@ -115,7 +130,7 @@ public class ValiRange : IValiRange
     /// <returns>A <see cref="DateRange"/> whose <c>Start</c> is <see cref="DateTime.Now"/> and <c>End</c> is <paramref name="amount"/> units later.</returns>
     public DateRange NextUnits(decimal amount, TimeUnit unit)
     {
-        DateTime now = DateTime.Now;
+        DateTime now = _clock.Now;
         DateTime end = AddUnit(now, amount, unit);
         return new DateRange(now, end);
     }
@@ -127,7 +142,7 @@ public class ValiRange : IValiRange
     /// <returns>A <see cref="DateRange"/> for the current month.</returns>
     public DateRange ThisMonth()
     {
-        DateTime today = DateTime.Today;
+        DateTime today = _clock.Today;
         DateTime start = new DateTime(today.Year, today.Month, 1);
         DateTime end   = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
         return new DateRange(start, end);
@@ -141,7 +156,7 @@ public class ValiRange : IValiRange
     /// <returns>A <see cref="DateRange"/> for the current week.</returns>
     public DateRange ThisWeek(WeekStart weekStart = WeekStart.Monday)
     {
-        DateTime start = StartOfWeek(DateTime.Today, weekStart);
+        DateTime start = StartOfWeek(_clock.Today, weekStart);
         DateTime end   = start.AddDays(6);
         return new DateRange(start, end);
     }
@@ -153,7 +168,7 @@ public class ValiRange : IValiRange
     /// <returns>A <see cref="DateRange"/> for the current quarter.</returns>
     public DateRange ThisQuarter()
     {
-        DateTime today      = DateTime.Today;
+        DateTime today      = _clock.Today;
         int      firstMonth = FirstMonthOfQuarter(today.Month);
         DateTime start      = new DateTime(today.Year, firstMonth, 1);
         DateTime end        = new DateTime(today.Year, firstMonth + 2, DateTime.DaysInMonth(today.Year, firstMonth + 2));
@@ -167,7 +182,7 @@ public class ValiRange : IValiRange
     /// <returns>A <see cref="DateRange"/> for the current year.</returns>
     public DateRange ThisYear()
     {
-        int year = DateTime.Today.Year;
+        int year = _clock.Today.Year;
         return new DateRange(new DateTime(year, 1, 1), new DateTime(year, 12, 31));
     }
 
@@ -435,6 +450,13 @@ public class ValiRange : IValiRange
     /// <summary>
     /// Determines whether two ranges share exactly one boundary point (touching but not overlapping).
     /// </summary>
+    /// <remarks>
+    /// Two ranges are considered adjacent when they share a boundary date: one range's <c>End</c> date
+    /// equals the other's <c>Start</c> date (compared at day granularity via <see cref="DateTime.Date"/>).
+    /// This is an intentional design choice — adjacency is defined by a shared boundary day, not by a
+    /// gap of exactly one tick. For example, a range ending on 2025-03-15 is adjacent to one starting
+    /// on 2025-03-15, regardless of the time-of-day component of either boundary.
+    /// </remarks>
     /// <param name="a">The first range.</param>
     /// <param name="b">The second range.</param>
     /// <returns><c>true</c> if the ranges are adjacent; otherwise <c>false</c>.</returns>
@@ -445,6 +467,12 @@ public class ValiRange : IValiRange
     /// Merges a list of overlapping or adjacent ranges into the minimum set of non-overlapping ranges,
     /// returned sorted by start date.
     /// </summary>
+    /// <remarks>
+    /// This method operates at day granularity. Boundary calculations use <see cref="DateTime.Date"/>
+    /// (midnight), so sub-day precision in range <c>Start</c> or <c>End</c> values is not preserved
+    /// in the merged boundaries. Ranges whose boundaries differ only by time-of-day may be merged
+    /// into a single range.
+    /// </remarks>
     /// <param name="ranges">The ranges to merge.</param>
     /// <returns>A sorted sequence of merged, non-overlapping <see cref="DateRange"/> values.</returns>
     public IEnumerable<DateRange> Merge(IEnumerable<DateRange> ranges)
@@ -464,6 +492,12 @@ public class ValiRange : IValiRange
     /// <summary>
     /// Returns the gaps (date ranges not covered by any of the given ranges) within a container range.
     /// </summary>
+    /// <remarks>
+    /// This method operates at day granularity. Gap boundaries are computed using
+    /// <see cref="DateTime.Date"/>-level arithmetic (whole-day steps via <c>AddDays</c>), so
+    /// sub-day precision in range <c>Start</c> or <c>End</c> values is not preserved in the
+    /// returned gap boundaries.
+    /// </remarks>
     /// <param name="ranges">The ranges to check for gaps between.</param>
     /// <param name="container">The enclosing container range.</param>
     /// <returns>A sequence of <see cref="DateRange"/> values representing uncovered periods.</returns>

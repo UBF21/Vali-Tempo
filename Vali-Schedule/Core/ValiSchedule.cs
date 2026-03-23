@@ -31,6 +31,13 @@ public class ValiSchedule : IValiSchedule
 
     private readonly ScheduleConfig _config = new();
 
+    /// <summary>
+    /// Returns the effective start date, resolving <see cref="DateTime.MinValue"/> (the sentinel
+    /// set when <c>StartingFrom</c> is never called) to today's date at access time.
+    /// </summary>
+    private DateTime EffectiveStartDate =>
+        _config.StartDate == DateTime.MinValue ? DateTime.Today : _config.StartDate;
+
     // ── Fluent builder ───────────────────────────────────────────────────────
 
     /// <summary>
@@ -201,7 +208,7 @@ public class ValiSchedule : IValiSchedule
         // so that the AfterOccurrences budget stays accurate when reference > StartDate.
         if (_config.EndType == RecurrenceEnd.AfterOccurrences && _config.MaxOccurrences.HasValue)
         {
-            var preScan = _config.StartDate.Date;
+            var preScan = EffectiveStartDate.Date;
             while (preScan < reference.Date)
             {
                 if (IsValidOccurrence(preScan)) occurrenceCount++;
@@ -213,6 +220,11 @@ public class ValiSchedule : IValiSchedule
         {
             if (IsValidOccurrence(candidate))
             {
+                // Design note: when the end condition is exceeded (end date passed or occurrence
+                // budget exhausted), this method returns null rather than skipping to look further.
+                // The caller receives no occurrence — the schedule intentionally stops here.
+                // Callers should not assume that null means "no occurrence ever"; it means the
+                // schedule has ended or the lookahead window was exhausted.
                 if (!IsWithinEnd(candidate)) return null;
 
                 occurrenceCount++;
@@ -248,7 +260,7 @@ public class ValiSchedule : IValiSchedule
         int count = 0;
         while (count < MaxScanDays) // max 5 years lookback
         {
-            if (candidate < _config.StartDate.Date) return null;
+            if (candidate < EffectiveStartDate.Date) return null;
             if (IsValidOccurrence(candidate) && IsWithinEnd(candidate))
             {
                 return _config.TimeOfDay.HasValue
@@ -288,7 +300,7 @@ public class ValiSchedule : IValiSchedule
         // so that the AfterOccurrences budget stays accurate when reference > StartDate.
         if (_config.EndType == RecurrenceEnd.AfterOccurrences && _config.MaxOccurrences.HasValue)
         {
-            var preScan = _config.StartDate.Date;
+            var preScan = EffectiveStartDate.Date;
             while (preScan < reference.Date)
             {
                 if (IsValidOccurrence(preScan)) occurrenceCount++;
@@ -323,6 +335,8 @@ public class ValiSchedule : IValiSchedule
     /// <summary>
     /// Enumerates all occurrences within the inclusive date range
     /// [<paramref name="from"/>, <paramref name="to"/>].
+    /// The scan is limited to <see cref="MaxScanDays"/> * 10 days to prevent runaway iteration
+    /// on unbounded or extremely large ranges.
     /// </summary>
     /// <param name="from">The inclusive start of the date range.</param>
     /// <param name="to">The inclusive end of the date range.</param>
@@ -331,12 +345,13 @@ public class ValiSchedule : IValiSchedule
     {
         var candidate = from.Date;
         int occurrenceCount = 0;
+        int scanCount = 0;
 
         // Pre-count occurrences from StartDate up to (but not including) the range start
         // so that the AfterOccurrences budget stays accurate when from > StartDate.
         if (_config.EndType == RecurrenceEnd.AfterOccurrences && _config.MaxOccurrences.HasValue)
         {
-            var preScan = _config.StartDate.Date;
+            var preScan = EffectiveStartDate.Date;
             while (preScan < from.Date)
             {
                 if (IsValidOccurrence(preScan)) occurrenceCount++;
@@ -344,7 +359,7 @@ public class ValiSchedule : IValiSchedule
             }
         }
 
-        while (candidate <= to.Date)
+        while (candidate <= to.Date && scanCount < MaxScanDays * 10)
         {
             if (IsValidOccurrence(candidate) && IsWithinEnd(candidate))
             {
@@ -360,6 +375,7 @@ public class ValiSchedule : IValiSchedule
                     : candidate;
             }
             candidate = candidate.AddDays(1);
+            scanCount++;
         }
     }
 
@@ -373,26 +389,27 @@ public class ValiSchedule : IValiSchedule
     /// <returns><c>true</c> if the date satisfies the recurrence pattern; otherwise, <c>false</c>.</returns>
     private bool IsValidOccurrence(DateTime date)
     {
-        if (date < _config.StartDate.Date) return false;
+        var effectiveStart = EffectiveStartDate;
+        if (date < effectiveStart.Date) return false;
 
         return _config.Type switch
         {
             RecurrenceType.Daily =>
-                (date - _config.StartDate.Date).Days % _config.Interval == 0,
+                (date - effectiveStart.Date).Days % _config.Interval == 0,
 
             RecurrenceType.Weekly =>
                 _config.DaysOfWeek.Contains(date.DayOfWeek)
-                && (int)((date - _config.StartDate.Date).Days / 7) % _config.Interval == 0,
+                && (int)((date - effectiveStart.Date).Days / 7) % _config.Interval == 0,
 
             RecurrenceType.Monthly =>
-                date.Day == Math.Min(_config.DayOfMonth ?? _config.StartDate.Day,
+                date.Day == Math.Min(_config.DayOfMonth ?? effectiveStart.Day,
                                      DateTime.DaysInMonth(date.Year, date.Month))
-                && MonthDiff(_config.StartDate, date) % _config.Interval == 0,
+                && MonthDiff(effectiveStart, date) % _config.Interval == 0,
 
             RecurrenceType.Yearly =>
-                date.Day == _config.StartDate.Day
-                && date.Month == _config.StartDate.Month
-                && (date.Year - _config.StartDate.Year) % _config.Interval == 0,
+                date.Day == effectiveStart.Day
+                && date.Month == effectiveStart.Month
+                && (date.Year - effectiveStart.Year) % _config.Interval == 0,
 
             RecurrenceType.Custom => _config.CustomPredicate?.Invoke(date) ?? false,
 

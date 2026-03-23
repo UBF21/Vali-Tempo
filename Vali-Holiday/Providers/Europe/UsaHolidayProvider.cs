@@ -88,14 +88,6 @@ public class UsaHolidayProvider : BaseHolidayProvider
             description: "Cultural observance rooted in the Celtic festival of Samhain. Known for costumes, trick-or-treating, and jack-o'-lanterns. Not a federal holiday."),
 
         new HolidayInfo(
-            "us_black_friday", 11, 28, "US",
-            "Black Friday",
-            Names("Viernes Negro", "Black Friday",
-                  "Black Friday", "Black Friday", "Black Friday"),
-            HolidayType.Observance,
-            description: "The day after Thanksgiving, traditionally the start of the Christmas shopping season. Not a federal holiday; approximate date shown (actual date falls one day after Thanksgiving each year)."),
-
-        new HolidayInfo(
             "us_new_years_eve", 12, 31, "US",
             "New Year's Eve",
             Names("Nochevieja", "New Year's Eve",
@@ -124,6 +116,13 @@ public class UsaHolidayProvider : BaseHolidayProvider
         var columbusDay = NthWeekday(year, 10, DayOfWeek.Monday, 2);
         // Fourth Thursday of November
         var thanksgiving = NthWeekday(year, 11, DayOfWeek.Thursday, 4);
+
+        // 4th Thursday of November
+        DateTime nov1 = new DateTime(year, 11, 1);
+        int daysToThursday = ((int)DayOfWeek.Thursday - (int)nov1.DayOfWeek + 7) % 7;
+        DateTime firstThursday = nov1.AddDays(daysToThursday);
+        DateTime thanksgiv = firstThursday.AddDays(21); // 4th Thursday
+        DateTime blackFriday = thanksgiv.AddDays(1);
 
         return new[]
         {
@@ -174,6 +173,14 @@ public class UsaHolidayProvider : BaseHolidayProvider
                       "Dia de Ação de Graças", "Jour de l'Action de Grâce", "Erntedankfest"),
                 HolidayType.National, isMovable: true,
                 description: "National holiday celebrating the harvest and giving thanks. Observed on the fourth Thursday of November each year, a tradition dating to 1863 when President Lincoln proclaimed it a national holiday."),
+
+            new HolidayInfo(
+                "us_black_friday", blackFriday.Month, blackFriday.Day, "US",
+                "Black Friday",
+                Names("Viernes Negro", "Black Friday",
+                      "Black Friday", "Black Friday", "Black Friday"),
+                HolidayType.Observance, isMovable: true,
+                description: "The day after Thanksgiving, traditionally the start of the Christmas shopping season. Not a federal holiday; falls one day after the fourth Thursday of November each year."),
         };
     }
 

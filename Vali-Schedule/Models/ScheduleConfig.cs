@@ -62,9 +62,10 @@ public class ScheduleConfig
     /// <summary>
     /// Gets the date from which the schedule begins.
     /// No occurrence is generated before this date.
-    /// Defaults to <see cref="DateTime.Today"/> if <c>StartingFrom</c> is not called.
+    /// Defaults to <see cref="DateTime.MinValue"/> as a sentinel; <c>ValiSchedule</c> resolves
+    /// this to the current date at build time if <c>StartingFrom</c> is never called.
     /// </summary>
-    public DateTime StartDate { get; internal set; } = DateTime.Today;
+    public DateTime StartDate { get; internal set; } = DateTime.MinValue;
 
     /// <summary>
     /// Optional predicate used when <see cref="RecurrenceType"/> is <see cref="RecurrenceType.Custom"/>.

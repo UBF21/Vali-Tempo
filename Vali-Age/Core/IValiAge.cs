@@ -59,7 +59,7 @@ public interface IValiAge
 
     /// <summary>
     /// Returns a relative time description from <paramref name="date"/> to
-    /// <see cref="DateTime.Now"/>, such as <c>"3 days ago"</c>, <c>"in 2 weeks"</c>,
+    /// the current time as provided by the injected clock, such as <c>"3 days ago"</c>, <c>"in 2 weeks"</c>,
     /// or <c>"just now"</c>.
     /// </summary>
     /// <param name="date">The date to describe relative to now.</param>
