@@ -73,6 +73,11 @@ public interface IValiSchedule
     /// <returns>The current <see cref="IValiSchedule"/> instance for fluent chaining.</returns>
     IValiSchedule OnDayOfMonth(int day);
 
+    /// <summary>Sets a custom predicate that additionally filters valid occurrences.</summary>
+    /// <param name="predicate">A function that determines whether a given date is a valid occurrence.</param>
+    /// <returns>The current <see cref="IValiSchedule"/> instance for fluent chaining.</returns>
+    IValiSchedule WithCustomPredicate(Func<DateTime, bool> predicate);
+
     /// <summary>
     /// Returns the next occurrence on or after the given reference date.
     /// </summary>

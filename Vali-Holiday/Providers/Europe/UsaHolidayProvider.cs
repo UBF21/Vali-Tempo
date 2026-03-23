@@ -116,13 +116,7 @@ public class UsaHolidayProvider : BaseHolidayProvider
         var columbusDay = NthWeekday(year, 10, DayOfWeek.Monday, 2);
         // Fourth Thursday of November
         var thanksgiving = NthWeekday(year, 11, DayOfWeek.Thursday, 4);
-
-        // 4th Thursday of November
-        DateTime nov1 = new DateTime(year, 11, 1);
-        int daysToThursday = ((int)DayOfWeek.Thursday - (int)nov1.DayOfWeek + 7) % 7;
-        DateTime firstThursday = nov1.AddDays(daysToThursday);
-        DateTime thanksgiv = firstThursday.AddDays(21); // 4th Thursday
-        DateTime blackFriday = thanksgiv.AddDays(1);
+        DateTime blackFriday = thanksgiving.AddDays(1);
 
         return new[]
         {

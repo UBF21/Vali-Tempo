@@ -163,6 +163,23 @@ public class ValiSchedule : IValiSchedule
         return this;
     }
 
+    /// <summary>
+    /// Validates the current configuration and returns the schedule, ready for use.
+    /// Throws if the configuration is invalid (e.g., weekly recurrence with no days configured).
+    /// </summary>
+    /// <returns>The current <see cref="ValiSchedule"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="RecurrenceType.Weekly"/> is set but no days of week have been configured.
+    /// </exception>
+    public ValiSchedule Build()
+    {
+        if (_config.Type == RecurrenceType.Weekly
+            && (_config.DaysOfWeek == null || _config.DaysOfWeek.Count == 0))
+            throw new InvalidOperationException(
+                "Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.");
+        return this;
+    }
+
     // ── IValiSchedule explicit implementation (delegates to typed methods) ───
 
     /// <inheritdoc/>
@@ -185,6 +202,9 @@ public class ValiSchedule : IValiSchedule
 
     /// <inheritdoc/>
     IValiSchedule IValiSchedule.OnDayOfMonth(int day) => OnDayOfMonth(day);
+
+    /// <inheritdoc/>
+    IValiSchedule IValiSchedule.WithCustomPredicate(Func<DateTime, bool> predicate) => WithCustomPredicate(predicate);
 
     // ── Query API ────────────────────────────────────────────────────────────
 
@@ -258,6 +278,41 @@ public class ValiSchedule : IValiSchedule
     {
         var candidate = reference.Date.AddDays(-1);
         int count = 0;
+        int occurrenceCount = 0;
+
+        // Pre-count occurrences from StartDate up to (but not including) reference
+        // so that the AfterOccurrences budget stays accurate when reference > StartDate.
+        if (_config.EndType == RecurrenceEnd.AfterOccurrences && _config.MaxOccurrences.HasValue)
+        {
+            var preScan = EffectiveStartDate.Date;
+            while (preScan < reference.Date)
+            {
+                if (IsValidOccurrence(preScan)) occurrenceCount++;
+                preScan = preScan.AddDays(1);
+            }
+            // If the budget is already exhausted before reference, the last valid occurrence
+            // must be within the counted range — find it by scanning backward from reference.
+            if (occurrenceCount >= _config.MaxOccurrences.Value)
+            {
+                // Scan backward to find the last occurrence within the budget
+                var backScan = reference.Date.AddDays(-1);
+                int backCount = 0;
+                while (backCount < MaxScanDays)
+                {
+                    if (backScan < EffectiveStartDate.Date) return null;
+                    if (IsValidOccurrence(backScan) && IsWithinEnd(backScan))
+                    {
+                        return _config.TimeOfDay.HasValue
+                            ? backScan.Add(_config.TimeOfDay.Value.ToTimeSpan())
+                            : backScan;
+                    }
+                    backScan = backScan.AddDays(-1);
+                    backCount++;
+                }
+                return null;
+            }
+        }
+
         while (count < MaxScanDays) // max 5 years lookback
         {
             if (candidate < EffectiveStartDate.Date) return null;
@@ -343,7 +398,7 @@ public class ValiSchedule : IValiSchedule
     /// <returns>A sequence of all occurrences within the specified range.</returns>
     public IEnumerable<DateTime> OccurrencesInRange(DateTime from, DateTime to)
     {
-        var candidate = from.Date;
+        var candidate = from.Date < EffectiveStartDate ? EffectiveStartDate : from.Date;
         int occurrenceCount = 0;
         int scanCount = 0;
 
@@ -398,8 +453,10 @@ public class ValiSchedule : IValiSchedule
                 (date - effectiveStart.Date).Days % _config.Interval == 0,
 
             RecurrenceType.Weekly =>
-                _config.DaysOfWeek.Contains(date.DayOfWeek)
-                && (int)((date - effectiveStart.Date).Days / 7) % _config.Interval == 0,
+                (_config.DaysOfWeek == null || _config.DaysOfWeek.Count == 0)
+                    ? throw new InvalidOperationException("Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.")
+                    : _config.DaysOfWeek.Contains(date.DayOfWeek)
+                      && (int)((date - effectiveStart.Date).Days / 7) % _config.Interval == 0,
 
             RecurrenceType.Monthly =>
                 date.Day == Math.Min(_config.DayOfMonth ?? effectiveStart.Day,
@@ -407,14 +464,25 @@ public class ValiSchedule : IValiSchedule
                 && MonthDiff(effectiveStart, date) % _config.Interval == 0,
 
             RecurrenceType.Yearly =>
-                date.Day == effectiveStart.Day
-                && date.Month == effectiveStart.Month
-                && (date.Year - effectiveStart.Year) % _config.Interval == 0,
+                IsValidYearlyOccurrence(date, effectiveStart),
 
             RecurrenceType.Custom => _config.CustomPredicate?.Invoke(date) ?? false,
 
             _ => false
         };
+    }
+
+    /// <summary>
+    /// Evaluates yearly recurrence, with a fallback for Feb 29 start dates in non-leap years.
+    /// </summary>
+    private bool IsValidYearlyOccurrence(DateTime date, DateTime effectiveStart)
+    {
+        bool yearMatches = (date.Year - effectiveStart.Year) % _config.Interval == 0;
+        if (!yearMatches) return false;
+        // Feb 29 start: in non-leap years, use Feb 28 as the anniversary
+        if (effectiveStart.Month == 2 && effectiveStart.Day == 29 && !DateTime.IsLeapYear(date.Year))
+            return date.Month == 2 && date.Day == 28;
+        return date.Month == effectiveStart.Month && date.Day == effectiveStart.Day;
     }
 
     /// <summary>

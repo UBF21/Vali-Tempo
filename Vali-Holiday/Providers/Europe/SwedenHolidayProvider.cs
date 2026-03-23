@@ -66,27 +66,6 @@ public class SwedenHolidayProvider : BaseHolidayProvider
             description: "Nationaldag sedan 2005 (tidigare kallad Svenska Flaggans Dag). Markerar dagen då Gustav Vasa valdes till kung den 6 juni 1523 och Sverige frigjorde sig från Kalmarunionen med Danmark. Firades traditionellt sedan 1893."),
 
         new HolidayInfo(
-            "se_midsummer_eve", 6, 24, "SE",
-            "Midsommarafton",
-            NamessSv("Víspera de San Juan / Midsommar", "Midsummer Eve", "Véspera de São João", "Veille de la Saint-Jean", "Mittsommerabend", "Midsommarafton"),
-            HolidayType.Optional,
-            description: "Midsommarafton — dagen före midsommardagen. Traditionellt den viktigaste firningsdagen runt sommarsolståndet i Sverige. Halvdag i praktiken; officiellt inte en röd dag men allmänt ledig."),
-
-        new HolidayInfo(
-            "se_midsummer_day", 6, 25, "SE",
-            "Midsommardagen",
-            NamessSv("Midsommar / Día de San Juan", "Midsummer Day", "Dia de São João / Midsommar", "Saint-Jean / Fête du Solstice", "Mittsommertag", "Midsommardagen"),
-            HolidayType.National,
-            description: "Midsommardagen infaller på lördagen mellan 20 och 26 juni. Firar sommarsolståndet — en av de viktigaste högtiderna i Sverige med majstångresning, folkdräkter och traditionell mat. Listed as 25 June (representative date); actual date is the Saturday between 20–26 June."),
-
-        new HolidayInfo(
-            "se_all_saints", 11, 1, "SE",
-            "Alla Helgons Dag",
-            NamessSv("Día de Todos los Santos", "All Saints' Day", "Dia de Todos os Santos", "Toussaint", "Allerheiligen", "Alla Helgons Dag"),
-            HolidayType.National,
-            description: "Alla Helgons Dag infaller på lördagen mellan 31 oktober och 6 november. Dag för minne av de döda och besök på gravar. Listed as 1 November (representative date); actual date is the Saturday between 31 October–6 November."),
-
-        new HolidayInfo(
             "se_christmas_eve", 12, 24, "SE",
             "Julafton",
             NamessSv("Nochebuena", "Christmas Eve", "Véspera de Natal", "Réveillon de Noël", "Heiliger Abend", "Julafton"),
@@ -130,6 +109,17 @@ public class SwedenHolidayProvider : BaseHolidayProvider
         var ascension    = EasterCalculator.Ascension(year);
         var pentecost    = easter.AddDays(49);
 
+        // Midsommar: Saturday between June 20 and 26
+        DateTime june20 = new DateTime(year, 6, 20);
+        int daysToSat = ((int)DayOfWeek.Saturday - (int)june20.DayOfWeek + 7) % 7;
+        DateTime midsommardag = june20.AddDays(daysToSat); // Midsommardagen (Saturday)
+        DateTime midsommarafton = midsommardag.AddDays(-1); // Midsommarafton (Friday)
+
+        // Alla Helgons Dag: Saturday between Oct 31 and Nov 6
+        DateTime oct31 = new DateTime(year, 10, 31);
+        int daysToSat2 = ((int)DayOfWeek.Saturday - (int)oct31.DayOfWeek + 7) % 7;
+        DateTime allaHelgons = oct31.AddDays(daysToSat2);
+
         return new[]
         {
             new HolidayInfo(
@@ -166,6 +156,27 @@ public class SwedenHolidayProvider : BaseHolidayProvider
                 NamessSv("Pentecostés", "Pentecost Sunday / Whit Sunday", "Pentecostes", "Pentecôte", "Pfingstsonntag", "Pingstdagen"),
                 HolidayType.National, isMovable: true,
                 description: "Pingstdagen / Pentecost Sunday. 49 dagar efter påskdagen. Minnet av den Helige Andes utgjutelse."),
+
+            new HolidayInfo(
+                "se_midsummer_eve", midsommarafton.Month, midsommarafton.Day, "SE",
+                "Midsommarafton",
+                NamessSv("Víspera de San Juan / Midsommar", "Midsummer Eve", "Véspera de São João", "Veille de la Saint-Jean", "Mittsommerabend", "Midsommarafton"),
+                HolidayType.Optional, isMovable: true,
+                description: "Midsommarafton — dagen före midsommardagen. Traditionellt den viktigaste firningsdagen runt sommarsolståndet i Sverige. Halvdag i praktiken; officiellt inte en röd dag men allmänt ledig."),
+
+            new HolidayInfo(
+                "se_midsummer_day", midsommardag.Month, midsommardag.Day, "SE",
+                "Midsommardagen",
+                NamessSv("Midsommar / Día de San Juan", "Midsummer Day", "Dia de São João / Midsommar", "Saint-Jean / Fête du Solstice", "Mittsommertag", "Midsommardagen"),
+                HolidayType.National, isMovable: true,
+                description: "Midsommardagen infaller på lördagen mellan 20 och 26 juni. Firar sommarsolståndet — en av de viktigaste högtiderna i Sverige med majstångresning, folkdräkter och traditionell mat."),
+
+            new HolidayInfo(
+                "se_all_saints", allaHelgons.Month, allaHelgons.Day, "SE",
+                "Alla Helgons Dag",
+                NamessSv("Día de Todos los Santos", "All Saints' Day", "Dia de Todos os Santos", "Toussaint", "Allerheiligen", "Alla Helgons Dag"),
+                HolidayType.National, isMovable: true,
+                description: "Alla Helgons Dag infaller på lördagen mellan 31 oktober och 6 november. Dag för minne av de döda och besök på gravar."),
         };
     }
 

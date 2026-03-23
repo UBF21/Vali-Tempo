@@ -20,7 +20,7 @@ namespace Vali_Holiday.Core;
 ///     .Register(new FranceHolidayProvider());
 /// </code>
 /// </remarks>
-public class ValiHoliday
+public class ValiHoliday : IValiHoliday
 {
     private readonly Dictionary<string, IHolidayProvider> _providers = new();
 
@@ -209,6 +209,7 @@ public class ValiHoliday
         for (int year = date.Year; year <= date.Year + 1; year++)
         {
             var holiday = provider.GetHolidays(year)
+                .Where(h => !(h.Month == 2 && h.Day == 29 && !DateTime.IsLeapYear(year)))
                 .Where(h => new DateTime(year, h.Month, h.Day) >= date.Date)
                 .OrderBy(h => h.Month).ThenBy(h => h.Day)
                 .FirstOrDefault();
@@ -268,6 +269,7 @@ public class ValiHoliday
         for (int year = date.Year; year >= date.Year - 1; year--)
         {
             var holiday = provider.GetHolidays(year)
+                .Where(h => !(h.Month == 2 && h.Day == 29 && !DateTime.IsLeapYear(year)))
                 .Where(h => new DateTime(year, h.Month, h.Day) < date.Date)
                 .OrderByDescending(h => h.Month).ThenByDescending(h => h.Day)
                 .FirstOrDefault();

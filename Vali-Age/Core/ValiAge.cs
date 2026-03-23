@@ -52,6 +52,8 @@ public class ValiAge : IValiAge
     /// <returns>The number of whole years of age as of <paramref name="reference"/>.</returns>
     public int Years(DateTime birthDate, DateTime reference)
     {
+        if (birthDate.Date > reference.Date)
+            throw new ArgumentOutOfRangeException(nameof(birthDate), "birthDate cannot be after reference date.");
         var today = reference.Date;
         var birth = birthDate.Date;
         int age = today.Year - birth.Year;
@@ -88,6 +90,8 @@ public class ValiAge : IValiAge
     /// <returns>An <see cref="AgeResult"/> describing the exact age as of <paramref name="reference"/>.</returns>
     public AgeResult Exact(DateTime birthDate, DateTime reference)
     {
+        if (birthDate.Date > reference.Date)
+            throw new ArgumentOutOfRangeException(nameof(birthDate), "birthDate cannot be after reference date.");
         int years = Years(birthDate, reference);
         DateTime afterYears = birthDate.Date.AddYears(years);
 

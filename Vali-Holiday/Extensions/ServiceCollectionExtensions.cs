@@ -9,32 +9,32 @@ namespace Vali_Holiday.Extensions;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers a <see cref="ValiHoliday"/> singleton pre-loaded with ALL built-in country providers
+    /// Registers a <see cref="IValiHoliday"/> singleton pre-loaded with ALL built-in country providers
     /// (Latin America + Europe).
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiHoliday(this IServiceCollection services)
-        => services.AddSingleton(_ => HolidayProviderFactory.CreateAll());
+        => services.AddSingleton<IValiHoliday>(_ => HolidayProviderFactory.CreateAll());
 
     /// <summary>
-    /// Registers a <see cref="ValiHoliday"/> singleton pre-loaded with only Latin American country providers.
+    /// Registers a <see cref="IValiHoliday"/> singleton pre-loaded with only Latin American country providers.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiHolidayLatinAmerica(this IServiceCollection services)
-        => services.AddSingleton(_ => HolidayProviderFactory.CreateLatinAmerica());
+        => services.AddSingleton<IValiHoliday>(_ => HolidayProviderFactory.CreateLatinAmerica());
 
     /// <summary>
-    /// Registers a <see cref="ValiHoliday"/> singleton pre-loaded with only European country providers.
+    /// Registers a <see cref="IValiHoliday"/> singleton pre-loaded with only European country providers.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiHolidayEurope(this IServiceCollection services)
-        => services.AddSingleton(_ => HolidayProviderFactory.CreateEurope());
+        => services.AddSingleton<IValiHoliday>(_ => HolidayProviderFactory.CreateEurope());
 
     /// <summary>
-    /// Registers a <see cref="ValiHoliday"/> singleton configured via the provided delegate,
+    /// Registers a <see cref="IValiHoliday"/> singleton configured via the provided delegate,
     /// allowing callers to register only the providers they need.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
@@ -47,7 +47,7 @@ public static class ServiceCollectionExtensions
     {
         var valiHoliday = new ValiHoliday();
         configure(valiHoliday);
-        services.AddSingleton(valiHoliday);
+        services.AddSingleton<IValiHoliday>(valiHoliday);
         return services;
     }
 }

@@ -178,6 +178,9 @@ public class ValiCalendar : IValiCalendar
         if (from.Date > to.Date)
             throw new ArgumentException("from must be less than or equal to to.", nameof(from));
 
+        if ((to.Date - from.Date).Days > MaxWorkdayScan * 2)
+            throw new InvalidOperationException($"Date span exceeds maximum scan limit of {MaxWorkdayScan * 2} days.");
+
         int count = 0;
         for (var d = from.Date; d <= to.Date; d = d.AddDays(1))
         {

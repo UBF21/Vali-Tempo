@@ -36,7 +36,7 @@ public interface IValiDateQuarter
     string QuarterName(DateTime date);
 
     /// <summary>
-    /// Returns the full descriptive name of the quarter in which the specified date falls (e.g., "Q1 2026").
+    /// Returns the full descriptive name of the quarter in which the specified date falls (e.g., "Quarter 1 - 2026").
     /// </summary>
     /// <param name="date">The date to evaluate.</param>
     /// <returns>A full string representing the quarter name including the year.</returns>

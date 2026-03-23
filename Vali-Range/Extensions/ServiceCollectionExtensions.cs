@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiRange(this IServiceCollection services)
     {
-        services.AddSingleton<IValiRange>(sp => new ValiRange(sp.GetRequiredService<IClock>()));
+        services.AddSingleton<IValiRange>(sp => new ValiRange(sp.GetService<IClock>()));
         return services;
     }
 }

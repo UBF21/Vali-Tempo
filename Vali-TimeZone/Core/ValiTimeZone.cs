@@ -75,7 +75,7 @@ public sealed class ValiTimeZone : IValiTimeZone
     public bool IsDst(DateTime dateTime, string zoneId)
     {
         var zone = ResolveZone(zoneId);
-        return zone.IsDaylightSavingTime(dateTime);
+        return zone.IsDaylightSavingTime(DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified));
     }
 
     /// <inheritdoc />

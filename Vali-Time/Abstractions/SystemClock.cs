@@ -9,7 +9,7 @@ public sealed class SystemClock : IClock
     /// <summary>Shared singleton instance for production use.</summary>
     public static readonly IClock Instance = new SystemClock();
 
-    public SystemClock() { }
+    private SystemClock() { }
 
     /// <inheritdoc/>
     public DateTime Now => DateTime.Now;

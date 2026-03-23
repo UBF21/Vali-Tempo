@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IValiTime, ValiTime>();
         services.AddSingleton<IValiDate, ValiDate>();
-        services.AddSingleton<IClock, SystemClock>();
+        services.AddSingleton<IClock>(_ => SystemClock.Instance);
         return services;
     }
 }

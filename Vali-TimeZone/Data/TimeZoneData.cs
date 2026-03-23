@@ -58,7 +58,7 @@ internal static class TimeZoneData
                 "America/Sao_Paulo",
                 "(UTC-03:00) Brasilia",
                 "E. South America Standard Time",
-                TimeSpan.FromHours(-3), true, "BR", "Brazil"),
+                TimeSpan.FromHours(-3), false, "BR", "Brazil"),
 
             ["America/Mexico_City"] = new(
                 "America/Mexico_City",
@@ -129,7 +129,7 @@ internal static class TimeZoneData
             ["America/Santo_Domingo"] = new(
                 "America/Santo_Domingo",
                 "(UTC-04:00) Santo Domingo",
-                "SA Western Standard Time",
+                "Atlantic Standard Time",
                 TimeSpan.FromHours(-4), false, "DO", "Dominican Republic"),
 
             ["America/Havana"] = new(

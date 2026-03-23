@@ -44,11 +44,11 @@ public class AustraliaHolidayProvider : BaseHolidayProvider
             description: "First day of the new calendar year. If 1 January falls on a weekend, the holiday is typically observed on the following Monday."),
 
         new HolidayInfo(
-            "au_australia_day", 1, 27, "AU",
+            "au_australia_day", 1, 26, "AU",
             "Australia Day",
             Names("Día de Australia", "Australia Day", "Dia da Austrália", "Jour de l'Australie", "Australien-Tag"),
             HolidayType.Civic,
-            description: "Commemorates the arrival of the First Fleet at Port Jackson, New South Wales, on 26 January 1788, when Captain Arthur Phillip raised the British flag. Observed on 26 January; when 26 January falls on a Saturday or Sunday, the public holiday is the following Monday. Representative date: 27 January."),
+            description: "Commemorates the arrival of the First Fleet at Port Jackson, New South Wales, on 26 January 1788, when Captain Arthur Phillip raised the British flag. Observed on 26 January; when 26 January falls on a Saturday or Sunday, the public holiday is the following Monday."),
 
         new HolidayInfo(
             "au_anzac_day", 4, 25, "AU",

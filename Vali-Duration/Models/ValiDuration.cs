@@ -158,6 +158,9 @@ public readonly struct ValiDuration : IEquatable<ValiDuration>, IComparable<Vali
     /// </returns>
     public string Format(int decimalPlaces = 2)
     {
+        if (decimalPlaces < 0)
+            throw new ArgumentOutOfRangeException(nameof(decimalPlaces), "Must be >= 0.");
+
         if (_seconds < 0m)
         {
             // Format the absolute value, then prepend the minus sign.

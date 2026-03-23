@@ -79,7 +79,7 @@ public class ValiCountdown : IValiCountdown
     {
         decimal ticks = (decimal)(_clock.Now - from).Ticks;
         decimal result = ConvertTicks(ticks, unit);
-        return decimalPlaces.HasValue ? Math.Round(result, decimalPlaces.Value) : result;
+        return decimalPlaces.HasValue ? Math.Round(Math.Max(0m, result), decimalPlaces.Value) : Math.Max(0m, result);
     }
 
     // === PROGRESS ===
