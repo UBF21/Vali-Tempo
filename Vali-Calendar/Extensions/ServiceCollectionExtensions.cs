@@ -17,6 +17,18 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <param name="weekStart">The default first day of the week. Defaults to <see cref="WeekStart.Monday"/>.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// <see cref="IClock"/> is resolved via <c>sp.GetService&lt;IClock&gt;()</c> with a fallback to
+    /// <see cref="SystemClock.Instance"/> when no <see cref="IClock"/> is registered in the container.
+    /// </para>
+    /// <para>
+    /// To use a custom clock (e.g., for deterministic testing), register a custom <see cref="IClock"/>
+    /// implementation in the container <em>before</em> calling <c>AddValiCalendar()</c>, or call
+    /// <c>AddValiTime()</c> first, which registers <see cref="SystemClock.Instance"/> as the
+    /// default <see cref="IClock"/>.
+    /// </para>
+    /// </remarks>
     public static IServiceCollection AddValiCalendar(this IServiceCollection services, WeekStart weekStart = WeekStart.Monday)
         => services.AddSingleton<IValiCalendar>(sp => new ValiCalendar(weekStart, null, sp.GetService<IClock>()));
 
@@ -28,6 +40,18 @@ public static class ServiceCollectionExtensions
     /// <param name="holidayProvider">The <see cref="IHolidayProvider"/> to integrate with workday logic.</param>
     /// <param name="weekStart">The default first day of the week. Defaults to <see cref="WeekStart.Monday"/>.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
+    /// <remarks>
+    /// <para>
+    /// <see cref="IClock"/> is resolved via <c>sp.GetService&lt;IClock&gt;()</c> with a fallback to
+    /// <see cref="SystemClock.Instance"/> when no <see cref="IClock"/> is registered in the container.
+    /// </para>
+    /// <para>
+    /// To use a custom clock (e.g., for deterministic testing), register a custom <see cref="IClock"/>
+    /// implementation in the container <em>before</em> calling <c>AddValiCalendar()</c>, or call
+    /// <c>AddValiTime()</c> first, which registers <see cref="SystemClock.Instance"/> as the
+    /// default <see cref="IClock"/>.
+    /// </para>
+    /// </remarks>
     public static IServiceCollection AddValiCalendar(this IServiceCollection services, IHolidayProvider holidayProvider, WeekStart weekStart = WeekStart.Monday)
         => services.AddSingleton<IValiCalendar>(sp => new ValiCalendar(weekStart, holidayProvider, sp.GetService<IClock>()));
 }

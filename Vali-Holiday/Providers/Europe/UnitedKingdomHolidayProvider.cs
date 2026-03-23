@@ -99,7 +99,12 @@ public class UnitedKingdomHolidayProvider : BaseHolidayProvider
     {
         var goodFriday  = EasterCalculator.GoodFriday(year);
         var easterMonday = EasterCalculator.Easter(year).AddDays(1);
-        var earlyMay     = NthWeekday(year, 5, DayOfWeek.Monday, 1);
+        var earlyMay = year switch
+        {
+            2020 => new DateTime(2020, 5, 8),  // VE Day 75th anniversary — moved by proclamation
+            2023 => new DateTime(2023, 5, 8),  // King Charles III Coronation — moved by proclamation
+            _    => NthWeekday(year, 5, DayOfWeek.Monday, 1)
+        };
         var springBank   = LastWeekday(year, 5, DayOfWeek.Monday);
         var summerBank   = LastWeekday(year, 8, DayOfWeek.Monday);
 

@@ -46,6 +46,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
         <None Include="VT.png">
             <Pack>True</Pack>
             <PackagePath></PackagePath>

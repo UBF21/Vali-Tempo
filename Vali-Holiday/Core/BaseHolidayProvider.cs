@@ -11,7 +11,7 @@ namespace Vali_Holiday.Core;
 /// </summary>
 public abstract class BaseHolidayProvider : IHolidayProvider
 {
-    private readonly ConcurrentDictionary<int, HashSet<(int Month, int Day)>> _holidayCache = new();
+    private readonly ConcurrentDictionary<int, HashSet<(int Month, int Day)>> _nationalHolidayCache = new();
     private readonly ConcurrentDictionary<int, IReadOnlyList<HolidayInfo>> _holidayListCache = new();
 
     /// <inheritdoc/>
@@ -61,16 +61,36 @@ public abstract class BaseHolidayProvider : IHolidayProvider
     private IReadOnlyList<HolidayInfo> GetCachedHolidays(int year)
         => _holidayListCache.GetOrAdd(year, y => BuildHolidays(y).ToList().AsReadOnly());
 
-    private HashSet<(int Month, int Day)> GetHolidaySet(int year)
-        => _holidayCache.GetOrAdd(year, y => GetCachedHolidays(y).Select(h => (h.Month, h.Day)).ToHashSet());
+    private HashSet<(int Month, int Day)> GetNationalHolidaySet(int year)
+        => _nationalHolidayCache.GetOrAdd(year, y =>
+            GetCachedHolidays(y)
+                .Where(h => h.RegionCode == null)
+                .Select(h => (h.Month, h.Day))
+                .ToHashSet());
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// Only national holidays (those with a <see langword="null"/> <see cref="HolidayInfo.RegionCode"/>)
+    /// are considered by this fast-path check. Regional holidays are intentionally excluded to avoid
+    /// false positives for callers who are not in the relevant region (e.g., a holiday that applies
+    /// only to Northern Ireland should not return <see langword="true"/> for an English caller).
+    /// To perform region-aware holiday checking use
+    /// <c>GetHolidays(year).Where(h =&gt; h.RegionCode == null || h.RegionCode == myRegion)</c>.
+    /// </remarks>
     public bool IsHoliday(DateTime date)
-        => GetHolidaySet(date.Year).Contains((date.Month, date.Day));
+        => GetNationalHolidaySet(date.Year).Contains((date.Month, date.Day));
 
     /// <inheritdoc/>
+    /// <remarks>
+    /// Only national holidays (those with a <see langword="null"/> <see cref="HolidayInfo.RegionCode"/>)
+    /// are considered by this fast-path check. Regional holidays are intentionally excluded to avoid
+    /// false positives for callers who are not in the relevant region (e.g., a holiday that applies
+    /// only to Northern Ireland should not return <see langword="true"/> for an English caller).
+    /// To perform region-aware holiday checking use
+    /// <c>GetHolidays(year).Where(h =&gt; h.RegionCode == null || h.RegionCode == myRegion)</c>.
+    /// </remarks>
     public bool IsHoliday(DateOnly date)
-        => GetHolidaySet(date.Year).Contains((date.Month, date.Day));
+        => GetNationalHolidaySet(date.Year).Contains((date.Month, date.Day));
 
     /// <inheritdoc/>
     public HolidayInfo? GetHoliday(DateTime date)

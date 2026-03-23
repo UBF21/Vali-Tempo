@@ -96,49 +96,49 @@ public class IrelandHolidayProvider : BaseHolidayProvider
         var octLast = new DateTime(year, 10, DateTime.DaysInMonth(year, 10));
         var octBank = octLast.AddDays(-(((int)octLast.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7));
 
-        return new[]
+        if (year >= 2023)
         {
-            new HolidayInfo(
+            yield return new HolidayInfo(
                 "ie_st_brigid", stBrigid.Month, stBrigid.Day, "IE",
                 "St. Brigid's Day",
                 Names("Día de Santa Brígida", "St. Brigid's Day", "Dia de Santa Brígida", "Jour de Sainte Brigide", "Tag der Heiligen Brigid"),
                 HolidayType.National, isMovable: true,
-                description: "Lá Fhéile Bríde. New public holiday since 2023 honouring St. Brigid of Kildare (c. 451–525), patron saint of Ireland, and coinciding with the Celtic festival of Imbolc (start of spring). Observed on 1 February if that day is a Monday, otherwise the first Monday of February."),
+                description: "Lá Fhéile Bríde. New public holiday since 2023 honouring St. Brigid of Kildare (c. 451–525), patron saint of Ireland, and coinciding with the Celtic festival of Imbolc (start of spring). Observed on 1 February if that day is a Friday, otherwise the first Monday of February.");
+        }
 
-            new HolidayInfo(
-                "ie_easter_monday", easterMonday.Month, easterMonday.Day, "IE",
-                "Easter Monday",
-                Names("Lunes de Pascua", "Easter Monday", "Segunda-Feira de Páscoa", "Lundi de Pâques", "Ostermontag"),
-                HolidayType.National, isMovable: true,
-                description: "Luan Cásca. The day after Easter Sunday. Public holiday in Ireland. Historically significant as 24 April 1916 was Easter Monday — the date of the Easter Rising that led to Irish independence."),
+        yield return new HolidayInfo(
+            "ie_easter_monday", easterMonday.Month, easterMonday.Day, "IE",
+            "Easter Monday",
+            Names("Lunes de Pascua", "Easter Monday", "Segunda-Feira de Páscoa", "Lundi de Pâques", "Ostermontag"),
+            HolidayType.National, isMovable: true,
+            description: "Luan Cásca. The day after Easter Sunday. Public holiday in Ireland. Historically significant as 24 April 1916 was Easter Monday — the date of the Easter Rising that led to Irish independence.");
 
-            new HolidayInfo(
-                "ie_may_bank_holiday", mayBank.Month, mayBank.Day, "IE",
-                "May Bank Holiday",
-                Names("Día Festivo de Mayo", "May Bank Holiday", "Feriado de Maio", "Jour férié de mai", "Mai-Feiertag"),
-                HolidayType.National, isMovable: true,
-                description: "First Monday in May / Luan an Bhealtaine."),
+        yield return new HolidayInfo(
+            "ie_may_bank_holiday", mayBank.Month, mayBank.Day, "IE",
+            "May Bank Holiday",
+            Names("Día Festivo de Mayo", "May Bank Holiday", "Feriado de Maio", "Jour férié de mai", "Mai-Feiertag"),
+            HolidayType.National, isMovable: true,
+            description: "First Monday in May / Luan an Bhealtaine.");
 
-            new HolidayInfo(
-                "ie_june_bank_holiday", juneBank.Month, juneBank.Day, "IE",
-                "June Bank Holiday",
-                Names("Día Festivo de Junio", "June Bank Holiday", "Feriado de Junho", "Jour férié de juin", "Juni-Feiertag"),
-                HolidayType.National, isMovable: true,
-                description: "First Monday in June / Luan an Mheithimh."),
+        yield return new HolidayInfo(
+            "ie_june_bank_holiday", juneBank.Month, juneBank.Day, "IE",
+            "June Bank Holiday",
+            Names("Día Festivo de Junio", "June Bank Holiday", "Feriado de Junho", "Jour férié de juin", "Juni-Feiertag"),
+            HolidayType.National, isMovable: true,
+            description: "First Monday in June / Luan an Mheithimh.");
 
-            new HolidayInfo(
-                "ie_august_bank_holiday", augBank.Month, augBank.Day, "IE",
-                "August Bank Holiday",
-                Names("Día Festivo de Agosto", "August Bank Holiday", "Feriado de Agosto", "Jour férié d'août", "August-Feiertag"),
-                HolidayType.National, isMovable: true,
-                description: "First Monday in August / Luan Lúnasa. Coincides with Lúnasa, the ancient Celtic harvest festival."),
+        yield return new HolidayInfo(
+            "ie_august_bank_holiday", augBank.Month, augBank.Day, "IE",
+            "August Bank Holiday",
+            Names("Día Festivo de Agosto", "August Bank Holiday", "Feriado de Agosto", "Jour férié d'août", "August-Feiertag"),
+            HolidayType.National, isMovable: true,
+            description: "First Monday in August / Luan Lúnasa. Coincides with Lúnasa, the ancient Celtic harvest festival.");
 
-            new HolidayInfo(
-                "ie_october_bank_holiday", octBank.Month, octBank.Day, "IE",
-                "October Bank Holiday",
-                Names("Día Festivo de Octubre", "October Bank Holiday", "Feriado de Outubro", "Jour férié d'octobre", "Oktober-Feiertag"),
-                HolidayType.National, isMovable: true,
-                description: "Last Monday in October / Luan Dheireadh Fómhair."),
-        };
+        yield return new HolidayInfo(
+            "ie_october_bank_holiday", octBank.Month, octBank.Day, "IE",
+            "October Bank Holiday",
+            Names("Día Festivo de Octubre", "October Bank Holiday", "Feriado de Outubro", "Jour férié d'octobre", "Oktober-Feiertag"),
+            HolidayType.National, isMovable: true,
+            description: "Last Monday in October / Luan Dheireadh Fómhair.");
     }
 }

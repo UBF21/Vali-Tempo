@@ -38,15 +38,6 @@ public class UsaHolidayProvider : BaseHolidayProvider
             description: "Celebration of the start of the calendar year."),
 
         new HolidayInfo(
-            "us_juneteenth", 6, 19, "US",
-            "Juneteenth National Independence Day",
-            Names("Día de la Independencia de Juneteenth", "Juneteenth National Independence Day",
-                  "Dia Nacional de Independência Juneteenth", "Journée nationale de l'indépendance Juneteenth",
-                  "Juneteenth Nationaler Unabhängigkeitstag"),
-            HolidayType.Civic,
-            description: "Commemorates June 19, 1865, when Union soldiers arrived in Galveston, Texas, and announced the end of slavery — more than two years after the Emancipation Proclamation. Established as a federal holiday in 2021."),
-
-        new HolidayInfo(
             "us_independence_day", 7, 4, "US",
             "Independence Day",
             Names("Día de la Independencia", "Independence Day",
@@ -118,7 +109,7 @@ public class UsaHolidayProvider : BaseHolidayProvider
         var thanksgiving = NthWeekday(year, 11, DayOfWeek.Thursday, 4);
         DateTime blackFriday = thanksgiving.AddDays(1);
 
-        return new[]
+        var result = new List<HolidayInfo>
         {
             new HolidayInfo(
                 "us_mlk_day", mlkDay.Month, mlkDay.Day, "US",
@@ -176,6 +167,19 @@ public class UsaHolidayProvider : BaseHolidayProvider
                 HolidayType.Observance, isMovable: true,
                 description: "The day after Thanksgiving, traditionally the start of the Christmas shopping season. Not a federal holiday; falls one day after the fourth Thursday of November each year."),
         };
+
+        // Only yield Juneteenth for 2021 and later
+        if (year >= 2021)
+            result.Add(new HolidayInfo(
+                "us_juneteenth", 6, 19, "US",
+                "Juneteenth National Independence Day",
+                Names("Día de la Independencia de Juneteenth", "Juneteenth National Independence Day",
+                      "Dia Nacional de Independência Juneteenth", "Journée nationale de l'indépendance Juneteenth",
+                      "Juneteenth Nationaler Unabhängigkeitstag"),
+                HolidayType.Civic,
+                description: "Commemorates June 19, 1865, when Union soldiers arrived in Galveston, Texas, and announced the end of slavery — more than two years after the Emancipation Proclamation. Established as a federal holiday in 2021."));
+
+        return result;
     }
 
     /// <summary>

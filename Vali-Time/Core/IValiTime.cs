@@ -89,6 +89,7 @@ public interface IValiTime
     /// The value of <paramref name="ts"/> expressed in <paramref name="unit"/> as a <see cref="decimal"/>,
     /// calculated directly from ticks for maximum precision.
     /// </returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="ts"/> is negative.</exception>
     decimal FromTimeSpan(TimeSpan ts, TimeUnit unit);
 
     /// <summary>
@@ -122,6 +123,7 @@ public interface IValiTime
     /// </list>
     /// </param>
     /// <returns>The total time represented by <paramref name="input"/>, expressed in seconds.</returns>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="input"/> is empty or whitespace.</exception>
     /// <exception cref="FormatException">Thrown if the string cannot be parsed into a recognised time pattern.</exception>
     decimal ParseTime(string input);
 
@@ -148,7 +150,10 @@ public interface IValiTime
     /// <param name="min">The lower bound.</param>
     /// <param name="max">The upper bound.</param>
     /// <returns>The clamped value in <paramref name="unit"/>.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="min"/> is greater than <paramref name="max"/>.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="min"/> is negative, <paramref name="max"/> is negative,
+    /// or <paramref name="min"/> is greater than <paramref name="max"/>.
+    /// </exception>
     decimal Clamp(decimal time, TimeUnit unit, decimal min, decimal max);
 
     /// <summary>
