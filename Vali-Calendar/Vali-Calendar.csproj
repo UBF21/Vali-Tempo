@@ -26,6 +26,7 @@
 
         <!-- Discoverability -->
         <PackageTags>calendar;workdays;week;month;business-days;dotnet</PackageTags>
+        <PackageIcon>VT.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
 
         <!-- Source Link / Symbols -->
@@ -50,6 +51,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Include="VT.png">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
         <None Include="README.md">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
