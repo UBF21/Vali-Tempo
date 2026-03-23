@@ -26,7 +26,7 @@
 
         <!-- Discoverability -->
         <PackageTags>Time;converter;formatting;utility;dotnet;date;calendar;quarter;range</PackageTags>
-        <PackageIcon>logo-Vali-Time.png</PackageIcon>
+        <PackageIcon>VT.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
 
         <!-- Source Link / Symbols -->
@@ -59,7 +59,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="logo-Vali-Time.png">
+        <None Include="VT.png">
             <Pack>True</Pack>
             <PackagePath></PackagePath>
         </None>

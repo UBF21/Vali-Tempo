@@ -26,6 +26,7 @@
 
         <!-- Discoverability -->
         <PackageTags>duration;time;decimal;precision;timespan;dotnet</PackageTags>
+        <PackageIcon>VT.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
 
         <!-- Source Link / Symbols -->
@@ -48,6 +49,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Include="VT.png">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
         <None Include="README.md">
             <Pack>True</Pack>
             <PackagePath>\</PackagePath>
