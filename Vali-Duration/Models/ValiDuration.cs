@@ -1,3 +1,4 @@
+using System.Globalization;
 using Vali_Time.Enums;
 
 namespace Vali_Duration.Models;
@@ -164,12 +165,12 @@ public readonly struct ValiDuration : IEquatable<ValiDuration>, IComparable<Vali
             return "-" + inner;
         }
 
-        if (_seconds >= 604800m) return $"{As(TimeUnit.Weeks).ToString($"F{decimalPlaces}")} w";
-        if (_seconds >= 86400m)  return $"{As(TimeUnit.Days).ToString($"F{decimalPlaces}")} d";
-        if (_seconds >= 3600m)   return $"{As(TimeUnit.Hours).ToString($"F{decimalPlaces}")} h";
-        if (_seconds >= 60m)     return $"{As(TimeUnit.Minutes).ToString($"F{decimalPlaces}")} min";
-        if (_seconds >= 1m)      return $"{As(TimeUnit.Seconds).ToString($"F{decimalPlaces}")} s";
-        return $"{As(TimeUnit.Milliseconds).ToString($"F{decimalPlaces}")} ms";
+        if (_seconds >= 604800m) return $"{As(TimeUnit.Weeks).ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture)} w";
+        if (_seconds >= 86400m)  return $"{As(TimeUnit.Days).ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture)} d";
+        if (_seconds >= 3600m)   return $"{As(TimeUnit.Hours).ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture)} h";
+        if (_seconds >= 60m)     return $"{As(TimeUnit.Minutes).ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture)} min";
+        if (_seconds >= 1m)      return $"{As(TimeUnit.Seconds).ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture)} s";
+        return $"{As(TimeUnit.Milliseconds).ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture)} ms";
     }
 
     // ── Arithmetic operators ─────────────────────────────────────────────────

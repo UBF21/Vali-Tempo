@@ -89,7 +89,7 @@ public class ValiAge : IValiAge
     public AgeResult Exact(DateTime birthDate, DateTime reference)
     {
         int years = Years(birthDate, reference);
-        DateTime afterYears = birthDate.AddYears(years);
+        DateTime afterYears = birthDate.Date.AddYears(years);
 
         int months = 0;
         while (afterYears.AddMonths(months + 1) <= reference) months++;
@@ -133,7 +133,7 @@ public class ValiAge : IValiAge
 
     /// <summary>
     /// Returns a relative time description from <paramref name="date"/> to
-    /// <see cref="DateTime.Now"/>.
+    /// the current time as provided by the injected clock.
     /// </summary>
     /// <remarks>
     /// Thresholds applied (absolute difference):

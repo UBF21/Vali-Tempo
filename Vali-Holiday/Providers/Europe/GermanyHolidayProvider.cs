@@ -172,8 +172,9 @@ public class GermanyHolidayProvider : BaseHolidayProvider
 
         // Buß- und Bettag: Wednesday before November 23 (Sachsen only)
         var nov23 = new DateTime(year, 11, 23);
-        var daysUntilWednesday = ((int)nov23.DayOfWeek - (int)DayOfWeek.Wednesday + 7) % 7;
-        var bussUndBettag = nov23.AddDays(daysUntilWednesday == 0 ? -7 : -daysUntilWednesday);
+        // Days to subtract from Nov 23 to reach the preceding Wednesday
+        int daysBackToWednesday = ((int)nov23.DayOfWeek - (int)DayOfWeek.Wednesday + 7) % 7;
+        var bussUndBettag = nov23.AddDays(daysBackToWednesday == 0 ? -7 : -daysBackToWednesday);
 
         return new[]
         {

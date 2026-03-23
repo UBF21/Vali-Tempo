@@ -72,7 +72,9 @@ public class ValiTime : IValiTime
         if (decimalPlaces is < 0)
             throw new ArgumentException("Decimal places cannot be negative.", nameof(decimalPlaces));
 
-        decimal totalSeconds = times.Sum(t => Convert(t.time, t.unit, TimeUnit.Seconds));
+        decimal totalSeconds = times.Sum(t => t.time < 0
+            ? -ConvertToSeconds(-t.time, t.unit)
+            : ConvertToSeconds(t.time, t.unit));
         return Convert(totalSeconds, TimeUnit.Seconds, resultUnit, decimalPlaces, rounding);
     }
 
@@ -134,6 +136,9 @@ public class ValiTime : IValiTime
     {
         if (time < 0) throw new ArgumentException("Time cannot be negative.", nameof(time));
         decimal seconds = Convert(time, unit, TimeUnit.Seconds);
+        const decimal maxSeconds = 922337203685m; // TimeSpan.MaxValue.TotalSeconds approx
+        if (seconds > maxSeconds) seconds = maxSeconds;
+        if (seconds < -maxSeconds) seconds = -maxSeconds;
         long ticks = (long)(seconds * TimeSpan.TicksPerSecond);
         return new TimeSpan(ticks);
     }
@@ -144,6 +149,10 @@ public class ValiTime : IValiTime
     /// <param name="seconds">The time in seconds to break down.</param>
     /// <returns>A dictionary with the time distributed across units, preserving full precision.</returns>
     /// <exception cref="ArgumentException">Thrown if the time is negative.</exception>
+    /// <remarks>
+    /// Note: this method decomposes seconds into hours, minutes, seconds, and milliseconds only.
+    /// Values representing days or larger are accumulated into the hours component.
+    /// </remarks>
     public Dictionary<TimeUnit, decimal> Breakdown(decimal seconds)
     {
         if (seconds < 0) throw new ArgumentException("Time cannot be negative.", nameof(seconds));
@@ -204,8 +213,12 @@ public class ValiTime : IValiTime
         if (decimalPlaces is < 0)
             throw new ArgumentException("Decimal places cannot be negative.", nameof(decimalPlaces));
 
-        decimal firstSeconds = Convert(times[0].time, times[0].unit, TimeUnit.Seconds);
-        decimal restSeconds = times.Skip(1).Sum(t => Convert(t.time, t.unit, TimeUnit.Seconds));
+        decimal firstSeconds = times[0].time < 0
+            ? -ConvertToSeconds(-times[0].time, times[0].unit)
+            : ConvertToSeconds(times[0].time, times[0].unit);
+        decimal restSeconds = times.Skip(1).Sum(t => t.time < 0
+            ? -ConvertToSeconds(-t.time, t.unit)
+            : ConvertToSeconds(t.time, t.unit));
         decimal totalSeconds = firstSeconds - restSeconds;
 
         if (totalSeconds < 0m && !allowNegative)
@@ -237,8 +250,8 @@ public class ValiTime : IValiTime
             TimeUnit.Hours        => (decimal)ts.Ticks / TimeSpan.TicksPerHour,
             TimeUnit.Days         => (decimal)ts.Ticks / TimeSpan.TicksPerDay,
             TimeUnit.Weeks        => (decimal)ts.Ticks / (TimeSpan.TicksPerDay * 7L),
-            TimeUnit.Months       => (decimal)ts.Ticks / (TimeSpan.TicksPerDay * 30.4375m),  // approximate
-            TimeUnit.Years        => (decimal)ts.Ticks / (TimeSpan.TicksPerDay * 365.25m),
+            TimeUnit.Months       => (decimal)ts.Ticks / (TimeSpan.TicksPerDay * Constants.DaysInMonthAvg),  // approximate
+            TimeUnit.Years        => (decimal)ts.Ticks / (TimeSpan.TicksPerDay * Constants.DaysInYearAvg),
             _                     => throw new NotSupportedException("TimeUnit not supported.")
         };
     }
@@ -445,6 +458,24 @@ public class ValiTime : IValiTime
     }
 
     // ── Private conversion helpers ───────────────────────────────────────────
+
+    /// <summary>
+    /// Converts a non-negative time value to seconds using only the unit-factor multiplication,
+    /// without the negative-value guard. Used internally by <see cref="SumTimes"/> and
+    /// <see cref="SubtractTimes"/> to allow negative individual inputs.
+    /// </summary>
+    private static decimal ConvertToSeconds(decimal time, TimeUnit unit) => unit switch
+    {
+        TimeUnit.Milliseconds => MillisecondsToSeconds(time),
+        TimeUnit.Seconds      => time,
+        TimeUnit.Minutes      => MinutesToSeconds(time),
+        TimeUnit.Hours        => HoursToSeconds(time),
+        TimeUnit.Days         => DaysToSeconds(time),
+        TimeUnit.Weeks        => WeeksToSeconds(time),
+        TimeUnit.Months       => MonthsToSeconds(time),
+        TimeUnit.Years        => YearsToSeconds(time),
+        _                     => throw new NotSupportedException("TimeUnit not supported.")
+    };
 
     /// <summary>
     /// Like <see cref="Convert"/> but accepts negative values (used internally by

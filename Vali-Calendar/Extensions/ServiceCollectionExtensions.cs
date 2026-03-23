@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Vali_Calendar.Core;
 using Vali_Holiday.Core;
+using Vali_Time.Abstractions;
 using Vali_Time.Enums;
 
 namespace Vali_Calendar.Extensions;
@@ -17,7 +18,7 @@ public static class ServiceCollectionExtensions
     /// <param name="weekStart">The default first day of the week. Defaults to <see cref="WeekStart.Monday"/>.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiCalendar(this IServiceCollection services, WeekStart weekStart = WeekStart.Monday)
-        => services.AddSingleton<IValiCalendar>(_ => new ValiCalendar(weekStart));
+        => services.AddSingleton<IValiCalendar>(sp => new ValiCalendar(weekStart, null, sp.GetRequiredService<IClock>()));
 
     /// <summary>
     /// Registers <see cref="IValiCalendar"/> as a singleton with the specified holiday provider,
@@ -28,5 +29,5 @@ public static class ServiceCollectionExtensions
     /// <param name="weekStart">The default first day of the week. Defaults to <see cref="WeekStart.Monday"/>.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiCalendar(this IServiceCollection services, IHolidayProvider holidayProvider, WeekStart weekStart = WeekStart.Monday)
-        => services.AddSingleton<IValiCalendar>(_ => new ValiCalendar(weekStart, holidayProvider));
+        => services.AddSingleton<IValiCalendar>(sp => new ValiCalendar(weekStart, holidayProvider, sp.GetRequiredService<IClock>()));
 }

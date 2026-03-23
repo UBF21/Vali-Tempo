@@ -83,7 +83,10 @@ public sealed class ValiZoneInfo
     /// </returns>
     public override string ToString()
     {
+        var absOffset = BaseOffset < TimeSpan.Zero ? BaseOffset.Negate() : BaseOffset;
         var sign = BaseOffset >= TimeSpan.Zero ? "+" : "-";
-        return $"[{CountryCode}] {Id} (UTC{sign}{Math.Abs(BaseOffset.Hours):D2}:{Math.Abs(BaseOffset.Minutes):D2})";
+        int hours = (int)absOffset.TotalHours;
+        int minutes = absOffset.Minutes;
+        return $"[{CountryCode}] {Id} (UTC{sign}{hours:D2}:{minutes:D2})";
     }
 }

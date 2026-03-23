@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Vali_Time.Abstractions;
 using Vali_Time.Core;
 
 namespace Vali_Time.Extensions;
@@ -17,6 +18,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IValiTime, ValiTime>();
         services.AddSingleton<IValiDate, ValiDate>();
+        services.AddSingleton<IClock, SystemClock>();
         return services;
     }
 }

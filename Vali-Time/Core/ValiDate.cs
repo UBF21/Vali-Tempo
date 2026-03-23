@@ -442,8 +442,8 @@ public class ValiDate : IValiDate
     /// </summary>
     /// <param name="date">The reference date.</param>
     /// <returns>
-    /// A <see cref="decimal"/> between 0.0 (start of quarter) and 1.0 (end of quarter)
-    /// representing how much of the quarter has passed.
+    /// A <see cref="decimal"/> between 0.0 (start of quarter) and &lt; 1.0 (approaching the last day of the quarter).
+    /// The value does not reach exactly 1.0 on the last day of the quarter because today is not counted as elapsed.
     /// </returns>
     public decimal ProgressInQuarter(DateTime date)
     {
@@ -551,10 +551,12 @@ public class ValiDate : IValiDate
             DateTime prevMonth = to.AddMonths(-1);
             int daysInPrevMonth = DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month);
             dayDiff += daysInPrevMonth;
+            decimal dayFraction = (decimal)Math.Max(0, dayDiff) / daysInPrevMonth;
+            return months + dayFraction;
         }
 
-        decimal dayFraction = (decimal)dayDiff / DateTime.DaysInMonth(to.Year, to.Month);
-        return months + dayFraction;
+        decimal dayFractionNormal = (decimal)dayDiff / DateTime.DaysInMonth(to.Year, to.Month);
+        return months + dayFractionNormal;
     }
 
     /// <summary>

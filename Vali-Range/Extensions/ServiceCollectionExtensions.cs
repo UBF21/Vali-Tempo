@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Vali_Range.Core;
+using Vali_Time.Abstractions;
 
 namespace Vali_Range.Extensions;
 
@@ -15,7 +16,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiRange(this IServiceCollection services)
     {
-        services.AddSingleton<IValiRange, ValiRange>();
+        services.AddSingleton<IValiRange>(sp => new ValiRange(sp.GetRequiredService<IClock>()));
         return services;
     }
 }

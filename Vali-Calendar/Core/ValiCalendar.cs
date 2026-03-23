@@ -2,6 +2,7 @@ using System.Globalization;
 using Vali_Calendar.Models;
 using Vali_Holiday.Core;
 using Vali_Holiday.Models;
+using Vali_Time.Abstractions;
 using Vali_Time.Enums;
 
 namespace Vali_Calendar.Core;
@@ -14,20 +15,26 @@ public class ValiCalendar : IValiCalendar
 {
     private readonly WeekStart _defaultWeekStart;
     private readonly IHolidayProvider? _holidayProvider;
+    private readonly IClock _clock;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ValiCalendar"/> with an optional default week start day
-    /// and an optional holiday provider.
+    /// Initializes a new instance of <see cref="ValiCalendar"/> with an optional default week start day,
+    /// an optional holiday provider, and an optional clock abstraction.
     /// </summary>
     /// <param name="defaultWeekStart">The default first day of the week. Defaults to <see cref="WeekStart.Monday"/>.</param>
     /// <param name="holidayProvider">
     /// An optional <see cref="IHolidayProvider"/> used to exclude public holidays from workday calculations.
     /// When <see langword="null"/>, workday logic is based solely on weekdays (Monday–Friday).
     /// </param>
-    public ValiCalendar(WeekStart defaultWeekStart = WeekStart.Monday, IHolidayProvider? holidayProvider = null)
+    /// <param name="clock">
+    /// Optional clock abstraction. Defaults to <see cref="SystemClock.Instance"/> when <c>null</c>.
+    /// Inject a test double to control time in unit tests.
+    /// </param>
+    public ValiCalendar(WeekStart defaultWeekStart = WeekStart.Monday, IHolidayProvider? holidayProvider = null, IClock? clock = null)
     {
         _defaultWeekStart = defaultWeekStart;
         _holidayProvider = holidayProvider;
+        _clock = clock ?? SystemClock.Instance;
     }
 
     // === WEEKS ===
@@ -60,6 +67,8 @@ public class ValiCalendar : IValiCalendar
         {
             weekNumber = new System.Globalization.GregorianCalendar().GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
             year = date.Year;
+            if (weekNumber == 1 && date.Month == 12)
+                year = date.Year + 1;
         }
 
         return new CalendarWeek(weekNumber, year, start, end);
@@ -70,7 +79,7 @@ public class ValiCalendar : IValiCalendar
     /// </summary>
     /// <param name="weekStart">The day the week starts on. Uses the instance default if not specified.</param>
     public CalendarWeek CurrentWeek(WeekStart? weekStart = null)
-        => WeekOf(DateTime.Today, weekStart);
+        => WeekOf(_clock.Today, weekStart);
 
     /// <summary>
     /// Returns all calendar weeks that overlap with the specified month.
@@ -143,6 +152,8 @@ public class ValiCalendar : IValiCalendar
 
     // === WORKDAYS (weekends excluded; holidays excluded when provider is configured) ===
 
+    private const int MaxWorkdayScan = 3660; // 10 years
+
     /// <summary>
     /// Returns <c>true</c> if the specified date is a workday.
     /// A workday is a weekday (Monday–Friday) that is not a public holiday
@@ -188,9 +199,14 @@ public class ValiCalendar : IValiCalendar
         int added = 0;
         int step = workdays >= 0 ? 1 : -1;
         int target = Math.Abs(workdays);
+        int iterations = 0;
 
         while (added < target)
         {
+            if (++iterations > MaxWorkdayScan)
+                throw new InvalidOperationException(
+                    $"AddWorkdays exceeded the maximum scan limit of {MaxWorkdayScan} days. " +
+                    "This may indicate an unbounded holiday configuration with no workdays in the scan window.");
             result = result.AddDays(step);
             if (IsWorkday(result))
                 added++;
@@ -230,8 +246,15 @@ public class ValiCalendar : IValiCalendar
     public DateTime NextWorkday(DateTime date)
     {
         var result = date.Date;
+        int iterations = 0;
         while (!IsWorkday(result))
+        {
+            if (++iterations > MaxWorkdayScan)
+                throw new InvalidOperationException(
+                    $"NextWorkday exceeded the maximum scan limit of {MaxWorkdayScan} days. " +
+                    "This may indicate an unbounded holiday configuration with no workdays in the scan window.");
             result = result.AddDays(1);
+        }
         return result;
     }
 
@@ -243,8 +266,15 @@ public class ValiCalendar : IValiCalendar
     public DateTime PreviousWorkday(DateTime date)
     {
         var result = date.Date;
+        int iterations = 0;
         while (!IsWorkday(result))
+        {
+            if (++iterations > MaxWorkdayScan)
+                throw new InvalidOperationException(
+                    $"PreviousWorkday exceeded the maximum scan limit of {MaxWorkdayScan} days. " +
+                    "This may indicate an unbounded holiday configuration with no workdays in the scan window.");
             result = result.AddDays(-1);
+        }
         return result;
     }
 

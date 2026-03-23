@@ -48,8 +48,9 @@ public sealed class ValiTimeZone : IValiTimeZone
     public DateTimeOffset ToDateTimeOffset(DateTime dateTime, string zoneId)
     {
         var zone = ResolveZone(zoneId);
-        var offset = zone.GetUtcOffset(dateTime);
-        return new DateTimeOffset(DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified), offset);
+        var unspecified = DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified);
+        var offset = zone.GetUtcOffset(unspecified);
+        return new DateTimeOffset(unspecified, offset);
     }
 
     // ====================================================================
