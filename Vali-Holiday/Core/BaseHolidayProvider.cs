@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Vali_Holiday.Models;
 using Vali_Holiday.Utils;
 
@@ -10,7 +11,8 @@ namespace Vali_Holiday.Core;
 /// </summary>
 public abstract class BaseHolidayProvider : IHolidayProvider
 {
-    private readonly Dictionary<int, HashSet<(int Month, int Day)>> _holidayCache = new();
+    private readonly ConcurrentDictionary<int, HashSet<(int Month, int Day)>> _holidayCache = new();
+    private readonly ConcurrentDictionary<int, IReadOnlyList<HolidayInfo>> _holidayListCache = new();
 
     /// <inheritdoc/>
     public abstract string CountryCode { get; }
@@ -48,15 +50,11 @@ public abstract class BaseHolidayProvider : IHolidayProvider
             .OrderBy(h => h.Month)
             .ThenBy(h => h.Day);
 
+    private IReadOnlyList<HolidayInfo> GetCachedHolidays(int year)
+        => _holidayListCache.GetOrAdd(year, y => GetHolidays(y).ToList().AsReadOnly());
+
     private HashSet<(int Month, int Day)> GetHolidaySet(int year)
-    {
-        if (!_holidayCache.TryGetValue(year, out var set))
-        {
-            set = GetHolidays(year).Select(h => (h.Month, h.Day)).ToHashSet();
-            _holidayCache[year] = set;
-        }
-        return set;
-    }
+        => _holidayCache.GetOrAdd(year, y => GetCachedHolidays(y).Select(h => (h.Month, h.Day)).ToHashSet());
 
     /// <inheritdoc/>
     public bool IsHoliday(DateTime date)
@@ -68,7 +66,7 @@ public abstract class BaseHolidayProvider : IHolidayProvider
 
     /// <inheritdoc/>
     public HolidayInfo? GetHoliday(DateTime date)
-        => GetHolidays(date.Year).FirstOrDefault(h => h.Month == date.Month && h.Day == date.Day);
+        => GetCachedHolidays(date.Year).FirstOrDefault(h => h.Month == date.Month && h.Day == date.Day);
 
     /// <inheritdoc/>
     /// <remarks>
@@ -79,7 +77,7 @@ public abstract class BaseHolidayProvider : IHolidayProvider
     {
         var years = Enumerable.Range(from.Year, to.Year - from.Year + 1);
         return years
-            .SelectMany(y => GetHolidays(y).Select(h => (year: y, holiday: h)))
+            .SelectMany(y => GetCachedHolidays(y).Select(h => (year: y, holiday: h)))
             .Where(t =>
             {
                 var d = new DateTime(t.year, t.holiday.Month, t.holiday.Day);

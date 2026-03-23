@@ -46,7 +46,7 @@ public readonly struct DateRange
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="unit"/> is not a recognised <see cref="TimeUnit"/> value.</exception>
     public decimal Duration(TimeUnit unit)
     {
-        long ticks = End.Ticks - Start.Ticks;
+        long ticks = End >= Start ? End.Ticks - Start.Ticks : 0L;
 
         return unit switch
         {

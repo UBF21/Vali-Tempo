@@ -144,14 +144,6 @@ public class GermanyHolidayProvider : BaseHolidayProvider
             HolidayType.Regional, regionCode: "DE-SN",
             description: "Reformationstag / Reformation Day. Gesetzlicher Feiertag in Sachsen."),
 
-        new HolidayInfo(
-            "de_sn_buss_bettag", 11, 18, "DE",
-            "Buß- und Bettag",
-            Names("Día de Arrepentimiento y Oración", "Repentance and Prayer Day",
-                  "Dia de Arrependimento e Oração", "Jour du Repentir et de la Prière", "Buß- und Bettag"),
-            HolidayType.Regional, regionCode: "DE-SN",
-            description: "Buß- und Bettag (Mittwoch vor dem 23. November) / Day of Repentance and Prayer. Einziger Bundesland-Feiertag ausschließlich in Sachsen, seit 1995 erhalten, als er bundesweit abgeschafft wurde. Approximate date: third Wednesday before November 23."),
-
         // ── Berlin (DE-BE) – fixed regional holidays ──────────────────────────────
 
         new HolidayInfo(
@@ -177,6 +169,11 @@ public class GermanyHolidayProvider : BaseHolidayProvider
         var ascension     = EasterCalculator.Ascension(year);
         var whitMonday    = EasterCalculator.Easter(year).AddDays(50);
         var corpusChristi = EasterCalculator.CorpusChristi(year);
+
+        // Buß- und Bettag: Wednesday before November 23 (Sachsen only)
+        var nov23 = new DateTime(year, 11, 23);
+        var daysUntilWednesday = ((int)nov23.DayOfWeek - (int)DayOfWeek.Wednesday + 7) % 7;
+        var bussUndBettag = nov23.AddDays(daysUntilWednesday == 0 ? -7 : -daysUntilWednesday);
 
         return new[]
         {
@@ -243,6 +240,16 @@ public class GermanyHolidayProvider : BaseHolidayProvider
                       "Corpo de Deus", "Fête-Dieu", "Fronleichnam"),
                 HolidayType.Regional, isMovable: true, regionCode: "DE-BW",
                 description: "Fronleichnam / Corpus Christi. Gesetzlicher Feiertag in Baden-Württemberg. 60 Tage nach Ostersonntag."),
+
+            // ── Sachsen (DE-SN) – movable regional holidays ───────────────────────
+
+            new HolidayInfo(
+                "de_sn_buss_bettag", bussUndBettag.Month, bussUndBettag.Day, "DE",
+                "Buß- und Bettag",
+                Names("Día de Arrepentimiento y Oración", "Repentance and Prayer Day",
+                      "Dia de Arrependimento e Oração", "Jour du Repentir et de la Prière", "Buß- und Bettag"),
+                HolidayType.Regional, isMovable: true, regionCode: "DE-SN",
+                description: "Buß- und Bettag (Mittwoch vor dem 23. November) / Day of Repentance and Prayer. Einziger Bundesland-Feiertag ausschließlich in Sachsen, seit 1995 erhalten, als er bundesweit abgeschafft wurde."),
         };
     }
 }

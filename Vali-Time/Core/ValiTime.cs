@@ -23,8 +23,8 @@ public class ValiTime : IValiTime
     /// <exception cref="NotSupportedException">Thrown if an unsupported unit is provided.</exception>
     public decimal Convert(decimal time, TimeUnit fromUnit, TimeUnit toUnit, int? decimalPlaces = null, MidpointRounding rounding = MidpointRounding.ToEven)
     {
-        if (time < Constants.Zero) throw new ArgumentException("Time cannot be negative.", nameof(time));
-        if (decimalPlaces is < Constants.Zero) throw new ArgumentException("Decimal places cannot be negative.", nameof(decimalPlaces));
+        if (time < 0) throw new ArgumentException("Time cannot be negative.", nameof(time));
+        if (decimalPlaces is < 0) throw new ArgumentException("Decimal places cannot be negative.", nameof(decimalPlaces));
 
         decimal timeInSeconds = fromUnit switch
         {
@@ -69,7 +69,7 @@ public class ValiTime : IValiTime
     {
         if (times == null || !times.Any())
             throw new ArgumentException("At least one time value must be provided.", nameof(times));
-        if (decimalPlaces is < Constants.Zero)
+        if (decimalPlaces is < 0)
             throw new ArgumentException("Decimal places cannot be negative.", nameof(decimalPlaces));
 
         decimal totalSeconds = times.Sum(t => Convert(t.time, t.unit, TimeUnit.Seconds));
@@ -94,10 +94,10 @@ public class ValiTime : IValiTime
             TimeUnit.Seconds => Constants.PrefixSeconds,
             TimeUnit.Minutes => Constants.PrefixMinutes,
             TimeUnit.Hours => Constants.PrefixHours,
-            TimeUnit.Days => "d",
-            TimeUnit.Weeks => "w",
-            TimeUnit.Months => "mo",
-            TimeUnit.Years => "yr",
+            TimeUnit.Days => Constants.PrefixDays,
+            TimeUnit.Weeks => Constants.PrefixWeeks,
+            TimeUnit.Months => Constants.PrefixMonths,
+            TimeUnit.Years => Constants.PrefixYears,
             _ => throw new NotSupportedException("TimeUnit not supported.")
         };
         return $"{time.ToString($"F{decimalPlaces}", culture)} {suffix}";
@@ -111,12 +111,14 @@ public class ValiTime : IValiTime
     /// <exception cref="ArgumentException">Thrown if the time is negative.</exception>
     public (decimal time, TimeUnit unit) GetBestUnit(decimal seconds)
     {
-        if (seconds < Constants.Zero) throw new ArgumentException("Time cannot be negative.", nameof(seconds));
+        if (seconds < 0) throw new ArgumentException("Time cannot be negative.", nameof(seconds));
+        if (seconds >= Constants.SecondsInYear) return (SecondsToYears(seconds), TimeUnit.Years);
+        if (seconds >= Constants.SecondsInMonth) return (SecondsToMonths(seconds), TimeUnit.Months);
         if (seconds >= Constants.SecondsInWeek) return (SecondsToWeeks(seconds), TimeUnit.Weeks);
         if (seconds >= Constants.SecondsInDay) return (SecondsToDays(seconds), TimeUnit.Days);
         if (seconds >= Constants.SecondsInHour) return (SecondsToHours(seconds), TimeUnit.Hours);
         if (seconds >= Constants.SecondsInMinute) return (SecondsToMinutes(seconds), TimeUnit.Minutes);
-        if (seconds >= Constants.OneDecimal) return (seconds, TimeUnit.Seconds);
+        if (seconds >= 1m) return (seconds, TimeUnit.Seconds);
         return (SecondsToMilliseconds(seconds), TimeUnit.Milliseconds);
     }
 
@@ -130,9 +132,10 @@ public class ValiTime : IValiTime
     /// <exception cref="NotSupportedException">Thrown if an unsupported unit is provided.</exception>
     public TimeSpan ToTimeSpan(decimal time, TimeUnit unit)
     {
-        if (time < Constants.Zero) throw new ArgumentException("Time cannot be negative.", nameof(time));
+        if (time < 0) throw new ArgumentException("Time cannot be negative.", nameof(time));
         decimal seconds = Convert(time, unit, TimeUnit.Seconds);
-        return TimeSpan.FromSeconds((double)seconds);
+        long ticks = (long)(seconds * TimeSpan.TicksPerSecond);
+        return new TimeSpan(ticks);
     }
 
     /// <summary>
@@ -143,14 +146,14 @@ public class ValiTime : IValiTime
     /// <exception cref="ArgumentException">Thrown if the time is negative.</exception>
     public Dictionary<TimeUnit, decimal> Breakdown(decimal seconds)
     {
-        if (seconds < Constants.Zero) throw new ArgumentException("Time cannot be negative.", nameof(seconds));
+        if (seconds < 0) throw new ArgumentException("Time cannot be negative.", nameof(seconds));
 
         var breakdown = new Dictionary<TimeUnit, decimal>
         {
             [TimeUnit.Hours] = SecondsToHours(seconds),
-            [TimeUnit.Minutes] = Constants.ZeroDecimal,
-            [TimeUnit.Seconds] = Constants.ZeroDecimal,
-            [TimeUnit.Milliseconds] = Constants.ZeroDecimal
+            [TimeUnit.Minutes] = 0m,
+            [TimeUnit.Seconds] = 0m,
+            [TimeUnit.Milliseconds] = 0m
         };
 
         decimal hoursInteger = decimal.Floor(breakdown[TimeUnit.Hours]);
@@ -198,17 +201,17 @@ public class ValiTime : IValiTime
     {
         if (times == null || !times.Any())
             throw new ArgumentException("At least one time value must be provided.", nameof(times));
-        if (decimalPlaces is < Constants.Zero)
+        if (decimalPlaces is < 0)
             throw new ArgumentException("Decimal places cannot be negative.", nameof(decimalPlaces));
 
         decimal firstSeconds = Convert(times[0].time, times[0].unit, TimeUnit.Seconds);
         decimal restSeconds = times.Skip(1).Sum(t => Convert(t.time, t.unit, TimeUnit.Seconds));
         decimal totalSeconds = firstSeconds - restSeconds;
 
-        if (totalSeconds < Constants.ZeroDecimal && !allowNegative)
+        if (totalSeconds < 0m && !allowNegative)
             throw new ArgumentException("The result of the subtraction is negative. Set allowNegative to true to allow negative results.", nameof(times));
 
-        if (totalSeconds < Constants.ZeroDecimal)
+        if (totalSeconds < 0m)
             return -Convert(-totalSeconds, TimeUnit.Seconds, resultUnit, decimalPlaces, rounding);
 
         return Convert(totalSeconds, TimeUnit.Seconds, resultUnit, decimalPlaces, rounding);
@@ -398,11 +401,11 @@ public class ValiTime : IValiTime
     public decimal Clamp(decimal time, TimeUnit unit, decimal min, decimal max)
     {
         if (min > max) throw new ArgumentException("min cannot be greater than max.");
-        decimal inSeconds = Convert(time, unit, TimeUnit.Seconds);
-        decimal minSeconds = Convert(min, unit, TimeUnit.Seconds);
-        decimal maxSeconds = Convert(max, unit, TimeUnit.Seconds);
+        decimal inSeconds = ConvertAny(time, unit, TimeUnit.Seconds);
+        decimal minSeconds = ConvertAny(min, unit, TimeUnit.Seconds);
+        decimal maxSeconds = ConvertAny(max, unit, TimeUnit.Seconds);
         decimal clamped = Math.Max(minSeconds, Math.Min(maxSeconds, inSeconds));
-        return Convert(clamped, TimeUnit.Seconds, unit);
+        return ConvertAny(clamped, TimeUnit.Seconds, unit);
     }
 
     /// <summary>
@@ -419,8 +422,8 @@ public class ValiTime : IValiTime
     /// </returns>
     public int Compare(decimal time1, TimeUnit unit1, decimal time2, TimeUnit unit2)
     {
-        decimal s1 = Convert(time1, unit1, TimeUnit.Seconds);
-        decimal s2 = Convert(time2, unit2, TimeUnit.Seconds);
+        decimal s1 = ConvertAny(time1, unit1, TimeUnit.Seconds);
+        decimal s2 = ConvertAny(time2, unit2, TimeUnit.Seconds);
         return s1.CompareTo(s2);
     }
 
@@ -442,6 +445,18 @@ public class ValiTime : IValiTime
     }
 
     // ── Private conversion helpers ───────────────────────────────────────────
+
+    /// <summary>
+    /// Like <see cref="Convert"/> but accepts negative values (used internally by
+    /// <see cref="Clamp"/> and <see cref="Compare"/> where negative times are valid).
+    /// </summary>
+    private decimal ConvertAny(decimal time, TimeUnit fromUnit, TimeUnit toUnit)
+    {
+        // Convert magnitude, then restore sign.
+        if (time < 0m)
+            return -Convert(-time, fromUnit, toUnit);
+        return Convert(time, fromUnit, toUnit);
+    }
 
     private static decimal MillisecondsToSeconds(decimal milliseconds) => milliseconds / Constants.MillisecondsInSecond;
     private static decimal SecondsToMilliseconds(decimal seconds) => seconds * Constants.MillisecondsInSecond;

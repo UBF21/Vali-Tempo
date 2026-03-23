@@ -454,7 +454,7 @@ public class ValiRange : IValiRange
         var current = sorted[0];
         foreach (var next in sorted.Skip(1))
         {
-            if (next.Start <= current.End.AddDays(1))
+            if (next.Start <= (current.End == DateTime.MaxValue ? DateTime.MaxValue : current.End.AddDays(1)))
                 current = new DateRange(current.Start, next.End > current.End ? next.End : current.End);
             else { yield return current; current = next; }
         }
@@ -475,7 +475,7 @@ public class ValiRange : IValiRange
         {
             var start = r.Start > container.Start ? r.Start : container.Start;
             if (cursor < start) yield return new DateRange(cursor, start.AddDays(-1));
-            if (r.End > cursor) cursor = r.End.AddDays(1);
+            if (r.End > cursor) cursor = r.End == DateTime.MaxValue ? DateTime.MaxValue : r.End.AddDays(1);
         }
         if (cursor <= container.End) yield return new DateRange(cursor, container.End);
     }

@@ -1,4 +1,5 @@
 using Vali_Age.Models;
+using Vali_Time.Abstractions;
 using Vali_Time.Enums;
 using Vali_Time.Utils;
 
@@ -9,6 +10,20 @@ namespace Vali_Age.Core;
 /// </summary>
 public class ValiAge : IValiAge
 {
+    private readonly IClock _clock;
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="ValiAge"/>.
+    /// </summary>
+    /// <param name="clock">
+    /// Optional clock abstraction. Defaults to <see cref="SystemClock.Instance"/> when <c>null</c>.
+    /// Inject a test double to control time in unit tests.
+    /// </param>
+    public ValiAge(IClock? clock = null)
+    {
+        _clock = clock ?? SystemClock.Instance;
+    }
+
     // =========================================================================
     // YEARS
     // =========================================================================
@@ -20,7 +35,7 @@ public class ValiAge : IValiAge
     /// <returns>The number of whole years of age as of <see cref="DateTime.Today"/>.</returns>
     public int Years(DateTime birthDate)
     {
-        return Years(birthDate, DateTime.Today);
+        return Years(birthDate, _clock.Today);
     }
 
     /// <summary>
@@ -37,8 +52,10 @@ public class ValiAge : IValiAge
     /// <returns>The number of whole years of age as of <paramref name="reference"/>.</returns>
     public int Years(DateTime birthDate, DateTime reference)
     {
-        int age = reference.Year - birthDate.Year;
-        if (reference < birthDate.AddYears(age)) age--;
+        var today = reference.Date;
+        var birth = birthDate.Date;
+        int age = today.Year - birth.Year;
+        if (today < birth.AddYears(age)) age--;
         return age;
     }
 
@@ -54,7 +71,7 @@ public class ValiAge : IValiAge
     /// <returns>An <see cref="AgeResult"/> describing the exact age as of <see cref="DateTime.Today"/>.</returns>
     public AgeResult Exact(DateTime birthDate)
     {
-        return Exact(birthDate, DateTime.Today);
+        return Exact(birthDate, _clock.Today);
     }
 
     /// <summary>
@@ -95,7 +112,7 @@ public class ValiAge : IValiAge
     /// <returns>A string in the format <c>"32 years, 4 months, 12 days"</c>.</returns>
     public string Format(DateTime birthDate)
     {
-        return Format(birthDate, DateTime.Today);
+        return Format(birthDate, _clock.Today);
     }
 
     /// <summary>
@@ -134,7 +151,7 @@ public class ValiAge : IValiAge
     /// <returns>A human-readable relative time string.</returns>
     public string Relative(DateTime date)
     {
-        return Relative(date, DateTime.Now);
+        return Relative(date, _clock.Now);
     }
 
     /// <summary>
@@ -199,7 +216,7 @@ public class ValiAge : IValiAge
     /// <returns><c>true</c> if the age satisfies the minimum threshold as of today.</returns>
     public bool IsAtLeast(DateTime birthDate, int amount, DatePart part)
     {
-        return IsAtLeast(birthDate, amount, part, DateTime.Today);
+        return IsAtLeast(birthDate, amount, part, _clock.Today);
     }
 
     /// <summary>
@@ -245,7 +262,7 @@ public class ValiAge : IValiAge
     /// <returns><c>true</c> if today shares the same day and month as <paramref name="birthDate"/>.</returns>
     public bool IsBirthday(DateTime birthDate)
     {
-        return IsBirthday(birthDate, DateTime.Today);
+        return IsBirthday(birthDate, _clock.Today);
     }
 
     /// <summary>
@@ -278,7 +295,7 @@ public class ValiAge : IValiAge
     /// <returns>A <see cref="DateTime"/> representing the next upcoming birthday.</returns>
     public DateTime NextBirthday(DateTime birthDate)
     {
-        return NextBirthday(birthDate, DateTime.Today);
+        return NextBirthday(birthDate, _clock.Today);
     }
 
     /// <summary>
@@ -308,7 +325,7 @@ public class ValiAge : IValiAge
     /// <returns>The number of whole days from today until the next birthday.</returns>
     public int DaysUntilBirthday(DateTime birthDate)
     {
-        return DaysUntilBirthday(birthDate, DateTime.Today);
+        return DaysUntilBirthday(birthDate, _clock.Today);
     }
 
     /// <summary>

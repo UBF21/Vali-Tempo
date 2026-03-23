@@ -48,8 +48,8 @@ internal static class TimeZoneData
                 "Pacific SA Standard Time",
                 TimeSpan.FromHours(-4), true, "CL", "Chile"),
 
-            ["America/Buenos_Aires"] = new(
-                "America/Buenos_Aires",
+            ["America/Argentina/Buenos_Aires"] = new(
+                "America/Argentina/Buenos_Aires",
                 "(UTC-03:00) Buenos Aires",
                 "Argentina Standard Time",
                 TimeSpan.FromHours(-3), false, "AR", "Argentina"),
@@ -88,7 +88,7 @@ internal static class TimeZoneData
                 "America/Montevideo",
                 "(UTC-03:00) Montevideo",
                 "Montevideo Standard Time",
-                TimeSpan.FromHours(-3), true, "UY", "Uruguay"),
+                TimeSpan.FromHours(-3), false, "UY", "Uruguay"),
 
             ["America/Panama"] = new(
                 "America/Panama",
