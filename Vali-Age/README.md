@@ -10,7 +10,9 @@
 - **IsAtLeast** — validate minimum age in years, months, or days (form validation, access control)
 - **IsBirthday** — check whether today (or any date) is someone's birthday
 - **NextBirthday** — returns the `DateTime` of the next upcoming birthday
+- **PreviousBirthday** — returns the `DateTime` of the most recent past birthday
 - **DaysUntilBirthday** — integer count of days until the next birthday
+- `AgeResult.ToString()` uses correct singular/plural: `"1 year"` vs `"2 years"`, `"1 month"` vs `"4 months"`, etc.
 - Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
 - Registered as a **singleton** via `AddValiAge()`
 
@@ -195,6 +197,28 @@ int days = age.DaysUntilBirthday(dob); // e.g. 188
 
 ---
 
+### `PreviousBirthday`
+
+Returns the most recent birthday on or before the reference date. If today is the birthday, returns today.
+
+```csharp
+DateTime PreviousBirthday(DateTime birthDate);
+DateTime PreviousBirthday(DateTime birthDate, DateTime reference);
+```
+
+```csharp
+var dob  = new DateTime(1990, 12, 25);
+
+// Most recent birthday relative to today
+DateTime prev = age.PreviousBirthday(dob);
+
+// With reference date
+DateTime prevAsOf = age.PreviousBirthday(dob, new DateTime(2025, 6, 1));
+Console.WriteLine(prevAsOf.ToString("yyyy-MM-dd")); // "2024-12-25"
+```
+
+---
+
 ### Practical Examples
 
 #### User profile: age and next birthday
@@ -251,5 +275,5 @@ public class UserProfileService(IValiAge valiAge)
 
 ## License
 
-Licensed under the [Apache-2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
+Licensed under the [MIT License](../LICENSE).
 Copyright © 2025 Felipe Rafael Montenegro Morriberon. All rights reserved.

@@ -1,7 +1,7 @@
 # Vali-Duration
 
 [![NuGet](https://img.shields.io/nuget/v/Vali-Duration.svg)](https://www.nuget.org/packages/Vali-Duration)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-6%20%7C%207%20%7C%208%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
 
 **Vali-Duration** provides a high-precision, immutable duration value type (`ValiDuration`) that uses `decimal` arithmetic internally. It avoids the floating-point rounding errors common with `double`-based `TimeSpan` calculations and supports fluent conversions, formatting, and arithmetic operators.
@@ -146,4 +146,4 @@ Console.WriteLine(vd.TotalHours);  // 2.3 ← exact
 
 ## License
 
-Apache-2.0 © 2025 Felipe Rafael Montenegro Morriberon
+MIT © 2025 Felipe Rafael Montenegro Morriberon

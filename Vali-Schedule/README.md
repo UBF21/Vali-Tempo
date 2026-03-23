@@ -270,5 +270,5 @@ DateTime? nextRun = schedule.NextOccurrence(DateTime.Now);
 
 ## License
 
-Licensed under the [Apache-2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
+Licensed under the [MIT License](../LICENSE).
 Copyright © 2025 Felipe Rafael Montenegro Morriberon. All rights reserved.

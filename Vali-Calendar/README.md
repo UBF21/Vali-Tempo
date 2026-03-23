@@ -257,4 +257,4 @@ services.AddSingleton<IValiCalendar>(sp =>
 
 ## License
 
-Apache-2.0
+MIT
