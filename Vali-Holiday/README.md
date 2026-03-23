@@ -14,13 +14,15 @@
 - **Movable holidays** — Easter-based dates (Good Friday, Corpus Christi, etc.) computed per year
 - **IHolidayProvider** — implement your own provider for unsupported countries or regional calendars
 - Registered as a **singleton** via `AddValiHoliday()`
-- Targets **.NET 8** and **.NET 9**
+- Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
 
 ## Installation
 
 ```bash
 dotnet add package Vali-Holiday
 ```
+
+> Compatible with .NET 6, 7, 8, and 9. For new projects, .NET 8 (LTS) or .NET 9 is recommended.
 
 ## Quick Start
 

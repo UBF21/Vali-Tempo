@@ -11,7 +11,7 @@
 - **Breakdown** — remaining time split into hours, minutes, seconds, and milliseconds as a `Dictionary<TimeUnit, decimal>`
 - **Format** — human-readable string such as `"5d 3h 20m"` or `"Expired"`
 - **IsWithin** — returns `true` if the deadline is within a given threshold (e.g., within 1 hour)
-- Targets **.NET 8** and **.NET 9**
+- Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
 - Registered as a **singleton** via `AddValiCountdown()`
 
 ## Installation
@@ -19,6 +19,8 @@
 ```bash
 dotnet add package Vali-CountDown
 ```
+
+> Compatible with .NET 6, 7, 8, and 9. For new projects, .NET 8 (LTS) or .NET 9 is recommended.
 
 ## Quick Start
 

@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/Vali-Tempo.svg)](https://www.nuget.org/packages/Vali-Tempo)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-8%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
+[![.NET](https://img.shields.io/badge/.NET-6%20%7C%207%20%7C%208%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
 
 **Vali-Tempo** is the meta-package for the Vali-Tempo ecosystem. Installing it gives you every module with a single NuGet reference and a single DI registration call.
 
@@ -11,6 +11,8 @@
 ```bash
 dotnet add package Vali-Tempo
 ```
+
+> Compiled targets: `net8.0` · `net9.0`. Compatible with **.NET 6 and .NET 7** via NuGet backward compatibility — no separate build needed.
 
 ## What's Included
 

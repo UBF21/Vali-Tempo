@@ -20,7 +20,7 @@
 dotnet add package Vali-Range
 ```
 
-Requires .NET 8.0 or later.
+Compiled targets: `net8.0` · `net9.0`. Compatible with **.NET 6 and .NET 7** via NuGet backward compatibility — no separate build needed.
 
 ## Quick Start
 
