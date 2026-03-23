@@ -92,6 +92,29 @@ public interface IValiHoliday
     IEnumerable<HolidayInfo> GetHolidays(int year, params string[] countryCodes);
 
     /// <summary>
+    /// Returns the next holiday on or after the given date for the specified country.
+    /// Searches up to one year ahead and returns <see langword="null"/> when no holiday is found.
+    /// </summary>
+    /// <param name="date">The reference date (time component is ignored).</param>
+    /// <param name="countryCode">ISO 3166-1 alpha-2 country code (case-insensitive).</param>
+    /// <returns>
+    /// The next <see cref="HolidayInfo"/> on or after <paramref name="date"/>,
+    /// or <see langword="null"/> if none is found within the next year.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no provider is registered for <paramref name="countryCode"/>.
+    /// </exception>
+    /// <remarks>
+    /// This overload does not include the resolved year in its return value. For movable holidays
+    /// (e.g. Easter-based), the same <see cref="HolidayInfo"/> object may represent different
+    /// calendar dates in different years. Use <see cref="GetNextHolidayWithYear"/> to obtain
+    /// both the holiday and the year in which it falls.
+    /// </remarks>
+    [Obsolete("Use GetNextHolidayWithYear to obtain the resolved year together with the holiday. " +
+              "This overload will be removed in a future version.")]
+    HolidayInfo? GetNextHoliday(DateTime date, string countryCode);
+
+    /// <summary>
     /// Returns the next holiday on or after the given date for the specified country,
     /// together with the calendar year in which that holiday falls.
     /// Searches up to one year ahead and returns <see langword="null"/> when no holiday is found.
@@ -109,6 +132,29 @@ public interface IValiHoliday
     /// Thrown when no provider is registered for <paramref name="countryCode"/>.
     /// </exception>
     (HolidayInfo Holiday, int Year)? GetNextHolidayWithYear(DateTime date, string countryCode);
+
+    /// <summary>
+    /// Returns the previous holiday strictly before the given date for the specified country.
+    /// Searches up to one year back and returns <see langword="null"/> when no holiday is found.
+    /// </summary>
+    /// <param name="date">The reference date (time component is ignored).</param>
+    /// <param name="countryCode">ISO 3166-1 alpha-2 country code (case-insensitive).</param>
+    /// <returns>
+    /// The most recent <see cref="HolidayInfo"/> before <paramref name="date"/>,
+    /// or <see langword="null"/> if none is found within the previous year.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no provider is registered for <paramref name="countryCode"/>.
+    /// </exception>
+    /// <remarks>
+    /// This overload does not include the resolved year in its return value. For movable holidays
+    /// (e.g. Easter-based), the same <see cref="HolidayInfo"/> object may represent different
+    /// calendar dates in different years. Use <see cref="GetPreviousHolidayWithYear"/> to obtain
+    /// both the holiday and the year in which it falls.
+    /// </remarks>
+    [Obsolete("Use GetPreviousHolidayWithYear to obtain the resolved year together with the holiday. " +
+              "This overload will be removed in a future version.")]
+    HolidayInfo? GetPreviousHoliday(DateTime date, string countryCode);
 
     /// <summary>
     /// Returns the previous holiday strictly before the given date for the specified country,

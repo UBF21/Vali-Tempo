@@ -61,7 +61,8 @@ public sealed class ValiTimeZone : IValiTimeZone
     public TimeSpan GetOffset(string zoneId, DateTime? at = null)
     {
         var zone = ResolveZone(zoneId);
-        return zone.GetUtcOffset(at ?? DateTime.UtcNow);
+        var dt = DateTime.SpecifyKind(at ?? DateTime.UtcNow, DateTimeKind.Unspecified);
+        return zone.GetUtcOffset(dt);
     }
 
     /// <inheritdoc />
@@ -81,7 +82,7 @@ public sealed class ValiTimeZone : IValiTimeZone
     /// <inheritdoc />
     public decimal OffsetDiff(string zoneId1, string zoneId2, DateTime? at = null)
     {
-        var instant = at ?? DateTime.UtcNow;
+        var instant = DateTime.SpecifyKind(at ?? DateTime.UtcNow, DateTimeKind.Unspecified);
         var offset1 = ResolveZone(zoneId1).GetUtcOffset(instant).TotalHours;
         var offset2 = ResolveZone(zoneId2).GetUtcOffset(instant).TotalHours;
         return (decimal)(offset1 - offset2);

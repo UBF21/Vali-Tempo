@@ -140,8 +140,11 @@ public class ValiTime : IValiTime
         decimal seconds = Convert(time, unit, TimeUnit.Seconds);
         decimal maxSeconds = (decimal)TimeSpan.MaxValue.TotalSeconds;
         if (seconds > maxSeconds) seconds = maxSeconds;
-        long ticks = (long)(seconds * TimeSpan.TicksPerSecond);
-        return new TimeSpan(ticks);
+        const decimal TicksPerSecond = TimeSpan.TicksPerSecond;
+        var ticks = seconds * TicksPerSecond;
+        const decimal maxTicks = long.MaxValue;  // ~9.2e18
+        ticks = ticks < 0m ? 0m : ticks > maxTicks ? maxTicks : ticks;
+        return TimeSpan.FromTicks((long)ticks);
     }
 
     /// <summary>

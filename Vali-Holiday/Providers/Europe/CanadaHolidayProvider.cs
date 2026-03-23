@@ -44,20 +44,6 @@ public class CanadaHolidayProvider : BaseHolidayProvider
             description: "Jour de l'An / New Year's Day. First day of the new calendar year."),
 
         new HolidayInfo(
-            "ca_family_day", 2, 17, "CA",
-            "Family Day",
-            Names("Día de la Familia", "Family Day", "Dia da Família", "Jour de la famille", "Familientag"),
-            HolidayType.National,
-            description: "Third Monday in February. Representative date: 17 February. Observed in most Canadian provinces (not all). Alberta was the first to introduce it in 1990. Celebrates the importance of family and gives workers a day off in the gap between New Year's Day and Easter."),
-
-        new HolidayInfo(
-            "ca_victoria_day", 5, 19, "CA",
-            "Victoria Day",
-            Names("Día de la Reina Victoria", "Victoria Day", "Dia da Rainha Vitória", "Fête de la Reine Victoria", "Victoriatag"),
-            HolidayType.Civic,
-            description: "Monday before 25 May. Representative date: 19 May. Celebrates Queen Victoria's birthday (24 May 1819) and the birthday of the current sovereign. Known as la Fête de Dollard in Quebec."),
-
-        new HolidayInfo(
             "ca_canada_day", 7, 1, "CA",
             "Canada Day",
             Names("Día de Canadá", "Canada Day", "Dia do Canadá", "Fête du Canada", "Kanada-Tag"),
@@ -65,25 +51,11 @@ public class CanadaHolidayProvider : BaseHolidayProvider
             description: "Fête du Canada. Celebrates Confederation on 1 July 1867 when the British North America Act (now the Constitution Act, 1867) united the Province of Canada, Nova Scotia, and New Brunswick into a single Dominion of Canada."),
 
         new HolidayInfo(
-            "ca_labour_day", 9, 1, "CA",
-            "Labour Day",
-            Names("Día del Trabajo", "Labour Day", "Dia do Trabalho", "Fête du Travail", "Tag der Arbeit"),
-            HolidayType.National,
-            description: "Fête du Travail. First Monday in September. Representative date: 1 September. Celebrates the achievements of the labour movement in Canada. In contrast to most of the world, Canada and the United States observe Labour Day in September rather than May."),
-
-        new HolidayInfo(
             "ca_truth_reconciliation", 9, 30, "CA",
             "National Day for Truth and Reconciliation",
             Names("Día Nacional por la Verdad y la Reconciliación", "National Day for Truth and Reconciliation", "Dia Nacional pela Verdade e Reconciliação", "Journée nationale de la vérité et de la réconciliation", "Nationaler Tag für Wahrheit und Versöhnung"),
             HolidayType.Civic,
             description: "Orange Shirt Day. Federal statutory holiday since 2021 (Bill C-5). Honours the children who died in the residential school system, the survivors, and their families and communities. Part of the process of reconciliation between Canadians and Indigenous peoples as called for by the Truth and Reconciliation Commission."),
-
-        new HolidayInfo(
-            "ca_thanksgiving", 10, 13, "CA",
-            "Thanksgiving",
-            Names("Acción de Gracias", "Thanksgiving Day", "Dia de Ação de Graças", "Action de grâce", "Erntedankfest"),
-            HolidayType.National,
-            description: "Action de grâce. Second Monday in October. Representative date: 13 October. Canadian Thanksgiving has roots in the European harvest festival traditions and was made an annual holiday by the Canadian Parliament in 1879. Unlike the American holiday, it is not connected to the Pilgrim story."),
 
         new HolidayInfo(
             "ca_remembrance_day", 11, 11, "CA",
@@ -118,8 +90,33 @@ public class CanadaHolidayProvider : BaseHolidayProvider
         var goodFriday   = EasterCalculator.GoodFriday(year);
         var easterMonday = EasterCalculator.Easter(year).AddDays(1);
 
+        // Family Day: third Monday of February
+        var feb1 = new DateTime(year, 2, 1);
+        var firstMondayFeb = feb1.AddDays(((int)DayOfWeek.Monday - (int)feb1.DayOfWeek + 7) % 7);
+        var familyDay = firstMondayFeb.AddDays(14);
+
+        // Victoria Day: last Monday on or before May 24 (Monday before May 25)
+        var may24 = new DateTime(year, 5, 24);
+        var victoriaDay = may24.AddDays(-(((int)may24.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7));
+
+        // Labour Day: first Monday of September
+        var sep1 = new DateTime(year, 9, 1);
+        var labourDay = sep1.AddDays(((int)DayOfWeek.Monday - (int)sep1.DayOfWeek + 7) % 7);
+
+        // Thanksgiving: second Monday of October
+        var oct1 = new DateTime(year, 10, 1);
+        var firstMondayOct = oct1.AddDays(((int)DayOfWeek.Monday - (int)oct1.DayOfWeek + 7) % 7);
+        var thanksgiving = firstMondayOct.AddDays(7);
+
         return new[]
         {
+            new HolidayInfo(
+                "ca_family_day", familyDay.Month, familyDay.Day, "CA",
+                "Family Day",
+                Names("Día de la Familia", "Family Day", "Dia da Família", "Jour de la famille", "Familientag"),
+                HolidayType.National, isMovable: true,
+                description: "Third Monday in February. Observed in most Canadian provinces (not all). Alberta was the first to introduce it in 1990. Celebrates the importance of family and gives workers a day off in the gap between New Year's Day and Easter."),
+
             new HolidayInfo(
                 "ca_good_friday", goodFriday.Month, goodFriday.Day, "CA",
                 "Good Friday",
@@ -133,6 +130,27 @@ public class CanadaHolidayProvider : BaseHolidayProvider
                 Names("Lunes de Pascua", "Easter Monday", "Segunda-Feira de Páscoa", "Lundi de Pâques", "Ostermontag"),
                 HolidayType.National, isMovable: true,
                 description: "Lundi de Pâques / Easter Monday. The day after Easter Sunday. Federal statutory holiday in Canada."),
+
+            new HolidayInfo(
+                "ca_victoria_day", victoriaDay.Month, victoriaDay.Day, "CA",
+                "Victoria Day",
+                Names("Día de la Reina Victoria", "Victoria Day", "Dia da Rainha Vitória", "Fête de la Reine Victoria", "Victoriatag"),
+                HolidayType.Civic, isMovable: true,
+                description: "Monday on or before 24 May. Celebrates Queen Victoria's birthday (24 May 1819) and the birthday of the current sovereign. Known as la Fête de Dollard in Quebec."),
+
+            new HolidayInfo(
+                "ca_labour_day", labourDay.Month, labourDay.Day, "CA",
+                "Labour Day",
+                Names("Día del Trabajo", "Labour Day", "Dia do Trabalho", "Fête du Travail", "Tag der Arbeit"),
+                HolidayType.National, isMovable: true,
+                description: "Fête du Travail. First Monday in September. Celebrates the achievements of the labour movement in Canada. In contrast to most of the world, Canada and the United States observe Labour Day in September rather than May."),
+
+            new HolidayInfo(
+                "ca_thanksgiving", thanksgiving.Month, thanksgiving.Day, "CA",
+                "Thanksgiving",
+                Names("Acción de Gracias", "Thanksgiving Day", "Dia de Ação de Graças", "Action de grâce", "Erntedankfest"),
+                HolidayType.National, isMovable: true,
+                description: "Action de grâce. Second Monday in October. Canadian Thanksgiving has roots in the European harvest festival traditions and was made an annual holiday by the Canadian Parliament in 1879. Unlike the American holiday, it is not connected to the Pilgrim story."),
         };
     }
 }

@@ -129,7 +129,7 @@ internal static class TimeZoneData
             ["America/Santo_Domingo"] = new(
                 "America/Santo_Domingo",
                 "(UTC-04:00) Santo Domingo",
-                "Atlantic Standard Time",
+                "SA Western Standard Time",
                 TimeSpan.FromHours(-4), false, "DO", "Dominican Republic"),
 
             ["America/Havana"] = new(

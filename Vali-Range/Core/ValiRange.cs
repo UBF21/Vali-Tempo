@@ -523,7 +523,7 @@ public class ValiRange : IValiRange
             if (cursor < start) yield return new DateRange(cursor, start.AddDays(-1));
             if (r.End > cursor) cursor = r.End == DateTime.MaxValue ? DateTime.MaxValue : r.End.AddDays(1);
         }
-        if (cursor < container.End) yield return new DateRange(cursor, container.End);
+        if (cursor <= container.End) yield return new DateRange(cursor, container.End);
     }
 
     /// <summary>

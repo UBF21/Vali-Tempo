@@ -66,9 +66,7 @@ public class ValiCalendar : IValiCalendar
         else
         {
             weekNumber = new System.Globalization.GregorianCalendar().GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
-            year = date.Year;
-            if (weekNumber == 1 && date.Month == 12)
-                year = date.Year + 1;
+            year = (weekNumber >= 52 && date.Month == 1) ? date.Year - 1 : date.Year;
         }
 
         return new CalendarWeek(weekNumber, year, start, end);

@@ -206,6 +206,9 @@ public class ValiSchedule : IValiSchedule
     /// <inheritdoc/>
     IValiSchedule IValiSchedule.WithCustomPredicate(Func<DateTime, bool> predicate) => WithCustomPredicate(predicate);
 
+    /// <inheritdoc/>
+    IValiSchedule IValiSchedule.Build() => Build();
+
     // ── Query API ────────────────────────────────────────────────────────────
 
     /// <summary>
