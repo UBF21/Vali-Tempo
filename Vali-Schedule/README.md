@@ -12,13 +12,15 @@
 - **Occurrences** — enumerate up to N upcoming occurrences
 - **OccurrencesInRange** — all occurrences within an inclusive date range
 - **OnDayOfMonth** — pin monthly schedules to a fixed calendar day (1–31)
-- Targets **.NET 8** and **.NET 9**
+- Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
 
 ## Installation
 
 ```bash
 dotnet add package Vali-Schedule
 ```
+
+> Compatible with .NET 6, 7, 8, and 9. For new projects, .NET 8 (LTS) or .NET 9 is recommended.
 
 ## Quick Start
 

@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/Vali-Duration.svg)](https://www.nuget.org/packages/Vali-Duration)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-8%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
+[![.NET](https://img.shields.io/badge/.NET-6%20%7C%207%20%7C%208%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
 
 **Vali-Duration** provides a high-precision, immutable duration value type (`ValiDuration`) that uses `decimal` arithmetic internally. It avoids the floating-point rounding errors common with `double`-based `TimeSpan` calculations and supports fluent conversions, formatting, and arithmetic operators.
 
@@ -23,6 +23,8 @@
 ```bash
 dotnet add package Vali-Duration
 ```
+
+> Compiled targets: `net8.0` · `net9.0`. Compatible with **.NET 6 and .NET 7** via NuGet backward compatibility — no separate build needed.
 
 ## Quick Start
 

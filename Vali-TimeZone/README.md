@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/Vali-TimeZone.svg)](https://www.nuget.org/packages/Vali-TimeZone)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-8%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
+[![.NET](https://img.shields.io/badge/.NET-6%20%7C%207%20%7C%208%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
 
 **Vali-TimeZone** is the timezone-aware module of the Vali-Tempo ecosystem. It provides conversion between timezones, UTC offset calculations, DST detection, and a curated catalog of IANA-compatible timezone identifiers for 30+ countries.
 
@@ -24,6 +24,8 @@
 ```bash
 dotnet add package Vali-TimeZone
 ```
+
+> Compiled targets: `net8.0` · `net9.0`. Compatible with **.NET 6 and .NET 7** via NuGet backward compatibility — no separate build needed.
 
 ## Quick Start
 
