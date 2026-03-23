@@ -58,20 +58,6 @@ public class FinlandHolidayProvider : BaseHolidayProvider
             description: "Vappu / Valborg / May Day. Sekä kansainvälinen työväenpäivä että perinteinen kevätjuhla Suomessa. Vietettiin alun perin Valpuriinöytenä (30. huhtikuuta) ja Vapuna (1. toukokuuta)."),
 
         new HolidayInfo(
-            "fi_midsummer", 6, 21, "FI",
-            "Juhannuspäivä",
-            NamesFi("Midsommar / Noche de San Juan", "Midsummer Day", "Dia de São João / Midsommar", "Fête de la Saint-Jean / Solstice d'été", "Mittsommertag", "Juhannuspäivä"),
-            HolidayType.National,
-            description: "Juhannuspäivä / Midsommardagen. Juhannus vietetään lauantaina 20.–26. kesäkuuta. Pääsiäistä edeltävän lauantain mukaan liikkuva päivä. Kesäpäivänseisauksen juhla; Suomessa perinteisesti vietetään mökillä, nuotion äärellä. Listed as 21 June (representative date); actual date is the Saturday between 20–26 June."),
-
-        new HolidayInfo(
-            "fi_all_saints", 11, 1, "FI",
-            "Pyhäinpäivä",
-            NamesFi("Día de Todos los Santos", "All Saints' Day", "Dia de Todos os Santos", "Toussaint", "Allerheiligen", "Pyhäinpäivä"),
-            HolidayType.National,
-            description: "Pyhäinpäivä / Alla helgons dag. Vietetään lauantaina 31. lokakuuta – 6. marraskuuta. Päivä kuolleiden muistamiselle. Listed as 1 November (representative date); actual date is the Saturday between 31 Oct–6 Nov."),
-
-        new HolidayInfo(
             "fi_independence_day", 12, 6, "FI",
             "Itsenäisyyspäivä",
             NamesFi("Día de la Independencia de Finlandia", "Finnish Independence Day", "Dia da Independência da Finlândia", "Fête de l'Indépendance finlandaise", "Finnischer Unabhängigkeitstag", "Itsenäisyyspäivä"),
@@ -116,6 +102,17 @@ public class FinlandHolidayProvider : BaseHolidayProvider
         var ascension    = EasterCalculator.Ascension(year);
         var pentecost    = easter.AddDays(49);
 
+        // Juhannuspäivä: Saturday between June 20 and 26
+        DateTime june20 = new DateTime(year, 6, 20);
+        int daysToSat = ((int)DayOfWeek.Saturday - (int)june20.DayOfWeek + 7) % 7;
+        DateTime juhannuspaiva = june20.AddDays(daysToSat); // Juhannuspäivä (Saturday)
+        DateTime juhannusaatto = juhannuspaiva.AddDays(-1); // Juhannusaatto (Friday)
+
+        // Pyhäinpäivä: Saturday between Oct 31 and Nov 6
+        DateTime oct31 = new DateTime(year, 10, 31);
+        int daysToSat2 = ((int)DayOfWeek.Saturday - (int)oct31.DayOfWeek + 7) % 7;
+        DateTime pyhaInpaiva = oct31.AddDays(daysToSat2);
+
         return new[]
         {
             new HolidayInfo(
@@ -152,6 +149,27 @@ public class FinlandHolidayProvider : BaseHolidayProvider
                 NamesFi("Pentecostés", "Pentecost Sunday / Whit Sunday", "Pentecostes", "Pentecôte", "Pfingstsonntag", "Helluntaipäivä"),
                 HolidayType.National, isMovable: true,
                 description: "Helluntaipäivä / Pingstdagen / Pentecost Sunday. 49 päivää pääsiäispäivän jälkeen. Pyhän Hengen tulemisen muistopäivä."),
+
+            new HolidayInfo(
+                "fi_midsummer_eve", juhannusaatto.Month, juhannusaatto.Day, "FI",
+                "Juhannusaatto",
+                NamesFi("Víspera de San Juan / Midsommar", "Midsummer Eve", "Véspera de São João", "Veille de la Saint-Jean", "Mittsommerabend", "Juhannusaatto"),
+                HolidayType.Optional, isMovable: true,
+                description: "Juhannusaatto / Midsommarafton. Juhannuksen aatto, juhannuspäivää edeltävä perjantai."),
+
+            new HolidayInfo(
+                "fi_midsummer", juhannuspaiva.Month, juhannuspaiva.Day, "FI",
+                "Juhannuspäivä",
+                NamesFi("Midsommar / Noche de San Juan", "Midsummer Day", "Dia de São João / Midsommar", "Fête de la Saint-Jean / Solstice d'été", "Mittsommertag", "Juhannuspäivä"),
+                HolidayType.National, isMovable: true,
+                description: "Juhannuspäivä / Midsommardagen. Juhannus vietetään lauantaina 20.–26. kesäkuuta. Kesäpäivänseisauksen juhla; Suomessa perinteisesti vietetään mökillä, nuotion äärellä."),
+
+            new HolidayInfo(
+                "fi_all_saints", pyhaInpaiva.Month, pyhaInpaiva.Day, "FI",
+                "Pyhäinpäivä",
+                NamesFi("Día de Todos los Santos", "All Saints' Day", "Dia de Todos os Santos", "Toussaint", "Allerheiligen", "Pyhäinpäivä"),
+                HolidayType.National, isMovable: true,
+                description: "Pyhäinpäivä / Alla helgons dag. Vietetään lauantaina 31. lokakuuta – 6. marraskuuta. Päivä kuolleiden muistamiselle."),
         };
     }
 

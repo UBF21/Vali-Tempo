@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Vali_Age.Core;
+using Vali_Time.Abstractions;
 
 namespace Vali_Age.Extensions;
 
@@ -15,7 +16,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiAge(this IServiceCollection services)
     {
-        services.AddSingleton<IValiAge, ValiAge>();
+        services.AddSingleton<IValiAge>(sp => new ValiAge(sp.GetService<IClock>()));
         return services;
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Vali_CountDown.Core;
+using Vali_Time.Abstractions;
 
 namespace Vali_CountDown.Extensions;
 
@@ -15,7 +16,7 @@ public static class ServiceCollectionExtensions
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiCountdown(this IServiceCollection services)
     {
-        services.AddSingleton<IValiCountdown, ValiCountdown>();
+        services.AddSingleton<IValiCountdown>(sp => new ValiCountdown(sp.GetService<IClock>()));
         return services;
     }
 }

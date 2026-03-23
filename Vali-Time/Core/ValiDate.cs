@@ -542,16 +542,15 @@ public class ValiDate : IValiDate
         int months = (to.Year - from.Year) * 12 + (to.Month - from.Month);
         int dayDiff = to.Day - from.Day;
 
-        // If dayDiff is negative, borrow one month and express the remainder
-        // as a fraction of the previous month's day count.
         if (dayDiff < 0)
         {
             months -= 1;
-            // Number of days in the month just before 'to'
             DateTime prevMonth = to.AddMonths(-1);
             int daysInPrevMonth = DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month);
-            dayDiff += daysInPrevMonth;
-            decimal dayFraction = (decimal)Math.Max(0, dayDiff) / daysInPrevMonth;
+            // clamp from.Day to daysInPrevMonth so fraction is always in [0,1)
+            int effectiveFromDay = Math.Min(from.Day, daysInPrevMonth);
+            dayDiff = to.Day + (daysInPrevMonth - effectiveFromDay);
+            decimal dayFraction = (decimal)dayDiff / daysInPrevMonth;
             return months + dayFraction;
         }
 

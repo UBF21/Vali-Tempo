@@ -4,6 +4,7 @@ using Vali_Calendar.Extensions;
 using Vali_CountDown.Extensions;
 using Vali_Holiday.Extensions;
 using Vali_Range.Extensions;
+using Vali_Schedule.Extensions;
 using Vali_Time.Extensions;
 using Vali_TimeZone.Extensions;
 
@@ -13,7 +14,7 @@ namespace Vali_Tempo.Extensions;
 /// Extension methods for registering all Vali-Tempo libraries with the dependency injection container
 /// in a single call. This is the entry point for applications that want to use the full
 /// Vali-Tempo suite — Vali-Time, Vali-Range, Vali-Calendar, Vali-CountDown, Vali-Age,
-/// Vali-Holiday, and Vali-TimeZone — without configuring each library individually.
+/// Vali-Holiday, Vali-TimeZone, and Vali-Schedule — without configuring each library individually.
 /// </summary>
 public static class ServiceCollectionExtensions
 {
@@ -30,6 +31,7 @@ public static class ServiceCollectionExtensions
     ///   <item><description><c>AddValiAge()</c> — registers <c>IValiAge</c> as a singleton.</description></item>
     ///   <item><description><c>AddValiHoliday()</c> — registers <c>ValiHoliday</c> as a singleton pre-loaded with all built-in country providers (Latin America + Europe + Other).</description></item>
     ///   <item><description><c>AddValiTimeZone()</c> — registers <c>IValiTimeZone</c> as a singleton.</description></item>
+    ///   <item><description><c>AddValiSchedule()</c> — registers <c>IValiSchedule</c> as a transient.</description></item>
     /// </list>
     /// To customise individual library registrations (e.g., using only specific holiday providers),
     /// call each library's own <c>AddVali*</c> extension method directly instead of this helper.
@@ -45,6 +47,7 @@ public static class ServiceCollectionExtensions
         services.AddValiAge();
         services.AddValiHoliday();
         services.AddValiTimeZone();
+        services.AddValiSchedule();
         return services;
     }
 

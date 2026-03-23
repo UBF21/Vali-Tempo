@@ -75,6 +75,8 @@ public class ValiTime : IValiTime
         decimal totalSeconds = times.Sum(t => t.time < 0
             ? -ConvertToSeconds(-t.time, t.unit)
             : ConvertToSeconds(t.time, t.unit));
+        if (totalSeconds < 0m)
+            throw new ArgumentException("The sum of the provided times is negative. Use SubtractTimes with allowNegative=true for signed results.", nameof(times));
         return Convert(totalSeconds, TimeUnit.Seconds, resultUnit, decimalPlaces, rounding);
     }
 
@@ -136,9 +138,8 @@ public class ValiTime : IValiTime
     {
         if (time < 0) throw new ArgumentException("Time cannot be negative.", nameof(time));
         decimal seconds = Convert(time, unit, TimeUnit.Seconds);
-        const decimal maxSeconds = 922337203685m; // TimeSpan.MaxValue.TotalSeconds approx
+        decimal maxSeconds = (decimal)TimeSpan.MaxValue.TotalSeconds;
         if (seconds > maxSeconds) seconds = maxSeconds;
-        if (seconds < -maxSeconds) seconds = -maxSeconds;
         long ticks = (long)(seconds * TimeSpan.TicksPerSecond);
         return new TimeSpan(ticks);
     }

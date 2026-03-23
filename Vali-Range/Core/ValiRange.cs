@@ -53,8 +53,8 @@ public class ValiRange : IValiRange
     private static DateTime SubtractUnit(DateTime date, decimal amount, TimeUnit unit) =>
         unit switch
         {
-            TimeUnit.Months => date.AddMonths(-(int)amount),
-            TimeUnit.Years  => date.AddYears(-(int)amount),
+            TimeUnit.Months => date.AddMonths(-(int)amount),  // fractional values are truncated toward zero
+            TimeUnit.Years  => date.AddYears(-(int)amount),    // fractional values are truncated toward zero
             _               => date - ToTimeSpan(amount, unit)
         };
 
@@ -65,8 +65,8 @@ public class ValiRange : IValiRange
     private static DateTime AddUnit(DateTime date, decimal amount, TimeUnit unit) =>
         unit switch
         {
-            TimeUnit.Months => date.AddMonths((int)amount),
-            TimeUnit.Years  => date.AddYears((int)amount),
+            TimeUnit.Months => date.AddMonths((int)amount),  // fractional values are truncated toward zero
+            TimeUnit.Years  => date.AddYears((int)amount),    // fractional values are truncated toward zero
             _               => date + ToTimeSpan(amount, unit)
         };
 
@@ -110,6 +110,7 @@ public class ValiRange : IValiRange
     /// Uses <see cref="DateTime.AddDays"/>, <see cref="DateTime.AddMonths"/>, or <see cref="DateTime.AddYears"/>
     /// as appropriate for the given <paramref name="unit"/>.
     /// </summary>
+    /// <remarks>For Months and Years units, fractional amounts are truncated toward zero.</remarks>
     /// <param name="amount">The number of units to look back.</param>
     /// <param name="unit">The unit of time to apply.</param>
     /// <returns>A <see cref="DateRange"/> whose <c>End</c> is <see cref="DateTime.Now"/> and <c>Start</c> is <paramref name="amount"/> units earlier.</returns>
@@ -125,6 +126,7 @@ public class ValiRange : IValiRange
     /// Uses <see cref="DateTime.AddDays"/>, <see cref="DateTime.AddMonths"/>, or <see cref="DateTime.AddYears"/>
     /// as appropriate for the given <paramref name="unit"/>.
     /// </summary>
+    /// <remarks>For Months and Years units, fractional amounts are truncated toward zero.</remarks>
     /// <param name="amount">The number of units to project into the future.</param>
     /// <param name="unit">The unit of time to apply.</param>
     /// <returns>A <see cref="DateRange"/> whose <c>Start</c> is <see cref="DateTime.Now"/> and <c>End</c> is <paramref name="amount"/> units later.</returns>
@@ -253,6 +255,7 @@ public class ValiRange : IValiRange
     /// Expands <paramref name="range"/> by subtracting <paramref name="amount"/> from its <c>Start</c>
     /// and adding <paramref name="amount"/> to its <c>End</c>.
     /// </summary>
+    /// <remarks>For Months and Years units, fractional amounts are truncated toward zero.</remarks>
     /// <param name="range">The range to expand.</param>
     /// <param name="amount">The amount to expand by in each direction.</param>
     /// <param name="unit">The unit of time for <paramref name="amount"/>.</param>
@@ -264,6 +267,7 @@ public class ValiRange : IValiRange
     /// Contracts <paramref name="range"/> by adding <paramref name="amount"/> to its <c>Start</c>
     /// and subtracting <paramref name="amount"/> from its <c>End</c>.
     /// </summary>
+    /// <remarks>For Months and Years units, fractional amounts are truncated toward zero.</remarks>
     /// <param name="range">The range to shrink.</param>
     /// <param name="amount">The amount to remove from each end.</param>
     /// <param name="unit">The unit of time for <paramref name="amount"/>.</param>
@@ -285,6 +289,7 @@ public class ValiRange : IValiRange
     /// Shifts <paramref name="range"/> forward (positive <paramref name="amount"/>) or backward (negative)
     /// by the specified duration, keeping its length unchanged.
     /// </summary>
+    /// <remarks>For Months and Years units, fractional amounts are truncated toward zero.</remarks>
     /// <param name="range">The range to shift.</param>
     /// <param name="amount">The amount to shift; positive values move toward the future.</param>
     /// <param name="unit">The unit of time for <paramref name="amount"/>.</param>
@@ -451,11 +456,11 @@ public class ValiRange : IValiRange
     /// Determines whether two ranges share exactly one boundary point (touching but not overlapping).
     /// </summary>
     /// <remarks>
-    /// Two ranges are considered adjacent when they share a boundary date: one range's <c>End</c> date
-    /// equals the other's <c>Start</c> date (compared at day granularity via <see cref="DateTime.Date"/>).
-    /// This is an intentional design choice — adjacency is defined by a shared boundary day, not by a
-    /// gap of exactly one tick. For example, a range ending on 2025-03-15 is adjacent to one starting
-    /// on 2025-03-15, regardless of the time-of-day component of either boundary.
+    /// Two ranges are considered adjacent when one ends on the same date the other begins (shared boundary date).
+    /// Specifically, one range's <c>End</c> date equals the other's <c>Start</c> date (compared at day
+    /// granularity via <see cref="DateTime.Date"/>). Ranges separated by one or more calendar days are NOT
+    /// adjacent per this method. Note: this definition is stricter than <see cref="Merge"/>, which also
+    /// merges ranges separated by exactly one calendar day.
     /// </remarks>
     /// <param name="a">The first range.</param>
     /// <param name="b">The second range.</param>
@@ -468,10 +473,17 @@ public class ValiRange : IValiRange
     /// returned sorted by start date.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Two ranges are merged when they overlap OR when one ends on the day immediately before the other
+    /// starts (next calendar day). Note: this definition is stricter than <see cref="IsAdjacent"/> which
+    /// only checks shared boundary dates.
+    /// </para>
+    /// <para>
     /// This method operates at day granularity. Boundary calculations use <see cref="DateTime.Date"/>
     /// (midnight), so sub-day precision in range <c>Start</c> or <c>End</c> values is not preserved
     /// in the merged boundaries. Ranges whose boundaries differ only by time-of-day may be merged
     /// into a single range.
+    /// </para>
     /// </remarks>
     /// <param name="ranges">The ranges to merge.</param>
     /// <returns>A sorted sequence of merged, non-overlapping <see cref="DateRange"/> values.</returns>
@@ -511,7 +523,7 @@ public class ValiRange : IValiRange
             if (cursor < start) yield return new DateRange(cursor, start.AddDays(-1));
             if (r.End > cursor) cursor = r.End == DateTime.MaxValue ? DateTime.MaxValue : r.End.AddDays(1);
         }
-        if (cursor <= container.End) yield return new DateRange(cursor, container.End);
+        if (cursor < container.End) yield return new DateRange(cursor, container.End);
     }
 
     /// <summary>
