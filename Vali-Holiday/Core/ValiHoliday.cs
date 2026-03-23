@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Vali_Holiday.Models;
 
 namespace Vali_Holiday.Core;
@@ -22,7 +23,7 @@ namespace Vali_Holiday.Core;
 /// </remarks>
 public class ValiHoliday : IValiHoliday
 {
-    private readonly Dictionary<string, IHolidayProvider> _providers = new();
+    private readonly ConcurrentDictionary<string, IHolidayProvider> _providers = new();
 
     /// <summary>
     /// Initialises an empty <see cref="ValiHoliday"/> instance with no providers registered.

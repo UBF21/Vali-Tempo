@@ -1,7 +1,7 @@
 using Vali_Holiday.Core;
 using Vali_Holiday.Models;
 
-namespace Vali_Holiday.Providers.Europe;
+namespace Vali_Holiday.Providers.NorthAmerica;
 
 /// <summary>
 /// Holiday provider for the United States of America, covering the 11 federal public holidays

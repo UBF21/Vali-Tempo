@@ -235,7 +235,7 @@ public sealed class DominicanRepublicHolidayProvider : BaseHolidayProvider
             ? may1
             : may1.AddDays(((int)DayOfWeek.Monday - (int)may1.DayOfWeek + 7) % 7);
 
-        return new[]
+        var result = new List<HolidayInfo>
         {
             // Good Friday — Easter - 2 days
             new HolidayInfo(
@@ -270,9 +270,11 @@ public sealed class DominicanRepublicHolidayProvider : BaseHolidayProvider
                 type: HolidayType.Religious,
                 isMovable: true,
                 description: "Catholic feast honouring the Body and Blood of Christ in the Eucharist, 60 days after Easter Sunday."),
+        };
 
-            // Labor Day observed — following Monday if May 1 is not Monday
-            new HolidayInfo(
+        if (may1.DayOfWeek != DayOfWeek.Monday)
+        {
+            result.Add(new HolidayInfo(
                 id: "do_labour_day_obs",
                 month: laborDayObs.Month,
                 day: laborDayObs.Day,
@@ -286,7 +288,9 @@ public sealed class DominicanRepublicHolidayProvider : BaseHolidayProvider
                     de: "Tag der Arbeit (Beobachtet)"),
                 type: HolidayType.National,
                 isMovable: true,
-                description: "Observed Labour Day: the following Monday when 1 May does not fall on a Monday."),
-        };
+                description: "Observed Labour Day: the following Monday when 1 May does not fall on a Monday."));
+        }
+
+        return result;
     }
 }

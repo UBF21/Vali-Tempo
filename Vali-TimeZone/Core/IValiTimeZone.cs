@@ -193,6 +193,11 @@ public interface IValiTimeZone
     /// <exception cref="TimeZoneNotFoundException">
     /// Thrown when <paramref name="zoneId"/> cannot be resolved.
     /// </exception>
+    /// <remarks>
+    /// The returned <see cref="DateTime"/> has <see cref="DateTimeKind.Unspecified"/> kind,
+    /// reflecting the local time in the specified timezone without a UTC/Local designation.
+    /// Use <see cref="ToDateTimeOffset"/> if you need an offset-aware value.
+    /// </remarks>
     DateTime Now(string zoneId);
 
     /// <summary>
@@ -206,6 +211,11 @@ public interface IValiTimeZone
     /// <exception cref="TimeZoneNotFoundException">
     /// Thrown when <paramref name="zoneId"/> cannot be resolved.
     /// </exception>
+    /// <remarks>
+    /// The returned <see cref="DateTime"/> has <see cref="DateTimeKind.Unspecified"/> kind,
+    /// reflecting the local time in the specified timezone without a UTC/Local designation.
+    /// Use <see cref="ToDateTimeOffset"/> if you need an offset-aware value.
+    /// </remarks>
     DateTime Today(string zoneId);
 
     /// <summary>

@@ -142,6 +142,31 @@ public interface IValiAge
     DateTime NextBirthday(DateTime birthDate, DateTime reference);
 
     /// <summary>
+    /// Returns the date of the most recent birthday on or before today.
+    /// </summary>
+    /// <param name="birthDate">The date of birth.</param>
+    /// <returns>
+    /// A <see cref="DateTime"/> representing the most recent birthday.
+    /// If today is the birthday, today's date is returned.
+    /// </returns>
+    DateTime PreviousBirthday(DateTime birthDate);
+
+    /// <summary>
+    /// Returns the date of the most recent birthday on or before <paramref name="reference"/>.
+    /// </summary>
+    /// <param name="birthDate">The date of birth.</param>
+    /// <param name="reference">The reference date.</param>
+    /// <returns>
+    /// A <see cref="DateTime"/> representing the most recent birthday on or before
+    /// <paramref name="reference"/>.
+    /// If <paramref name="reference"/> is the birthday, that date is returned.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="reference"/> is before the first birthday.
+    /// </exception>
+    DateTime PreviousBirthday(DateTime birthDate, DateTime reference);
+
+    /// <summary>
     /// Returns the number of days remaining until the next birthday from today.
     /// </summary>
     /// <param name="birthDate">The date of birth.</param>

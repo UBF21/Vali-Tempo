@@ -110,9 +110,13 @@ public sealed class ValiTimeZone : IValiTimeZone
     public IEnumerable<ValiZoneInfo> AllZones() => TimeZoneData.Zones.Values;
 
     /// <inheritdoc />
-    public IEnumerable<ValiZoneInfo> ZonesForCountry(string countryCode) =>
-        TimeZoneData.Zones.Values
+    public IEnumerable<ValiZoneInfo> ZonesForCountry(string countryCode)
+    {
+        if (string.IsNullOrWhiteSpace(countryCode))
+            throw new ArgumentNullException(nameof(countryCode));
+        return TimeZoneData.Zones.Values
             .Where(z => z.CountryCode.Equals(countryCode, StringComparison.OrdinalIgnoreCase));
+    }
 
     /// <inheritdoc />
     public bool IsValidZone(string zoneId)
@@ -127,18 +131,37 @@ public sealed class ValiTimeZone : IValiTimeZone
     // ====================================================================
 
     /// <inheritdoc />
+    /// <remarks>
+    /// The returned <see cref="DateTime"/> has <see cref="DateTimeKind.Unspecified"/> kind,
+    /// reflecting the local time in the specified timezone without a UTC/Local designation.
+    /// Use <see cref="ToDateTimeOffset"/> if you need an offset-aware value.
+    /// </remarks>
     public DateTime Now(string zoneId) => FromUtc(DateTime.UtcNow, zoneId);
 
     /// <inheritdoc />
+    /// <remarks>
+    /// The returned <see cref="DateTime"/> has <see cref="DateTimeKind.Unspecified"/> kind,
+    /// reflecting the local time in the specified timezone without a UTC/Local designation.
+    /// Use <see cref="ToDateTimeOffset"/> if you need an offset-aware value.
+    /// </remarks>
     public DateTime Today(string zoneId) => Now(zoneId).Date;
 
     /// <inheritdoc />
-    public bool IsSameInstant(DateTime a, string zoneA, DateTime b, string zoneB) =>
-        ToUtc(a, zoneA) == ToUtc(b, zoneB);
+    public bool IsSameInstant(DateTime a, string zoneA, DateTime b, string zoneB)
+    {
+        if (string.IsNullOrWhiteSpace(zoneA))
+            throw new ArgumentNullException(nameof(zoneA));
+        if (string.IsNullOrWhiteSpace(zoneB))
+            throw new ArgumentNullException(nameof(zoneB));
+        return ToUtc(a, zoneA) == ToUtc(b, zoneB);
+    }
 
     /// <inheritdoc />
-    public string FormatWithZone(DateTime dateTime, string zoneId, string format = "yyyy-MM-dd HH:mm:ss zzz") =>
-        ToDateTimeOffset(dateTime, zoneId).ToString(format);
+    public string FormatWithZone(DateTime dateTime, string zoneId, string format = "yyyy-MM-dd HH:mm:ss zzz")
+    {
+        var effectiveFormat = string.IsNullOrWhiteSpace(format) ? "yyyy-MM-dd HH:mm:ss zzz" : format;
+        return ToDateTimeOffset(dateTime, zoneId).ToString(effectiveFormat);
+    }
 
     // ====================================================================
     // Private helpers

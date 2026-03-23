@@ -2,7 +2,7 @@ using Vali_Holiday.Core;
 using Vali_Holiday.Models;
 using Vali_Holiday.Utils;
 
-namespace Vali_Holiday.Providers.Europe;
+namespace Vali_Holiday.Providers.Oceania;
 
 /// <summary>
 /// Holiday provider for Australia, covering the 8 national public holidays observed

@@ -100,7 +100,7 @@ public class FranceHolidayProvider : BaseHolidayProvider
             "Saint-Étienne",
             Names("San Esteban / Boxing Day (Alsacia-Mosela)", "St Stephen's Day / Boxing Day (Alsace-Moselle)",
                   "Santo Estêvão / Boxing Day (Alsácia-Mosela)", "Saint-Étienne (Alsace-Moselle)", "Zweiter Weihnachtstag (Alsace-Moselle)"),
-            HolidayType.Regional, regionCode: "FR-67",
+            HolidayType.Regional, regionCode: "FR-67,FR-57,FR-68",
             description: "Jour férié supplémentaire en Alsace-Moselle (Bas-Rhin, Moselle, Haut-Rhin) au titre du droit local. Correspond au lendemain de Noël, célébration de Saint Étienne, premier martyr chrétien."),
     };
 
@@ -150,7 +150,7 @@ public class FranceHolidayProvider : BaseHolidayProvider
                 "Vendredi Saint",
                 Names("Viernes Santo (Alsacia-Mosela)", "Good Friday (Alsace-Moselle)",
                       "Sexta-Feira Santa (Alsácia-Mosela)", "Vendredi Saint (Alsace-Moselle)", "Karfreitag (Alsace-Moselle)"),
-                HolidayType.Regional, isMovable: true, regionCode: "FR-57",
+                HolidayType.Regional, isMovable: true, regionCode: "FR-67,FR-57,FR-68",
                 description: "Jour férié supplémentaire en Alsace-Moselle au titre du droit local concordataire. Vendredi Saint, deux jours avant Pâques."),
         };
     }

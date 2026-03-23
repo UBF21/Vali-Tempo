@@ -1,5 +1,7 @@
 using Vali_Holiday.Providers.Europe;
 using Vali_Holiday.Providers.LatinAmerica;
+using Vali_Holiday.Providers.NorthAmerica;
+using Vali_Holiday.Providers.Oceania;
 
 namespace Vali_Holiday.Core;
 

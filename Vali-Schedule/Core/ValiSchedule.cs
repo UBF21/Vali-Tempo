@@ -49,9 +49,15 @@ public class ValiSchedule : IValiSchedule
     /// The time unit that qualifies <paramref name="interval"/>.
     /// Supported values: <see cref="TimeUnit.Days"/>, <see cref="TimeUnit.Weeks"/>,
     /// <see cref="TimeUnit.Months"/>, <see cref="TimeUnit.Years"/>.
+    /// All other <see cref="TimeUnit"/> values (e.g., <c>Hours</c>, <c>Minutes</c>) are not supported
+    /// and will throw an <see cref="ArgumentOutOfRangeException"/>.
     /// </param>
     /// <returns>The current <see cref="ValiSchedule"/> instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="interval"/> is less than 1.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="interval"/> is less than 1, or when <paramref name="unit"/> is not one of
+    /// <see cref="TimeUnit.Days"/>, <see cref="TimeUnit.Weeks"/>, <see cref="TimeUnit.Months"/>,
+    /// or <see cref="TimeUnit.Years"/>.
+    /// </exception>
     public ValiSchedule Every(int interval, TimeUnit unit)
     {
         if (interval < 1)
@@ -64,7 +70,8 @@ public class ValiSchedule : IValiSchedule
             TimeUnit.Weeks  => RecurrenceType.Weekly,
             TimeUnit.Months => RecurrenceType.Monthly,
             TimeUnit.Years  => RecurrenceType.Yearly,
-            _               => RecurrenceType.Custom
+            _ => throw new ArgumentOutOfRangeException(nameof(unit), unit,
+                     "Supported TimeUnit values are Days, Weeks, Months, and Years.")
         };
         return this;
     }
@@ -263,6 +270,7 @@ public class ValiSchedule : IValiSchedule
                     ? candidate.Add(_config.TimeOfDay.Value.ToTimeSpan())
                     : candidate;
             }
+            if (candidate >= DateTime.MaxValue.AddDays(-1)) break;
             candidate = candidate.AddDays(1);
             count++;
         }
@@ -312,6 +320,7 @@ public class ValiSchedule : IValiSchedule
                             ? backScan.Add(_config.TimeOfDay.Value.ToTimeSpan())
                             : backScan;
                     }
+                    if (backScan <= DateTime.MinValue.AddDays(1)) break;
                     backScan = backScan.AddDays(-1);
                     backCount++;
                 }
@@ -328,6 +337,7 @@ public class ValiSchedule : IValiSchedule
                     ? candidate.Add(_config.TimeOfDay.Value.ToTimeSpan())
                     : candidate;
             }
+            if (candidate <= DateTime.MinValue.AddDays(1)) break;
             candidate = candidate.AddDays(-1);
             count++;
         }
@@ -388,6 +398,7 @@ public class ValiSchedule : IValiSchedule
 
                 yielded++;
             }
+            if (candidate >= DateTime.MaxValue.AddDays(-1)) break;
             candidate = candidate.AddDays(1);
             count++;
         }
@@ -402,8 +413,16 @@ public class ValiSchedule : IValiSchedule
     /// <param name="from">The inclusive start of the date range.</param>
     /// <param name="to">The inclusive end of the date range.</param>
     /// <returns>A sequence of all occurrences within the specified range.</returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="from"/> is later than <paramref name="to"/>.
+    /// </exception>
     public IEnumerable<DateTime> OccurrencesInRange(DateTime from, DateTime to)
     {
+        if (from.Date > to.Date)
+            throw new ArgumentException(
+                $"'from' ({from:yyyy-MM-dd}) must be less than or equal to 'to' ({to:yyyy-MM-dd}).",
+                nameof(from));
+
         var candidate = from.Date < EffectiveStartDate ? EffectiveStartDate : from.Date;
         int occurrenceCount = 0;
         int scanCount = 0;
@@ -435,6 +454,7 @@ public class ValiSchedule : IValiSchedule
                     ? candidate.Add(_config.TimeOfDay.Value.ToTimeSpan())
                     : candidate;
             }
+            if (candidate >= DateTime.MaxValue.AddDays(-1)) break;
             candidate = candidate.AddDays(1);
             scanCount++;
         }
