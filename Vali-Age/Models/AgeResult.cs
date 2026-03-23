@@ -45,5 +45,8 @@ public readonly struct AgeResult
     /// Returns a human-readable string representing the age breakdown.
     /// </summary>
     /// <returns>A string in the format <c>"32 years, 4 months, 12 days"</c>.</returns>
-    public override string ToString() => $"{Years} years, {Months} months, {Days} days";
+    public override string ToString() =>
+        $"{Years} {(Years == 1 ? "year" : "years")}, " +
+        $"{Months} {(Months == 1 ? "month" : "months")}, " +
+        $"{Days} {(Days == 1 ? "day" : "days")}";
 }

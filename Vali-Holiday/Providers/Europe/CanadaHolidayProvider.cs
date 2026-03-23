@@ -2,7 +2,7 @@ using Vali_Holiday.Core;
 using Vali_Holiday.Models;
 using Vali_Holiday.Utils;
 
-namespace Vali_Holiday.Providers.Europe;
+namespace Vali_Holiday.Providers.NorthAmerica;
 
 /// <summary>
 /// Holiday provider for Canada, covering the 12 federal statutory holidays as defined by

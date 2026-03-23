@@ -331,6 +331,41 @@ public class ValiAge : IValiAge
     }
 
     // =========================================================================
+    // PREVIOUS BIRTHDAY
+    // =========================================================================
+
+    /// <summary>
+    /// Returns the date of the most recent birthday on or before today.
+    /// </summary>
+    /// <param name="birthDate">The date of birth.</param>
+    /// <returns>A <see cref="DateTime"/> representing the most recent birthday.</returns>
+    public DateTime PreviousBirthday(DateTime birthDate)
+    {
+        return PreviousBirthday(birthDate, _clock.Today);
+    }
+
+    /// <summary>
+    /// Returns the date of the most recent birthday on or before <paramref name="reference"/>.
+    /// </summary>
+    /// <param name="birthDate">The date of birth.</param>
+    /// <param name="reference">The reference date.</param>
+    /// <returns>A <see cref="DateTime"/> representing the most recent birthday.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="reference"/> is before the first birthday (i.e., before
+    /// the person has had their first birthday).
+    /// </exception>
+    public DateTime PreviousBirthday(DateTime birthDate, DateTime reference)
+    {
+        var thisYear = BirthdayInYear(birthDate, reference.Year);
+        if (thisYear <= reference.Date) return thisYear;
+        // Birthday hasn't happened this year yet — return last year's
+        if (reference.Year <= 1)
+            throw new ArgumentOutOfRangeException(nameof(reference),
+                "Cannot compute previous birthday: reference is before the first birthday.");
+        return BirthdayInYear(birthDate, reference.Year - 1);
+    }
+
+    // =========================================================================
     // DAYS UNTIL BIRTHDAY
     // =========================================================================
 

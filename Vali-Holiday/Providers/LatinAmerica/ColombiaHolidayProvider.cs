@@ -88,9 +88,12 @@ public class ColombiaHolidayProvider : BaseHolidayProvider
     {
         var holyThursday = EasterCalculator.HolyThursday(year);
         var goodFriday = EasterCalculator.GoodFriday(year);
-        var ascension = EasterCalculator.Ascension(year);
-        var corpusChristi = EasterCalculator.CorpusChristi(year);
-        var sacredHeart = EasterCalculator.SacredHeart(year);
+        var ascensionRaw = EasterCalculator.Ascension(year);
+        var corpusChristiRaw = EasterCalculator.CorpusChristi(year);
+        var sacredHeartRaw = EasterCalculator.SacredHeart(year);
+        var ascension = NextMonday(year, ascensionRaw.Month, ascensionRaw.Day);
+        var corpusChristi = NextMonday(year, corpusChristiRaw.Month, corpusChristiRaw.Day);
+        var sacredHeart = NextMonday(year, sacredHeartRaw.Month, sacredHeartRaw.Day);
 
         var epiphany    = NextMonday(year, 1, 6);
         var sanJose     = NextMonday(year, 3, 19);

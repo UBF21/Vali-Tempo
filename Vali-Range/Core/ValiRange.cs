@@ -324,6 +324,7 @@ public class ValiRange : IValiRange
         while (current <= end)
         {
             yield return current;
+            if (current == DateTime.MaxValue) yield break;
             current = current.AddDays(1);
         }
     }
@@ -343,6 +344,7 @@ public class ValiRange : IValiRange
         while (current <= end)
         {
             yield return current;
+            if (current > DateTime.MaxValue.AddDays(-7)) yield break;
             current = current.AddDays(7);
         }
     }
@@ -360,6 +362,7 @@ public class ValiRange : IValiRange
         while (current <= end)
         {
             yield return current;
+            if (current.Year == 9999 && current.Month == 12) yield break;
             current = current.AddMonths(1);
         }
     }
@@ -397,6 +400,7 @@ public class ValiRange : IValiRange
                 chunkEnd = rangeEnd;
 
             yield return new DateRange(chunkStart, chunkEnd);
+            if (weekBeginning > DateTime.MaxValue.AddDays(-7)) yield break;
             weekBeginning = weekBeginning.AddDays(7);
         }
     }
@@ -423,6 +427,7 @@ public class ValiRange : IValiRange
             DateTime chunkEnd   = monthEnd   > rangeEnd         ? rangeEnd         : monthEnd;
 
             yield return new DateRange(chunkStart, chunkEnd);
+            if (monthStart.Year == 9999 && monthStart.Month == 12) yield break;
             monthStart = monthStart.AddMonths(1);
         }
     }
