@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
     /// <param name="weekStart">The default first day of the week. Defaults to <see cref="WeekStart.Monday"/>.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiCalendar(this IServiceCollection services, WeekStart weekStart = WeekStart.Monday)
-        => services.AddSingleton<IValiCalendar>(sp => new ValiCalendar(weekStart, null, sp.GetRequiredService<IClock>()));
+        => services.AddSingleton<IValiCalendar>(sp => new ValiCalendar(weekStart, null, sp.GetService<IClock>()));
 
     /// <summary>
     /// Registers <see cref="IValiCalendar"/> as a singleton with the specified holiday provider,
@@ -29,5 +29,5 @@ public static class ServiceCollectionExtensions
     /// <param name="weekStart">The default first day of the week. Defaults to <see cref="WeekStart.Monday"/>.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddValiCalendar(this IServiceCollection services, IHolidayProvider holidayProvider, WeekStart weekStart = WeekStart.Monday)
-        => services.AddSingleton<IValiCalendar>(sp => new ValiCalendar(weekStart, holidayProvider, sp.GetRequiredService<IClock>()));
+        => services.AddSingleton<IValiCalendar>(sp => new ValiCalendar(weekStart, holidayProvider, sp.GetService<IClock>()));
 }

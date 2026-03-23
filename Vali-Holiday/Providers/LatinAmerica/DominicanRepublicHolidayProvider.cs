@@ -141,10 +141,10 @@ public sealed class DominicanRepublicHolidayProvider : BaseHolidayProvider
                 type: HolidayType.National,
                 description: "International Workers' Day."),
 
-            // 16 June — Día de la Fundación de la Sociedad la Trinitaria
+            // 16 July — Día de la Fundación de la Sociedad la Trinitaria
             new HolidayInfo(
                 id: "do_trinitaria_foundation",
-                month: 6, day: 16,
+                month: 7, day: 16,
                 countryCode: cc,
                 name: "Fundación de la Sociedad la Trinitaria",
                 names: Names(

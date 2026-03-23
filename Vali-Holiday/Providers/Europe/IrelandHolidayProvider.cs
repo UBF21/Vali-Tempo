@@ -43,46 +43,11 @@ public class IrelandHolidayProvider : BaseHolidayProvider
             description: "First day of the new calendar year / Lá Caille."),
 
         new HolidayInfo(
-            "ie_st_brigid", 2, 3, "IE",
-            "St. Brigid's Day",
-            Names("Día de Santa Brígida", "St. Brigid's Day", "Dia de Santa Brígida", "Jour de Sainte Brigide", "Tag der Heiligen Brigid"),
-            HolidayType.National,
-            description: "Lá Fhéile Bríde. New public holiday since 2023 honouring St. Brigid of Kildare (c. 451–525), patron saint of Ireland, and coinciding with the Celtic festival of Imbolc (start of spring). Observed on the first Monday of February (or 1 February if that day falls on a Friday). Representative date: 3 February."),
-
-        new HolidayInfo(
             "ie_st_patricks_day", 3, 17, "IE",
             "St. Patrick's Day",
             Names("Día de San Patricio", "St. Patrick's Day", "Dia de São Patrício", "Jour de la Saint-Patrick", "Sankt-Patrick-Tag"),
             HolidayType.Civic,
             description: "Lá Fhéile Pádraig. National holiday of Ireland celebrating the death of Saint Patrick (c. 385–461), the foremost patron saint of Ireland, who brought Christianity to the island. Celebrated worldwide by the Irish diaspora with parades and wearing green."),
-
-        new HolidayInfo(
-            "ie_may_bank_holiday", 5, 5, "IE",
-            "May Bank Holiday",
-            Names("Día Festivo de Mayo", "May Bank Holiday", "Feriado de Maio", "Jour férié de mai", "Mai-Feiertag"),
-            HolidayType.National,
-            description: "First Monday in May / Luan an Bhealtaine. Representative date: 5 May. Actual date: first Monday of May."),
-
-        new HolidayInfo(
-            "ie_june_bank_holiday", 6, 2, "IE",
-            "June Bank Holiday",
-            Names("Día Festivo de Junio", "June Bank Holiday", "Feriado de Junho", "Jour férié de juin", "Juni-Feiertag"),
-            HolidayType.National,
-            description: "First Monday in June / Luan an Mheithimh. Representative date: 2 June. Actual date: first Monday of June."),
-
-        new HolidayInfo(
-            "ie_august_bank_holiday", 8, 4, "IE",
-            "August Bank Holiday",
-            Names("Día Festivo de Agosto", "August Bank Holiday", "Feriado de Agosto", "Jour férié d'août", "August-Feiertag"),
-            HolidayType.National,
-            description: "First Monday in August / Luan Lúnasa. Representative date: 4 August. Actual date: first Monday of August. Coincides with Lúnasa, the ancient Celtic harvest festival."),
-
-        new HolidayInfo(
-            "ie_october_bank_holiday", 10, 27, "IE",
-            "October Bank Holiday",
-            Names("Día Festivo de Octubre", "October Bank Holiday", "Feriado de Outubro", "Jour férié d'octobre", "Oktober-Feiertag"),
-            HolidayType.National,
-            description: "Last Monday in October / Luan Dheireadh Fómhair. Representative date: 27 October. Actual date: last Monday of October."),
 
         new HolidayInfo(
             "ie_christmas_day", 12, 25, "IE",
@@ -109,14 +74,71 @@ public class IrelandHolidayProvider : BaseHolidayProvider
     {
         var easterMonday = EasterCalculator.Easter(year).AddDays(1);
 
+        // St. Brigid's Day: 1 Feb if Monday, otherwise first Monday of February
+        var feb1 = new DateTime(year, 2, 1);
+        var stBrigid = feb1.DayOfWeek == DayOfWeek.Monday
+            ? feb1
+            : feb1.AddDays(((int)DayOfWeek.Monday - (int)feb1.DayOfWeek + 7) % 7);
+
+        // First Monday of May
+        var may1 = new DateTime(year, 5, 1);
+        var mayBank = may1.AddDays(((int)DayOfWeek.Monday - (int)may1.DayOfWeek + 7) % 7);
+
+        // First Monday of June
+        var jun1 = new DateTime(year, 6, 1);
+        var juneBank = jun1.AddDays(((int)DayOfWeek.Monday - (int)jun1.DayOfWeek + 7) % 7);
+
+        // First Monday of August
+        var aug1 = new DateTime(year, 8, 1);
+        var augBank = aug1.AddDays(((int)DayOfWeek.Monday - (int)aug1.DayOfWeek + 7) % 7);
+
+        // Last Monday of October
+        var octLast = new DateTime(year, 10, DateTime.DaysInMonth(year, 10));
+        var octBank = octLast.AddDays(-(((int)octLast.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7));
+
         return new[]
         {
+            new HolidayInfo(
+                "ie_st_brigid", stBrigid.Month, stBrigid.Day, "IE",
+                "St. Brigid's Day",
+                Names("Día de Santa Brígida", "St. Brigid's Day", "Dia de Santa Brígida", "Jour de Sainte Brigide", "Tag der Heiligen Brigid"),
+                HolidayType.National, isMovable: true,
+                description: "Lá Fhéile Bríde. New public holiday since 2023 honouring St. Brigid of Kildare (c. 451–525), patron saint of Ireland, and coinciding with the Celtic festival of Imbolc (start of spring). Observed on 1 February if that day is a Monday, otherwise the first Monday of February."),
+
             new HolidayInfo(
                 "ie_easter_monday", easterMonday.Month, easterMonday.Day, "IE",
                 "Easter Monday",
                 Names("Lunes de Pascua", "Easter Monday", "Segunda-Feira de Páscoa", "Lundi de Pâques", "Ostermontag"),
                 HolidayType.National, isMovable: true,
                 description: "Luan Cásca. The day after Easter Sunday. Public holiday in Ireland. Historically significant as 24 April 1916 was Easter Monday — the date of the Easter Rising that led to Irish independence."),
+
+            new HolidayInfo(
+                "ie_may_bank_holiday", mayBank.Month, mayBank.Day, "IE",
+                "May Bank Holiday",
+                Names("Día Festivo de Mayo", "May Bank Holiday", "Feriado de Maio", "Jour férié de mai", "Mai-Feiertag"),
+                HolidayType.National, isMovable: true,
+                description: "First Monday in May / Luan an Bhealtaine."),
+
+            new HolidayInfo(
+                "ie_june_bank_holiday", juneBank.Month, juneBank.Day, "IE",
+                "June Bank Holiday",
+                Names("Día Festivo de Junio", "June Bank Holiday", "Feriado de Junho", "Jour férié de juin", "Juni-Feiertag"),
+                HolidayType.National, isMovable: true,
+                description: "First Monday in June / Luan an Mheithimh."),
+
+            new HolidayInfo(
+                "ie_august_bank_holiday", augBank.Month, augBank.Day, "IE",
+                "August Bank Holiday",
+                Names("Día Festivo de Agosto", "August Bank Holiday", "Feriado de Agosto", "Jour férié d'août", "August-Feiertag"),
+                HolidayType.National, isMovable: true,
+                description: "First Monday in August / Luan Lúnasa. Coincides with Lúnasa, the ancient Celtic harvest festival."),
+
+            new HolidayInfo(
+                "ie_october_bank_holiday", octBank.Month, octBank.Day, "IE",
+                "October Bank Holiday",
+                Names("Día Festivo de Octubre", "October Bank Holiday", "Feriado de Outubro", "Jour férié d'octobre", "Oktober-Feiertag"),
+                HolidayType.National, isMovable: true,
+                description: "Last Monday in October / Luan Dheireadh Fómhair."),
         };
     }
 }

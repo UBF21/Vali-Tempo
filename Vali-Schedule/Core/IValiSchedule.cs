@@ -122,4 +122,14 @@ public interface IValiSchedule
     /// <param name="to">The inclusive end of the date range.</param>
     /// <returns>A sequence of all occurrences within the specified range.</returns>
     IEnumerable<DateTime> OccurrencesInRange(DateTime from, DateTime to);
+
+    /// <summary>
+    /// Validates the current configuration and returns the schedule, ready for use.
+    /// Throws if the configuration is invalid (e.g., weekly recurrence with no days configured).
+    /// </summary>
+    /// <returns>The current <see cref="IValiSchedule"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when weekly recurrence is set but no days of week have been configured.
+    /// </exception>
+    IValiSchedule Build();
 }

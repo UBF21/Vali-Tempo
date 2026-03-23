@@ -143,14 +143,12 @@ public class ValiCountdown : IValiCountdown
             };
         }
 
-        long totalMs = (long)span.TotalMilliseconds;
-
-        long hours   = totalMs / 3_600_000L;
-        long rem     = totalMs % 3_600_000L;
-        long minutes = rem / 60_000L;
-        rem          = rem % 60_000L;
-        long seconds = rem / 1_000L;
-        long ms      = rem % 1_000L;
+        long remaining = span.Ticks;
+        long days    = remaining / TimeSpan.TicksPerDay;    remaining %= TimeSpan.TicksPerDay;
+        long hours   = days * 24 + remaining / TimeSpan.TicksPerHour; remaining %= TimeSpan.TicksPerHour;
+        long minutes = remaining / TimeSpan.TicksPerMinute; remaining %= TimeSpan.TicksPerMinute;
+        long seconds = remaining / TimeSpan.TicksPerSecond; remaining %= TimeSpan.TicksPerSecond;
+        long ms      = remaining / TimeSpan.TicksPerMillisecond;
 
         return new Dictionary<TimeUnit, decimal>
         {

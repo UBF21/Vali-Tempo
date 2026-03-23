@@ -171,7 +171,7 @@ public class ValiDate : IValiDate
         return part switch
         {
             DatePart.Day  => date.Date + endTime,
-            DatePart.Week => StartOfWeek(date, ws).AddDays(6) + endTime,
+            DatePart.Week => WeekEndOf(date, ws, endTime),
             DatePart.Month =>
                 new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month)) + endTime,
             DatePart.Quarter => QuarterEndDate(date) + endTime,
@@ -550,12 +550,24 @@ public class ValiDate : IValiDate
             // clamp from.Day to daysInPrevMonth so fraction is always in [0,1)
             int effectiveFromDay = Math.Min(from.Day, daysInPrevMonth);
             dayDiff = to.Day + (daysInPrevMonth - effectiveFromDay);
-            decimal dayFraction = (decimal)dayDiff / daysInPrevMonth;
+            decimal dayFraction = (decimal)dayDiff / DateTime.DaysInMonth(from.Year, from.Month);
             return months + dayFraction;
         }
 
         decimal dayFractionNormal = (decimal)dayDiff / DateTime.DaysInMonth(to.Year, to.Month);
         return months + dayFractionNormal;
+    }
+
+    /// <summary>
+    /// Returns the last instant of the week containing <paramref name="date"/>, guarded
+    /// against <see cref="DateTime.MaxValue"/> overflow.
+    /// </summary>
+    private DateTime WeekEndOf(DateTime date, WeekStart weekStart, TimeSpan endTime)
+    {
+        var weekStart_ = StartOfWeek(date, weekStart);
+        int daysUntilEnd = 6;
+        var candidate = weekStart_.AddDays(daysUntilEnd);
+        return candidate > DateTime.MaxValue.Date ? DateTime.MaxValue : candidate + endTime;
     }
 
     /// <summary>
