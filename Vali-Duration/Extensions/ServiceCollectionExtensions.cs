@@ -4,12 +4,15 @@ using Vali_Time.Enums;
 
 namespace Vali_Duration.Extensions;
 
+/// <summary>
+/// Extension methods for <see cref="TimeSpan"/> and <see cref="ValiDuration"/> conversions.
+/// </summary>
 public static class TimeSpanExtensions
 {
-    /// Converts a TimeSpan to a ValiDuration with full decimal precision.
+    /// <summary>Converts a <see cref="TimeSpan"/> to a <see cref="ValiDuration"/> with full decimal precision.</summary>
     public static ValiDuration ToValiDuration(this TimeSpan ts) => ValiDuration.FromTimeSpan(ts);
 
-    /// Converts a ValiDuration to the specified TimeUnit as decimal.
+    /// <summary>Converts a <see cref="ValiDuration"/> to the specified <see cref="TimeUnit"/> as a decimal value.</summary>
     public static decimal As(this ValiDuration duration, TimeUnit unit) => duration.As(unit);
 }
 

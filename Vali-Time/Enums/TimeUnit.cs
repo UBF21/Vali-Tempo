@@ -38,13 +38,13 @@ public enum TimeUnit
 
     /// <summary>
     /// Represents time in months. Uses an average of 30.4375 days per month when a concrete calendar
-    /// date is not available (365.25 / 12). For calendar-accurate month arithmetic, use <see cref="ValiDate"/>.
+    /// date is not available (365.25 / 12). For calendar-accurate month arithmetic, use <see cref="Vali_Time.Core.ValiDate"/>.
     /// </summary>
     Months,
 
     /// <summary>
     /// Represents time in years. Uses an average of 365.25 days per year (accounting for leap years)
-    /// when a concrete calendar date is not available. For calendar-accurate year arithmetic, use <see cref="ValiDate"/>.
+    /// when a concrete calendar date is not available. For calendar-accurate year arithmetic, use <see cref="Vali_Time.Core.ValiDate"/>.
     /// </summary>
     Years
 }
