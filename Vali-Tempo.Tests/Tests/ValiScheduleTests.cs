@@ -227,4 +227,64 @@ public class ValiScheduleTests
 
         schedule.OccursOn(new DateTime(2025, 1, 7)).Should().BeFalse();
     }
+
+    // ── S-1: Monthly day-31 skip ─────────────────────────────────────────────
+
+    [Fact]
+    public void Monthly_Day31_SkipsShortMonths()
+    {
+        // Start Jan 31 2025, every 1 month on day 31.
+        // Months with fewer than 31 days (Feb, Apr, Jun, Sep, Nov) must be skipped.
+        // Within 2025 the valid occurrences are: Jan 31, Mar 31, May 31, Jul 31, Aug 31, Oct 31, Dec 31 — 7 total.
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .OnDayOfMonth(31)
+            .StartingFrom(new DateTime(2025, 1, 31));
+
+        var results = schedule.OccurrencesInRange(
+            new DateTime(2025, 1, 1),
+            new DateTime(2025, 12, 31)).ToList();
+
+        results.Should().HaveCount(7);
+        results.Should().AllSatisfy(d => d.Day.Should().Be(31));
+        results.Should().NotContain(d => d.Month == 2);  // Feb has 28 days in 2025
+        results.Should().NotContain(d => d.Month == 4);  // Apr has 30 days
+        results.Should().NotContain(d => d.Month == 6);  // Jun has 30 days
+        results.Should().NotContain(d => d.Month == 9);  // Sep has 30 days
+        results.Should().NotContain(d => d.Month == 11); // Nov has 30 days
+    }
+
+    [Fact]
+    public void Monthly_Day31_NextOccurrence_SkipsApril()
+    {
+        // From March 31 2025, next monthly occurrence on day 31 should be May 31 (not Apr 30)
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .OnDayOfMonth(31)
+            .StartingFrom(new DateTime(2025, 1, 31));
+
+        var result = schedule.NextOccurrence(new DateTime(2025, 4, 1));
+
+        result.Should().Be(new DateTime(2025, 5, 31));
+    }
+
+    [Fact]
+    public void Monthly_Day29_SkipsNonLeapFeb()
+    {
+        // Start Jan 29 2025, every 1 month on day 29.
+        // Feb 2025 has 28 days — not a leap year — so Feb must be skipped.
+        // Mar 29 must be the next occurrence after Jan 29.
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .OnDayOfMonth(29)
+            .StartingFrom(new DateTime(2025, 1, 29));
+
+        var results = schedule.OccurrencesInRange(
+            new DateTime(2025, 1, 1),
+            new DateTime(2025, 3, 31)).ToList();
+
+        results.Should().NotContain(d => d.Month == 2); // Feb 2025 has only 28 days
+        results.Should().Contain(new DateTime(2025, 1, 29));
+        results.Should().Contain(new DateTime(2025, 3, 29));
+    }
 }

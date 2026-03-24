@@ -305,4 +305,48 @@ public class ValiTimeZoneTests
 
         formatted.Should().Be("2025/03/01");
     }
+
+    // ====================================================================
+    // GetOffset — Z-1 DST-aware fix
+    // ====================================================================
+
+    [Fact]
+    public void GetOffset_StandardZone_ReturnsCorrectOffset()
+    {
+        // America/Lima has no DST — offset is always UTC-5
+        var offset = _vali.GetOffset("America/Lima", new DateTime(2025, 6, 1));
+        offset.Should().Be(TimeSpan.FromHours(-5));
+    }
+
+    [Fact]
+    public void GetOffset_WithDstActive_ReturnsCorrectOffset()
+    {
+        // America/New_York during summer (DST active) → UTC-4
+        var offset = _vali.GetOffset("America/New_York", new DateTime(2025, 7, 15));
+        offset.Should().Be(TimeSpan.FromHours(-4));
+    }
+
+    [Fact]
+    public void GetOffset_WithDstInactive_ReturnsCorrectOffset()
+    {
+        // America/New_York during winter (no DST) → UTC-5
+        var offset = _vali.GetOffset("America/New_York", new DateTime(2025, 1, 15));
+        offset.Should().Be(TimeSpan.FromHours(-5));
+    }
+
+    [Fact]
+    public void GetOffset_EuropeLondonDst_ReturnsCorrectOffset()
+    {
+        // Europe/London during summer (BST) → UTC+1
+        var offset = _vali.GetOffset("Europe/London", new DateTime(2025, 8, 1));
+        offset.Should().Be(TimeSpan.FromHours(1));
+    }
+
+    [Fact]
+    public void GetOffset_EuropeLondonWinter_ReturnsUtc()
+    {
+        // Europe/London during winter (GMT) → UTC+0
+        var offset = _vali.GetOffset("Europe/London", new DateTime(2025, 1, 15));
+        offset.Should().Be(TimeSpan.Zero);
+    }
 }

@@ -482,4 +482,31 @@ public class ValiTimeTests
         (_, TimeUnit unit) = _vali.GetBestUnit(86400m); // exactly 1 day
         unit.Should().BeOneOf(TimeUnit.Hours, TimeUnit.Days);
     }
+
+    // ── T-2: ToTimeSpan overflow guard ───────────────────────────────────────
+
+    [Fact]
+    public void ToTimeSpan_ExceedsMaxValue_ThrowsOverflowException()
+    {
+        // 999_999_999_999 seconds is far beyond TimeSpan.MaxValue (~29,227 years)
+        Action act = () => _vali.ToTimeSpan(999_999_999_999m, TimeUnit.Seconds);
+        act.Should().Throw<OverflowException>();
+    }
+
+    [Fact]
+    public void ToTimeSpan_ExactlyAtMaxValue_DoesNotThrow()
+    {
+        // 100 years in seconds ≈ 3_155_760_000s — well within TimeSpan range (~29,227 years)
+        decimal hundredYearsInSeconds = 100m * 365.25m * 24m * 3600m;
+        Action act = () => _vali.ToTimeSpan(hundredYearsInSeconds, TimeUnit.Seconds);
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void ToTimeSpan_NegativeValue_ThrowsArgumentException()
+    {
+        // Negative time is always invalid — existing behavior must still hold
+        Action act = () => _vali.ToTimeSpan(-1m, TimeUnit.Seconds);
+        act.Should().Throw<ArgumentException>().WithMessage("*negative*");
+    }
 }
