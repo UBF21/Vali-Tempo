@@ -64,7 +64,7 @@ public abstract class BaseHolidayProvider : IHolidayProvider
     private HashSet<(int Month, int Day)> GetNationalHolidaySet(int year)
         => _nationalHolidayCache.GetOrAdd(year, y =>
             GetCachedHolidays(y)
-                .Where(h => h.RegionCode == null)
+                .Where(h => h.RegionCode == null && h.Type != HolidayType.Observance)
                 .Select(h => (h.Month, h.Day))
                 .ToHashSet());
 

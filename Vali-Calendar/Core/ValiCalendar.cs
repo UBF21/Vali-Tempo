@@ -294,7 +294,7 @@ public class ValiCalendar : IValiCalendar
     /// <returns>A sequence of <see cref="HolidayInfo"/> for the given month.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when no <see cref="IHolidayProvider"/> has been configured.
-    /// Use the <see cref="ValiCalendar(WeekStart, IHolidayProvider?)"/> constructor overload to supply one.
+    /// Use the <see cref="ValiCalendar(WeekStart, IHolidayProvider?, IClock?)"/> constructor overload to supply one.
     /// </exception>
     public IEnumerable<HolidayInfo> HolidaysInMonth(int year, int month)
     {
@@ -312,7 +312,7 @@ public class ValiCalendar : IValiCalendar
     /// <returns>A sequence of <see cref="HolidayInfo"/> for the given year.</returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown when no <see cref="IHolidayProvider"/> has been configured.
-    /// Use the <see cref="ValiCalendar(WeekStart, IHolidayProvider?)"/> constructor overload to supply one.
+    /// Use the <see cref="ValiCalendar(WeekStart, IHolidayProvider?, IClock?)"/> constructor overload to supply one.
     /// </exception>
     public IEnumerable<HolidayInfo> HolidaysInYear(int year)
     {

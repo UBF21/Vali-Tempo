@@ -70,6 +70,13 @@ public class HondurasHolidayProvider : BaseHolidayProvider
             description: "Celebración institucional en honor a las Fuerzas Armadas de Honduras."),
 
         new HolidayInfo(
+            "hn_teachers_day", 9, 17, "HN",
+            "Día del Maestro",
+            Names("Día del Maestro", "Teachers' Day", "Dia do Professor", "Jour des Enseignants", "Tag der Lehrer"),
+            HolidayType.Civic,
+            description: "Celebración del día del maestro hondureño, instituido el 17 de septiembre en honor a la fundación de la primera escuela normal del país en 1845."),
+
+        new HolidayInfo(
             "hn_christmas", 12, 25, "HN",
             "Navidad",
             Names("Navidad", "Christmas Day", "Natal", "Noël", "Weihnachten"),
@@ -85,6 +92,7 @@ public class HondurasHolidayProvider : BaseHolidayProvider
     /// </remarks>
     protected override IEnumerable<HolidayInfo> GetMovableHolidays(int year)
     {
+        var easter       = EasterCalculator.Easter(year);
         var holyThursday = EasterCalculator.HolyThursday(year);
         var goodFriday   = EasterCalculator.GoodFriday(year);
         var holySaturday = EasterCalculator.HolySaturday(year);
@@ -113,6 +121,13 @@ public class HondurasHolidayProvider : BaseHolidayProvider
                 Names("Sábado de Gloria", "Holy Saturday", "Sábado de Aleluia", "Samedi Saint", "Karsamstag"),
                 HolidayType.Religious, isMovable: true,
                 description: "Día de vigilia entre la muerte y la resurrección de Jesucristo; último día de duelo de la Semana Santa."),
+
+            new HolidayInfo(
+                "hn_easter", easter.Month, easter.Day, "HN",
+                "Pascua",
+                Names("Pascua", "Easter Sunday", "Páscoa", "Pâques", "Ostersonntag"),
+                HolidayType.Religious, isMovable: true,
+                description: "Celebración de la Resurrección de Jesucristo."),
 
             new HolidayInfo(
                 "hn_morazan_birthday", morazanBirthday.Month, morazanBirthday.Day, "HN",

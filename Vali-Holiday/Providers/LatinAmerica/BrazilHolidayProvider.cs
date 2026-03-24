@@ -192,15 +192,19 @@ public sealed class BrazilHolidayProvider : BaseHolidayProvider
     protected override IEnumerable<HolidayInfo> GetMovableHolidays(int year)
     {
         const string cc = "BR";
-        var easter = EasterCalculator.Easter(year);
+        var easter          = EasterCalculator.Easter(year);
+        var carnavalMonday  = EasterCalculator.CarnavalMonday(year);
+        var carnavalTuesday = EasterCalculator.CarnavalTuesday(year);
+        var goodFriday      = EasterCalculator.GoodFriday(year);
+        var corpusChristi   = EasterCalculator.CorpusChristi(year);
 
         return new[]
         {
             // Carnival Monday — Easter - 48 days
             new HolidayInfo(
                 id: "br_carnival_monday",
-                month: EasterCalculator.CarnavalMonday(year).Month,
-                day: EasterCalculator.CarnavalMonday(year).Day,
+                month: carnavalMonday.Month,
+                day: carnavalMonday.Day,
                 countryCode: cc,
                 name: "Segunda-feira de Carnaval",
                 names: Names(
@@ -216,8 +220,8 @@ public sealed class BrazilHolidayProvider : BaseHolidayProvider
             // Carnival Tuesday — Easter - 47 days
             new HolidayInfo(
                 id: "br_carnival_tuesday",
-                month: EasterCalculator.CarnavalTuesday(year).Month,
-                day: EasterCalculator.CarnavalTuesday(year).Day,
+                month: carnavalTuesday.Month,
+                day: carnavalTuesday.Day,
                 countryCode: cc,
                 name: "Terça-feira de Carnaval",
                 names: Names(
@@ -233,8 +237,8 @@ public sealed class BrazilHolidayProvider : BaseHolidayProvider
             // Good Friday — Easter - 2 days
             new HolidayInfo(
                 id: "br_good_friday",
-                month: EasterCalculator.GoodFriday(year).Month,
-                day: EasterCalculator.GoodFriday(year).Day,
+                month: goodFriday.Month,
+                day: goodFriday.Day,
                 countryCode: cc,
                 name: "Sexta-Feira Santa",
                 names: Names(
@@ -250,8 +254,8 @@ public sealed class BrazilHolidayProvider : BaseHolidayProvider
             // Corpus Christi — Easter + 60 days
             new HolidayInfo(
                 id: "br_corpus_christi",
-                month: EasterCalculator.CorpusChristi(year).Month,
-                day: EasterCalculator.CorpusChristi(year).Day,
+                month: corpusChristi.Month,
+                day: corpusChristi.Day,
                 countryCode: cc,
                 name: "Corpus Christi",
                 names: Names(

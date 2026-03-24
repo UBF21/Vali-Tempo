@@ -52,6 +52,9 @@ public interface IValiTime
     /// <param name="time">The time value to convert.</param>
     /// <param name="unit">The unit of the time value.</param>
     /// <returns>A <see cref="TimeSpan"/> representing the time.</returns>
+    /// <exception cref="OverflowException">
+    /// Thrown when the converted value exceeds <see cref="TimeSpan.MaxValue"/> (~29,227 years).
+    /// </exception>
     TimeSpan ToTimeSpan(decimal time, TimeUnit unit);
 
     /// <summary>

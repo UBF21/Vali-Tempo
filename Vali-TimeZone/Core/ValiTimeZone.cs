@@ -79,9 +79,7 @@ public sealed class ValiTimeZone : IValiTimeZone
         var utcInstant = at.HasValue
             ? DateTime.SpecifyKind(at.Value, DateTimeKind.Utc)
             : DateTime.UtcNow;
-        // Convert UTC to zone's local time, then get offset
-        var localTime = TimeZoneInfo.ConvertTimeFromUtc(utcInstant, zone);
-        return zone.GetUtcOffset(localTime);
+        return zone.GetUtcOffset(utcInstant);
     }
 
     /// <inheritdoc />

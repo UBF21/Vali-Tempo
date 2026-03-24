@@ -56,13 +56,6 @@ public class ChileHolidayProvider : BaseHolidayProvider
             description: "Conmemoración del Combate Naval de Iquique del 21 de mayo de 1879, durante la Guerra del Pacífico. El capitán Arturo Prat murió heroicamente a bordo de la corbeta Esmeralda."),
 
         new HolidayInfo(
-            "cl_indigenous_peoples", 6, 20, "CL",
-            "Día Nacional de los Pueblos Indígenas",
-            Names("Día Nacional de los Pueblos Indígenas", "National Day of Indigenous Peoples", "Dia Nacional dos Povos Indígenas", "Journée Nationale des Peuples Autochtones", "Nationaler Tag der Indigenen Völker"),
-            HolidayType.National,
-            description: "Celebra el solsticio de invierno del hemisferio sur (Inti Raymi y We Tripantu). La ley fija la fecha al solsticio astronómico, que generalmente cae el 20 o 21 de junio. Aquí se registra el 20 de junio como fecha referencial."),
-
-        new HolidayInfo(
             "cl_san_pedro_pablo", 6, 29, "CL",
             "San Pedro y San Pablo",
             Names("San Pedro y San Pablo", "Saints Peter and Paul", "São Pedro e São Paulo", "Saint Pierre et Paul", "Peter und Paul"),
@@ -147,11 +140,19 @@ public class ChileHolidayProvider : BaseHolidayProvider
     /// </remarks>
     protected override IEnumerable<HolidayInfo> GetMovableHolidays(int year)
     {
-        var goodFriday = EasterCalculator.GoodFriday(year);
+        var goodFriday   = EasterCalculator.GoodFriday(year);
         var holySaturday = EasterCalculator.HolySaturday(year);
+        int indigenousDay = IndigenousPeoplesDay(year);
 
         return new[]
         {
+            new HolidayInfo(
+                "cl_indigenous_peoples", 6, indigenousDay, "CL",
+                "Día Nacional de los Pueblos Indígenas",
+                Names("Día Nacional de los Pueblos Indígenas", "National Day of Indigenous Peoples", "Dia Nacional dos Povos Indígenas", "Journée Nationale des Peuples Autochtones", "Nationaler Tag der Indigenen Völker"),
+                HolidayType.National, isMovable: true,
+                description: "Celebra el solsticio de invierno del hemisferio sur (Inti Raymi y We Tripantu). La fecha corresponde al solsticio astronómico, que cae el 20 o 21 de junio según el año."),
+
             new HolidayInfo(
                 "cl_good_friday", goodFriday.Month, goodFriday.Day, "CL",
                 "Viernes Santo",
@@ -166,5 +167,13 @@ public class ChileHolidayProvider : BaseHolidayProvider
                 HolidayType.Religious, isMovable: true,
                 description: "Vigilia pascual entre la muerte y resurrección de Jesucristo.")
         };
+    }
+
+    private static int IndigenousPeoplesDay(int year)
+    {
+        // The astronomical winter solstice falls on June 20 in leap years near the solstice cycle.
+        // Years when the solstice is on June 20 (Southern Hemisphere winter solstice):
+        var june20Years = new HashSet<int> { 2020, 2024, 2028, 2032, 2036, 2040 };
+        return june20Years.Contains(year) ? 20 : 21;
     }
 }

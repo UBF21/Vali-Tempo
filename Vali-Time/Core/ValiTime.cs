@@ -140,7 +140,10 @@ public class ValiTime : IValiTime
         if (time < 0) throw new ArgumentException("Time cannot be negative.", nameof(time));
         decimal seconds = Convert(time, unit, TimeUnit.Seconds);
         const decimal maxTicks = (decimal)long.MaxValue;
-        decimal ticks = Math.Min(seconds * TimeSpan.TicksPerSecond, maxTicks);
+        decimal ticks = seconds * TimeSpan.TicksPerSecond;
+        if (ticks > maxTicks)
+            throw new OverflowException(
+                $"The value {seconds} seconds is too large to represent as a TimeSpan (max ~29,227 years).");
         return TimeSpan.FromTicks((long)ticks);
     }
 

@@ -356,12 +356,13 @@ public class ValiAge : IValiAge
     /// </exception>
     public DateTime PreviousBirthday(DateTime birthDate, DateTime reference)
     {
+        var firstBirthday = BirthdayInYear(birthDate, birthDate.Year);
+        if (reference.Date < firstBirthday)
+            throw new ArgumentOutOfRangeException(nameof(reference),
+                "Reference date is before the person's first birthday.");
         var thisYear = BirthdayInYear(birthDate, reference.Year);
         if (thisYear <= reference.Date) return thisYear;
         // Birthday hasn't happened this year yet — return last year's
-        if (reference.Year <= 1)
-            throw new ArgumentOutOfRangeException(nameof(reference),
-                "Cannot compute previous birthday: reference is before the first birthday.");
         return BirthdayInYear(birthDate, reference.Year - 1);
     }
 

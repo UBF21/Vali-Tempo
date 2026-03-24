@@ -601,7 +601,7 @@ public class ValiDate : IValiDate
             // clamp from.Day to daysInPrevMonth so fraction is always in [0,1)
             int effectiveFromDay = Math.Min(from.Day, daysInPrevMonth);
             dayDiff = to.Day + (daysInPrevMonth - effectiveFromDay);
-            decimal dayFraction = (decimal)dayDiff / DateTime.DaysInMonth(from.Year, from.Month);
+            decimal dayFraction = (decimal)dayDiff / daysInPrevMonth;
             return months + dayFraction;
         }
 
