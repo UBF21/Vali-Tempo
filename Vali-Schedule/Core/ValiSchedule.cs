@@ -486,8 +486,8 @@ public class ValiSchedule : IValiSchedule
                       && IsInValidWeekInterval(date, effectiveStart),
 
             RecurrenceType.Monthly =>
-                date.Day == Math.Min(_config.DayOfMonth ?? effectiveStart.Day,
-                                     DateTime.DaysInMonth(date.Year, date.Month))
+                (_config.DayOfMonth == null || _config.DayOfMonth <= DateTime.DaysInMonth(date.Year, date.Month))
+                && date.Day == (_config.DayOfMonth ?? effectiveStart.Day)
                 && MonthDiff(effectiveStart, date) % _config.Interval == 0,
 
             RecurrenceType.Yearly =>

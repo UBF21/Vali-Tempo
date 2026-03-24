@@ -457,6 +457,7 @@ public class ValiRange : IValiRange
 
             yield return new DateRange(chunkStart, chunkEnd);
 
+            if (quarterStart.Year == 9999 && quarterStart.Month >= 10) yield break;
             quarterStart = quarterStart.AddMonths(3);
             firstMonth   = quarterStart.Month;
         }

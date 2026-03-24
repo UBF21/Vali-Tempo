@@ -160,8 +160,9 @@ public class ArgentinaHolidayProvider : BaseHolidayProvider
                 "ar_easter", easter.Month, easter.Day, "AR",
                 "Pascua",
                 Names("Pascua", "Easter Sunday", "Páscoa", "Pâques", "Ostersonntag"),
-                HolidayType.Religious, isMovable: true,
-                description: "Celebración de la Resurrección de Jesucristo. Día de mayor importancia en el calendario litúrgico cristiano."),
+                HolidayType.Observance, isMovable: true,
+                regionCode: "AR-OBS",
+                description: "Celebración de la Resurrección de Jesucristo. Día de mayor importancia en el calendario litúrgico cristiano. No es feriado nacional obligatorio en Argentina."),
 
             new HolidayInfo(
                 "ar_san_martin", sanMartin.Month, sanMartin.Day, "AR",
