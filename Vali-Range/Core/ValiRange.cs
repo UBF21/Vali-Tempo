@@ -29,8 +29,8 @@ public class ValiRange : IValiRange
     // =========================================================================
 
     /// <summary>
-    /// Converts a <paramref name="amount"/> expressed in <paramref name="unit"/> into a <see cref="TimeSpan"/>.
-    /// For calendar-sensitive units (Months, Years) an average-day approximation is used.
+    /// Maximum representable <see cref="TimeSpan"/> value as a <see cref="decimal"/> tick count.
+    /// Used to guard against overflow when converting large durations.
     /// </summary>
     private const decimal MaxTicksDecimal = (decimal)long.MaxValue;
 

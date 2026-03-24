@@ -245,7 +245,7 @@ public readonly struct ValiDuration : IEquatable<ValiDuration>, IComparable<Vali
 
     /// <summary>
     /// Implicitly converts a <see cref="ValiDuration"/> to a <see cref="TimeSpan"/>.
-    /// Precision is limited to the <c>double</c> range of <see cref="TimeSpan.FromSeconds"/>.
+    /// Precision is limited to the <c>double</c> range of <see cref="TimeSpan.FromSeconds(double)"/>.
     /// </summary>
     /// <param name="d">The <see cref="ValiDuration"/> to convert.</param>
     public static implicit operator TimeSpan(ValiDuration d) => d.ToTimeSpan();
