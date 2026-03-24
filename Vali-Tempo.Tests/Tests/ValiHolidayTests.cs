@@ -409,4 +409,131 @@ public class ValiHolidayTests
     {
         HolidayProviderFactory.CreateLatinAmerica().Supports("NI").Should().BeTrue();
     }
+
+    // ── H-1: Honduras Día del Maestro (Sep 17) ──────────────────────────────
+
+    [Fact]
+    public void Honduras_Sep17_IsDiaDelMaestro()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.IsHoliday(new DateTime(2025, 9, 17), "HN").Should().BeTrue();
+    }
+
+    [Fact]
+    public void Honduras_GetHolidays_ContainsDiaDelMaestro()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.GetHolidays(2025, "HN").Should().Contain(h => h.Id == "hn_teachers_day");
+    }
+
+    // ── H-2: Honduras Easter Sunday added to movable holidays ───────────────
+
+    [Fact]
+    public void Honduras_EasterSunday_IsHoliday()
+    {
+        // Easter 2025 = April 20
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.IsHoliday(new DateTime(2025, 4, 20), "HN").Should().BeTrue();
+    }
+
+    [Fact]
+    public void Honduras_GetHolidays_ContainsEasterSunday()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.GetHolidays(2025, "HN").Should().Contain(h => h.Id == "hn_easter");
+    }
+
+    // ── H-3: Argentina ar_easter is Observance + regionCode, excluded from IsHoliday ──
+
+    [Fact]
+    public void Argentina_EasterSunday_NotInIsHoliday()
+    {
+        // Easter 2025 = April 20; ar_easter is HolidayType.Observance with regionCode AR-OBS
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.IsHoliday(new DateTime(2025, 4, 20), "AR").Should().BeFalse();
+    }
+
+    [Fact]
+    public void Argentina_EasterSunday_ExistsInGetHolidays()
+    {
+        // ar_easter is still in the full list even though it is an Observance
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.GetHolidays(2025, "AR").Should().Contain(h => h.Id == "ar_easter");
+    }
+
+    [Fact]
+    public void Argentina_EasterSunday_HasObservanceType()
+    {
+        var provider = new ArgentinaHolidayProvider();
+        var holiday = provider.GetHolidays(2025).First(h => h.Id == "ar_easter");
+        holiday.Type.Should().Be(HolidayType.Observance);
+    }
+
+    // ── H-4: Chile Indigenous Peoples Day is solstice-based (Jun 20 or 21) ──
+
+    [Fact]
+    public void Chile_2024_IndigenousPeoplesDay_IsJun20()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.IsHoliday(new DateTime(2024, 6, 20), "CL").Should().BeTrue();
+    }
+
+    [Fact]
+    public void Chile_2025_IndigenousPeoplesDay_IsJun21()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.IsHoliday(new DateTime(2025, 6, 21), "CL").Should().BeTrue();
+    }
+
+    [Fact]
+    public void Chile_2025_Jun20_IsNotIndigenousPeoplesDay()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.IsHoliday(new DateTime(2025, 6, 20), "CL").Should().BeFalse();
+    }
+
+    [Fact]
+    public void Chile_IndigenousPeoplesDay_IsMovable()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        var holiday = vali.GetHolidays(2025, "CL").First(h => h.Id == "cl_indigenous_peoples");
+        holiday.IsMovable.Should().BeTrue();
+    }
+
+    // ── H-5: BaseHolidayProvider Observance type excluded from IsHoliday ────
+
+    [Fact]
+    public void Argentina_EasterSunday_ObservanceExcludedFromIsHoliday()
+    {
+        // Reinforces H-3: Observance-typed holidays must not appear in IsHoliday
+        var provider = new ArgentinaHolidayProvider();
+        // Easter 2025 = April 20
+        provider.IsHoliday(new DateTime(2025, 4, 20)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Mexico_MothersDayObservance_NotInIsHoliday()
+    {
+        // mx_mothers_day (May 10) is HolidayType.Observance — must not appear in IsHoliday
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.IsHoliday(new DateTime(2025, 5, 10), "MX").Should().BeFalse();
+    }
+
+    // ── H-6: Brazil pre-computed EasterCalculator (functional results) ───────
+
+    [Fact]
+    public void Brazil_CarnavalMonday_2025_IsCorrect()
+    {
+        // Easter 2025 = April 20; Carnaval Monday = Easter - 48 days = March 3
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.IsHoliday(new DateTime(2025, 3, 3), "BR").Should().BeTrue();
+    }
+
+    [Fact]
+    public void Brazil_CorpusChristi_2025_IsCorrect()
+    {
+        // Easter 2025 = April 20; Corpus Christi = Easter + 60 days = June 19
+        var vali = HolidayProviderFactory.CreateAll();
+        vali.IsHoliday(new DateTime(2025, 6, 19), "BR").Should().BeTrue();
+    }
 }

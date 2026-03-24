@@ -356,7 +356,7 @@ public class ValiAge : IValiAge
     /// </exception>
     public DateTime PreviousBirthday(DateTime birthDate, DateTime reference)
     {
-        var firstBirthday = BirthdayInYear(birthDate, birthDate.Year);
+        var firstBirthday = BirthdayInYear(birthDate, birthDate.Year + 1);
         if (reference.Date < firstBirthday)
             throw new ArgumentOutOfRangeException(nameof(reference),
                 "Reference date is before the person's first birthday.");

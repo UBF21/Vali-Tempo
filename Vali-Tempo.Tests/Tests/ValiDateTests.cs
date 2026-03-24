@@ -511,4 +511,42 @@ public class ValiDateTests
         var b = new DateTime(2025, 4, 1);
         _vali.IsInSameQuarter(a, b).Should().BeFalse();
     }
+
+    // ── T-1: MonthsDiff wrong denominator bug fixes ──────────────────────────
+
+    [Fact]
+    public void MonthsDiff_WhenDayDiffNegative_FractionBelowOne()
+    {
+        // from = Jan 31, to = Mar 1: dayDiff = 1 - 31 = -20 (negative)
+        // Whole months = 1 (Jan→Feb skipped back to Jan, so months-1=1)
+        // Fraction should be computed against days-in-Feb (28), not days-in-Jan (31)
+        // Result should be ~1.03, definitely < 2
+        var from = new DateTime(2025, 1, 31);
+        var to   = new DateTime(2025, 3, 1);
+        decimal result = _vali.Diff(from, to, TimeUnit.Months);
+        result.Should().BeGreaterThan(1m).And.BeLessThan(2m);
+    }
+
+    [Fact]
+    public void MonthsDiff_CrossMonthBoundary_FractionIsCorrect()
+    {
+        // from = Jan 31 2025, to = Feb 28 2025: dayDiff = 28-31 = -3 (negative branch)
+        // prevMonth = Jan, daysInPrevMonth = 31
+        // effectiveFromDay = min(31,31) = 31; dayDiff = 28+(31-31) = 28; fraction = 28/31 ≈ 0.903
+        // Result is positive and less than 1: fraction stays in [0,1) — the key invariant of the fix
+        var from = new DateTime(2025, 1, 31);
+        var to   = new DateTime(2025, 2, 28);
+        decimal result = _vali.Diff(from, to, TimeUnit.Months);
+        result.Should().BeGreaterThan(0m).And.BeLessThan(1m);
+    }
+
+    [Fact]
+    public void MonthsDiff_FromLongMonthToShortMonth_NoOverflow()
+    {
+        // from = Jan 31, to = Apr 1: should be ~2.03, not > 3 or nonsensical
+        var from = new DateTime(2025, 1, 31);
+        var to   = new DateTime(2025, 4, 1);
+        decimal result = _vali.Diff(from, to, TimeUnit.Months);
+        result.Should().BeGreaterThan(2m).And.BeLessThan(3m);
+    }
 }

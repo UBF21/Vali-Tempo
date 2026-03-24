@@ -379,4 +379,60 @@ public class ValiAgeTests
         var reference = new DateTime(2024, 2, 29);
         _vali.IsAtLeast(birthDate, 20, DatePart.Year, reference).Should().BeTrue();
     }
+
+    // ── PreviousBirthday — A-1 guard fix ────────────────────────────────────
+
+    [Fact]
+    public void PreviousBirthday_BeforeFirstBirthday_ThrowsArgumentOutOfRange()
+    {
+        // born Dec 25, 1990; first birthday = Dec 25, 1991
+        // reference = Dec 24, 1991 → one day before first birthday → should throw
+        var birthDate = new DateTime(1990, 12, 25);
+        var reference = new DateTime(1991, 12, 24);
+        var act = () => _vali.PreviousBirthday(birthDate, reference);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void PreviousBirthday_OnFirstBirthday_ReturnsFirstBirthday()
+    {
+        // born Jun 15, 1990; first birthday = Jun 15, 1991
+        // reference exactly on first birthday → returns that date
+        var birthDate = new DateTime(1990, 6, 15);
+        var reference = new DateTime(1991, 6, 15);
+        DateTime result = _vali.PreviousBirthday(birthDate, reference);
+        result.Should().Be(new DateTime(1991, 6, 15));
+    }
+
+    [Fact]
+    public void PreviousBirthday_JustAfterFirstBirthday_ReturnsFirstBirthday()
+    {
+        // born Jun 15, 1990; first birthday = Jun 15, 1991
+        // reference = Jun 16, 1991 → one day after first birthday → previous is Jun 15, 1991
+        var birthDate = new DateTime(1990, 6, 15);
+        var reference = new DateTime(1991, 6, 16);
+        DateTime result = _vali.PreviousBirthday(birthDate, reference);
+        result.Should().Be(new DateTime(1991, 6, 15));
+    }
+
+    [Fact]
+    public void PreviousBirthday_BirthdayNotYetThisYear_ReturnsPreviousYear()
+    {
+        // born Dec 25, 1990; reference = Jun 1, 2025
+        // birthday in 2025 is Dec 25, 2025 — hasn't happened yet → previous is Dec 25, 2024
+        var birthDate = new DateTime(1990, 12, 25);
+        var reference = new DateTime(2025, 6, 1);
+        DateTime result = _vali.PreviousBirthday(birthDate, reference);
+        result.Should().Be(new DateTime(2024, 12, 25));
+    }
+
+    [Fact]
+    public void PreviousBirthday_OnBirthdayToday_ReturnsThatDay()
+    {
+        // born Mar 10, 1990; reference = Mar 10, 2025 → birthday falls on reference date
+        var birthDate = new DateTime(1990, 3, 10);
+        var reference = new DateTime(2025, 3, 10);
+        DateTime result = _vali.PreviousBirthday(birthDate, reference);
+        result.Should().Be(new DateTime(2025, 3, 10));
+    }
 }

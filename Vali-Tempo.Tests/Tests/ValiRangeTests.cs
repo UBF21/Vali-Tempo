@@ -340,4 +340,35 @@ public class ValiRangeTests
         merged[0].Start.Should().Be(new DateTime(2025, 1, 1));
         merged[0].End.Should().Be(new DateTime(2025, 12, 31));
     }
+
+    // ── R-1: SplitByQuarter overflow guard ───────────────────────────────────
+
+    [Fact]
+    public void SplitByQuarter_RangeEndingInMaxYear_DoesNotThrow()
+    {
+        // Q4 9999 starts Oct 1 — AddMonths(3) would overflow; guard must yield break
+        var range = new DateRange(new DateTime(9999, 10, 1), DateTime.MaxValue);
+        Action act = () => _vali.SplitByQuarter(range).ToList();
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void SplitByQuarter_RangeEndingInMaxYear_YieldsExactlyOneQuarter()
+    {
+        // Only Q4 9999 exists in the range — exactly one result expected
+        var range = new DateRange(new DateTime(9999, 10, 1), DateTime.MaxValue);
+        var quarters = _vali.SplitByQuarter(range).ToList();
+        quarters.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void SplitByQuarter_RangeSpanningQ3Q4MaxYear_YieldsCorrectly()
+    {
+        // Q3 9999 = Jul 1 – Sep 30; Q4 9999 = Oct 1 – Dec 31 — two quarters expected
+        var range = new DateRange(new DateTime(9999, 7, 1), new DateTime(9999, 12, 31));
+        var quarters = _vali.SplitByQuarter(range).ToList();
+        quarters.Should().HaveCount(2);
+        quarters[0].Start.Should().Be(new DateTime(9999, 7, 1));
+        quarters[1].Start.Should().Be(new DateTime(9999, 10, 1));
+    }
 }
