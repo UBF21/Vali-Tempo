@@ -144,7 +144,32 @@ public interface IValiDateQuarter
     /// <summary>
     /// Returns the first day of the quarter that immediately precedes the quarter containing the specified date.
     /// </summary>
+    /// <remarks>
+    /// When the previous quarter would underflow below <see cref="DateTime.MinValue"/>,
+    /// <see cref="DateTime.MinValue"/> is returned as a sentinel value. Callers that need to
+    /// distinguish this sentinel from a real date should use <see cref="TryPreviousQuarterStart"/> instead.
+    /// </remarks>
     /// <param name="date">The date to evaluate.</param>
-    /// <returns>A <see cref="DateTime"/> representing the start of the previous quarter.</returns>
+    /// <returns>
+    /// A <see cref="DateTime"/> representing the start of the previous quarter, or
+    /// <see cref="DateTime.MinValue"/> when no previous quarter exists.
+    /// </returns>
     DateTime PreviousQuarterStart(DateTime date);
+
+    /// <summary>
+    /// Tries to return the first day of the quarter that immediately precedes the quarter
+    /// containing the specified date.
+    /// </summary>
+    /// <param name="date">The date to evaluate.</param>
+    /// <param name="result">
+    /// When this method returns <c>true</c>, contains the first day of the previous quarter.
+    /// When this method returns <c>false</c> (no previous quarter exists), contains
+    /// <see cref="DateTime.MinValue"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if a previous quarter exists and <paramref name="result"/> holds its start date;
+    /// <c>false</c> if the current date is in a quarter that would underflow and no previous quarter
+    /// can be represented.
+    /// </returns>
+    bool TryPreviousQuarterStart(DateTime date, out DateTime result);
 }
