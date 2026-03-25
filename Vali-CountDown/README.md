@@ -11,6 +11,7 @@
 - **Breakdown** — remaining time split into hours, minutes, seconds, and milliseconds as a `Dictionary<TimeUnit, decimal>`
 - **Format** — human-readable string such as `"5d 3h 20m"` or `"Expired"`
 - **IsWithin** — returns `true` if the deadline is within a given threshold (e.g., within 1 hour)
+- **IsStarted** — returns `true` if a given point in time is in the past or present (elapsed time > 0)
 - Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
 - Registered as a **singleton** via `AddValiCountdown()`
 
@@ -166,6 +167,22 @@ var sla = DateTime.Now.AddMinutes(45);
 
 bool nearingExpiry = countdown.IsWithin(sla, 1, TimeUnit.Hours);   // true  — within 1 hour
 bool critical      = countdown.IsWithin(sla, 30, TimeUnit.Minutes); // false — more than 30 min remain
+```
+
+---
+
+### `IsStarted`
+
+Returns `true` if `from` is in the past or present (i.e., elapsed time > 0).
+
+```csharp
+bool IsStarted(DateTime from);
+```
+
+```csharp
+var eventStart = new DateTime(2025, 6, 1, 9, 0, 0);
+
+bool started = countdown.IsStarted(eventStart); // true if event has begun
 ```
 
 ---

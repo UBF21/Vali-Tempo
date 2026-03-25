@@ -163,7 +163,7 @@ public class ValiHolidayTests
     {
         var vali = HolidayProviderFactory.CreateAll();
         Action act = () => vali.For(null!);
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -171,7 +171,7 @@ public class ValiHolidayTests
     {
         var vali = HolidayProviderFactory.CreateAll();
         Action act = () => vali.For("");
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class ValiHolidayTests
     {
         var vali = HolidayProviderFactory.CreateAll();
         Action act = () => vali.For("  ");
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -187,7 +187,7 @@ public class ValiHolidayTests
     {
         var vali = HolidayProviderFactory.CreateAll();
         Action act = () => vali.IsHoliday(DateTime.Today, null!);
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -195,7 +195,7 @@ public class ValiHolidayTests
     {
         var vali = HolidayProviderFactory.CreateAll();
         Action act = () => vali.GetHolidays(2025, (string)null!);
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentException>();
     }
 
     // ── FIX 2: Cache consistency tests ──────────────────────────────────────
@@ -301,7 +301,7 @@ public class ValiHolidayTests
     {
         var vali = HolidayProviderFactory.CreateAll();
         Action act = () => vali.GetNextHolidayWithYear(DateTime.Today, null!);
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -309,7 +309,7 @@ public class ValiHolidayTests
     {
         var vali = HolidayProviderFactory.CreateAll();
         Action act = () => vali.GetPreviousHolidayWithYear(DateTime.Today, null!);
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -535,5 +535,25 @@ public class ValiHolidayTests
         // Easter 2025 = April 20; Corpus Christi = Easter + 60 days = June 19
         var vali = HolidayProviderFactory.CreateAll();
         vali.IsHoliday(new DateTime(2025, 6, 19), "BR").Should().BeTrue();
+    }
+
+    // ── VH-2: HolidaysThisMonth validates month ──────────────────────────────
+
+    [Fact]
+    public void HolidaysThisMonth_MonthZero_ThrowsArgumentOutOfRangeException()
+    {
+        // Month 0 is below the valid range [1,12]
+        var vali = HolidayProviderFactory.CreateLatinAmerica();
+        Action act = () => vali.HolidaysThisMonth(2025, 0, "PE").ToList();
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void HolidaysThisMonth_Month13_ThrowsArgumentOutOfRangeException()
+    {
+        // Month 13 is above the valid range [1,12]
+        var vali = HolidayProviderFactory.CreateLatinAmerica();
+        Action act = () => vali.HolidaysThisMonth(2025, 13, "PE").ToList();
+        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 }

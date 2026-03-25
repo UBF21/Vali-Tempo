@@ -224,4 +224,32 @@ public class ValiCountdownTests
         string result = _vali.Format(deadline);
         result.Should().MatchRegex(@"\d+d|\d+h");
     }
+
+    // ── VCO-1: Format returns "< 1s" for sub-second deadlines ────────────────
+
+    [Fact]
+    public void Format_SubSecondDeadline_ReturnsLessThanOneSecond()
+    {
+        // A deadline 0.5 seconds in the future: TimeUntil returns < 1 second,
+        // which when cast to long becomes 0, triggering the "< 1s" branch.
+        DateTime deadline = DateTime.Now.AddMilliseconds(500);
+        string result = _vali.Format(deadline, includeSeconds: true);
+        result.Should().Be("< 1s");
+    }
+
+    // ── VCO-2: IsStarted ─────────────────────────────────────────────────────
+
+    [Fact]
+    public void IsStarted_PastDate_ReturnsTrue()
+    {
+        // A point 1 hour in the past has already started
+        _vali.IsStarted(DateTime.Now.AddHours(-1)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsStarted_FutureDate_ReturnsFalse()
+    {
+        // A point 1 hour in the future has not yet started
+        _vali.IsStarted(DateTime.Now.AddHours(1)).Should().BeFalse();
+    }
 }
