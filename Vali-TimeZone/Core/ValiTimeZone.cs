@@ -72,7 +72,12 @@ public sealed class ValiTimeZone : IValiTimeZone
     // Timezone info
     // ====================================================================
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IValiTimeZone.GetOffset"/>
+    /// <param name="zoneId">The IANA timezone ID.</param>
+    /// <param name="at">
+    /// The UTC instant at which to evaluate the offset. When <c>null</c>, <see cref="DateTime.UtcNow"/> is used.
+    /// The value is always interpreted as UTC regardless of its <see cref="DateTime.Kind"/>.
+    /// </param>
     public TimeSpan GetOffset(string zoneId, DateTime? at = null)
     {
         var zone = ResolveZone(zoneId);
@@ -96,7 +101,13 @@ public sealed class ValiTimeZone : IValiTimeZone
         return zone.IsDaylightSavingTime(DateTime.SpecifyKind(dateTime, DateTimeKind.Unspecified));
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IValiTimeZone.OffsetDiff"/>
+    /// <param name="zoneId1">The IANA timezone ID of the first timezone.</param>
+    /// <param name="zoneId2">The IANA timezone ID of the second timezone.</param>
+    /// <param name="at">
+    /// The UTC instant at which to evaluate the offset. When <c>null</c>, <see cref="DateTime.UtcNow"/> is used.
+    /// The value is always interpreted as UTC regardless of its <see cref="DateTime.Kind"/>.
+    /// </param>
     public decimal OffsetDiff(string zoneId1, string zoneId2, DateTime? at = null)
     {
         var utcInstant = at.HasValue
@@ -126,7 +137,7 @@ public sealed class ValiTimeZone : IValiTimeZone
     public IEnumerable<ValiZoneInfo> ZonesForCountry(string countryCode)
     {
         if (string.IsNullOrWhiteSpace(countryCode))
-            throw new ArgumentNullException(nameof(countryCode));
+            throw new ArgumentException("Country code must not be null, empty, or whitespace.", nameof(countryCode));
         return TimeZoneData.Zones.Values
             .Where(z => z.CountryCode.Equals(countryCode, StringComparison.OrdinalIgnoreCase));
     }
@@ -163,9 +174,9 @@ public sealed class ValiTimeZone : IValiTimeZone
     public bool IsSameInstant(DateTime a, string zoneA, DateTime b, string zoneB)
     {
         if (string.IsNullOrWhiteSpace(zoneA))
-            throw new ArgumentNullException(nameof(zoneA));
+            throw new ArgumentException("Zone ID must not be null, empty, or whitespace.", nameof(zoneA));
         if (string.IsNullOrWhiteSpace(zoneB))
-            throw new ArgumentNullException(nameof(zoneB));
+            throw new ArgumentException("Zone ID must not be null, empty, or whitespace.", nameof(zoneB));
         return ToUtc(a, zoneA) == ToUtc(b, zoneB);
     }
 

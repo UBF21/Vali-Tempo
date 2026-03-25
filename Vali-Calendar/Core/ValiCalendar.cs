@@ -44,6 +44,10 @@ public class ValiCalendar : IValiCalendar
     /// The week number follows ISO 8601 when <paramref name="weekStart"/> is <see cref="WeekStart.Monday"/>,
     /// or uses <see cref="GregorianCalendar"/> rules when it is <see cref="WeekStart.Sunday"/>.
     /// </summary>
+    /// <remarks>
+    /// For Sunday-based weeks, the year always equals the calendar year of the date
+    /// (<see cref="CalendarWeekRule.FirstDay"/> is used, which starts a new week 1 on every January 1st).
+    /// </remarks>
     /// <param name="date">The date to evaluate.</param>
     /// <param name="weekStart">The day the week starts on. Uses the instance default if not specified.</param>
     public CalendarWeek WeekOf(DateTime date, WeekStart? weekStart = null)
@@ -66,7 +70,7 @@ public class ValiCalendar : IValiCalendar
         else
         {
             weekNumber = new System.Globalization.GregorianCalendar().GetWeekOfYear(date, CalendarWeekRule.FirstDay, DayOfWeek.Sunday);
-            year = (weekNumber >= 52 && date.Month == 1) ? date.Year - 1 : date.Year;
+            year = date.Year;
         }
 
         return new CalendarWeek(weekNumber, year, start, end);

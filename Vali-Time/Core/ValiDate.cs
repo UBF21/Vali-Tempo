@@ -564,15 +564,35 @@ public class ValiDate : IValiDate
     /// <summary>
     /// Returns the first day of the quarter immediately preceding the one containing the given date.
     /// </summary>
+    /// <remarks>
+    /// When the quarter start of the given date is at or before <c>new DateTime(1, 3, 1)</c>
+    /// (i.e., the previous quarter would underflow below <see cref="DateTime.MinValue"/>),
+    /// <see cref="DateTime.MinValue"/> is returned as a sentinel value. Callers that need to
+    /// distinguish this sentinel from a real date should use <see cref="TryPreviousQuarterStart"/> instead.
+    /// </remarks>
     /// <param name="date">The reference date.</param>
     /// <returns>
-    /// A <see cref="DateTime"/> set to midnight on the first day of the previous quarter.
+    /// A <see cref="DateTime"/> set to midnight on the first day of the previous quarter, or
+    /// <see cref="DateTime.MinValue"/> when no previous quarter exists.
     /// </returns>
     public DateTime PreviousQuarterStart(DateTime date)
     {
         var start = QuarterStartDate(date);
         if (start <= new DateTime(1, 3, 1)) return DateTime.MinValue;
         return start.AddMonths(-3);
+    }
+
+    /// <inheritdoc/>
+    public bool TryPreviousQuarterStart(DateTime date, out DateTime result)
+    {
+        var start = QuarterStartDate(date);
+        if (start <= new DateTime(1, 3, 1))
+        {
+            result = DateTime.MinValue;
+            return false;
+        }
+        result = start.AddMonths(-3);
+        return true;
     }
 
     // =========================================================================

@@ -14,6 +14,9 @@ public static class EasterCalculator
     /// <returns>A <see cref="DateTime"/> representing Easter Sunday at midnight.</returns>
     public static DateTime Easter(int year)
     {
+        if (year < 1583)
+            throw new ArgumentOutOfRangeException(nameof(year), year,
+                "The Gaussian Easter algorithm is only valid for Gregorian calendar years (1583 and later).");
         int a = year % 19;
         int b = year / 100;
         int c = year % 100;

@@ -125,6 +125,7 @@ public class ValiRange : IValiRange
     /// <returns>A <see cref="DateRange"/> whose <c>End</c> is <see cref="DateTime.Now"/> and <c>Start</c> is <paramref name="amount"/> units earlier.</returns>
     public DateRange LastUnits(decimal amount, TimeUnit unit)
     {
+        if (amount <= 0) throw new ArgumentException("Amount must be greater than zero.", nameof(amount));
         DateTime now   = _clock.Now;
         DateTime start = SubtractUnit(now, amount, unit);
         return new DateRange(start, now);
@@ -141,6 +142,7 @@ public class ValiRange : IValiRange
     /// <returns>A <see cref="DateRange"/> whose <c>Start</c> is <see cref="DateTime.Now"/> and <c>End</c> is <paramref name="amount"/> units later.</returns>
     public DateRange NextUnits(decimal amount, TimeUnit unit)
     {
+        if (amount <= 0) throw new ArgumentException("Amount must be greater than zero.", nameof(amount));
         DateTime now = _clock.Now;
         DateTime end = AddUnit(now, amount, unit);
         return new DateRange(now, end);
@@ -538,7 +540,7 @@ public class ValiRange : IValiRange
             if (cursor < start) yield return new DateRange(cursor, start.AddDays(-1));
             if (r.End > cursor) cursor = r.End == DateTime.MaxValue ? DateTime.MaxValue : r.End.AddDays(1);
         }
-        if (cursor <= container.End) yield return new DateRange(cursor, container.End);
+        if (cursor < container.End) yield return new DateRange(cursor, container.End);
     }
 
     /// <summary>

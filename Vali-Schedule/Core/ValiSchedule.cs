@@ -249,6 +249,9 @@ public class ValiSchedule : IValiSchedule
             }
         }
 
+        int preScanCount = occurrenceCount;
+        int yielded = 0;
+
         while (count < MaxScanDays) // max 5 years lookahead
         {
             if (IsValidOccurrence(candidate))
@@ -260,7 +263,8 @@ public class ValiSchedule : IValiSchedule
                 // schedule has ended or the lookahead window was exhausted.
                 if (!IsWithinEnd(candidate)) return null;
 
-                occurrenceCount++;
+                yielded++;
+                occurrenceCount = preScanCount + yielded;
                 if (_config.EndType == RecurrenceEnd.AfterOccurrences
                     && _config.MaxOccurrences.HasValue
                     && occurrenceCount > _config.MaxOccurrences.Value)
@@ -379,13 +383,16 @@ public class ValiSchedule : IValiSchedule
             }
         }
 
+        int preScanCount = occurrenceCount;
+
         while (yielded < limit && count < MaxScanDays)
         {
             if (IsValidOccurrence(candidate))
             {
                 if (!IsWithinEnd(candidate)) yield break;
 
-                occurrenceCount++;
+                yielded++;
+                occurrenceCount = preScanCount + yielded;
 
                 if (_config.EndType == RecurrenceEnd.AfterOccurrences
                     && _config.MaxOccurrences.HasValue
@@ -395,8 +402,6 @@ public class ValiSchedule : IValiSchedule
                 yield return _config.TimeOfDay.HasValue
                     ? candidate.Add(_config.TimeOfDay.Value.ToTimeSpan())
                     : candidate;
-
-                yielded++;
             }
             if (candidate >= DateTime.MaxValue.AddDays(-1)) break;
             candidate = candidate.AddDays(1);
@@ -439,11 +444,15 @@ public class ValiSchedule : IValiSchedule
             }
         }
 
+        int preScanCount = occurrenceCount;
+        int rangeYielded = 0;
+
         while (candidate <= to.Date && scanCount < MaxScanDays * 10)
         {
             if (IsValidOccurrence(candidate) && IsWithinEnd(candidate))
             {
-                occurrenceCount++;
+                rangeYielded++;
+                occurrenceCount = preScanCount + rangeYielded;
 
                 if (_config.EndType == RecurrenceEnd.AfterOccurrences
                     && _config.MaxOccurrences.HasValue
@@ -481,8 +490,7 @@ public class ValiSchedule : IValiSchedule
             RecurrenceType.Weekly =>
                 (_config.DaysOfWeek == null || _config.DaysOfWeek.Count == 0)
                     ? throw new InvalidOperationException("Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.")
-                    : _config.DaysOfWeek != null && _config.DaysOfWeek.Count > 0
-                      && _config.DaysOfWeek.Contains(date.DayOfWeek)
+                    : _config.DaysOfWeek.Contains(date.DayOfWeek)
                       && IsInValidWeekInterval(date, effectiveStart),
 
             RecurrenceType.Monthly =>

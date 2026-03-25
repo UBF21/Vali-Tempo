@@ -76,7 +76,7 @@ public class ValiTime : IValiTime
             ? -ConvertToSeconds(-t.time, t.unit)
             : ConvertToSeconds(t.time, t.unit));
         if (totalSeconds < 0m)
-            throw new ArgumentException("The sum of the provided times is negative. Use SubtractTimes with allowNegative=true for signed results.", nameof(times));
+            throw new ArgumentException("The sum of the provided times is negative.", nameof(times));
         return Convert(totalSeconds, TimeUnit.Seconds, resultUnit, decimalPlaces, rounding);
     }
 
@@ -361,6 +361,9 @@ public class ValiTime : IValiTime
                 !decimal.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal secs))
                 throw new FormatException($"Unable to parse time string: '{input}'.");
 
+            if (minutes < 0 || minutes > 59 || secs < 0 || secs > 59)
+                throw new FormatException($"Invalid time format: minutes and seconds must be between 0 and 59 in '{input}'.");
+
             return minutes * Constants.SecondsInMinute + secs;
         }
 
@@ -371,6 +374,9 @@ public class ValiTime : IValiTime
                 !decimal.TryParse(parts[2], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal secs))
                 throw new FormatException($"Unable to parse time string: '{input}'.");
 
+            if (minutes < 0 || minutes > 59 || secs < 0 || secs > 59)
+                throw new FormatException($"Invalid time format: minutes and seconds must be between 0 and 59 in '{input}'.");
+
             return hours * Constants.SecondsInHour + minutes * Constants.SecondsInMinute + secs;
         }
 
@@ -378,15 +384,21 @@ public class ValiTime : IValiTime
     }
 
     private static readonly Regex TokenRegex = new(
-        @"(\d+(?:\.\d+)?)\s*(ms|milliseconds?|mo|months?|s|sec(?:onds)?|m|min(?:utes)?|h|hr|hours?|d|days?|w|weeks?|yr|years?)",
+        @"(\d+(?:\.\d+)?)\s*(milliseconds?|ms|months?|mo|sec(?:onds)?|min(?:utes)?|hours?|hr|days?|weeks?|years?|yr|[smhdw])",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private static decimal ParseLabelledTokens(string input)
     {
-        var matches = TokenRegex.Matches(input);
+        string trimmed = input.Trim();
+        var matches = TokenRegex.Matches(trimmed);
 
         if (matches.Count == 0)
             throw new FormatException($"Unable to parse time string: '{input}'. No recognised time tokens found.");
+
+        string matched = string.Concat(matches.Select(m => m.Value)).Replace(" ", "");
+        string expected = trimmed.Replace(" ", "");
+        if (matched != expected)
+            throw new FormatException($"Unrecognised tokens in time string: '{input}'.");
 
         decimal totalSeconds = 0m;
 

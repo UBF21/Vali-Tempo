@@ -71,6 +71,7 @@ public class ValiCountdown : IValiCountdown
 
     /// <summary>
     /// Returns the amount of time that has elapsed since the specified point in the given unit.
+    /// When <paramref name="from"/> is in the future, the method returns 0.
     /// </summary>
     /// <param name="from">The starting point in time.</param>
     /// <param name="unit">The time unit in which to express the result.</param>
@@ -178,6 +179,7 @@ public class ValiCountdown : IValiCountdown
             return "Expired";
 
         long total   = (long)totalSeconds;
+        if (total == 0) return "< 1s";
         long days    = total / 86_400L;
         long rem     = total % 86_400L;
         long hours   = rem / 3_600L;
@@ -194,6 +196,15 @@ public class ValiCountdown : IValiCountdown
 
         return parts.Count > 0 ? string.Join(" ", parts) : (includeSeconds ? "0s" : "0m");
     }
+
+    // === IS STARTED ===
+
+    /// <summary>
+    /// Returns <c>true</c> if <paramref name="from"/> is in the past or present (i.e., elapsed time &gt; 0).
+    /// </summary>
+    /// <param name="from">The start instant to check.</param>
+    /// <returns><c>true</c> if <see cref="TimeElapsed(DateTime, TimeUnit)"/> would return a positive value.</returns>
+    public bool IsStarted(DateTime from) => _clock.Now >= from;
 
     // === IS WITHIN ===
 

@@ -31,6 +31,7 @@ public interface IValiCountdown
 
     /// <summary>
     /// Returns the amount of time that has elapsed since the specified point in the given unit.
+    /// When <paramref name="from"/> is in the future, the method returns 0.
     /// </summary>
     /// <param name="from">The starting point in time.</param>
     /// <param name="unit">The time unit in which to express the result.</param>
@@ -83,4 +84,10 @@ public interface IValiCountdown
     /// <param name="amount">The threshold amount.</param>
     /// <param name="unit">The time unit for the threshold.</param>
     bool IsWithin(DateTime deadline, decimal amount, TimeUnit unit);
+
+    /// <summary>
+    /// Returns <c>true</c> if <paramref name="from"/> is in the past or present.
+    /// </summary>
+    /// <param name="from">The start instant to check.</param>
+    bool IsStarted(DateTime from);
 }
