@@ -81,8 +81,8 @@ public interface IValiTimeZone
     /// </summary>
     /// <param name="zoneId">The IANA timezone ID.</param>
     /// <param name="at">
-    /// The UTC instant at which to evaluate the offset.
-    /// Defaults to <see cref="DateTime.UtcNow"/> when <see langword="null"/>.
+    /// The UTC instant at which to evaluate the offset. When <c>null</c>, <see cref="DateTime.UtcNow"/> is used.
+    /// The value is always interpreted as UTC regardless of its <see cref="DateTime.Kind"/>.
     /// </param>
     /// <returns>The UTC offset as a <see cref="TimeSpan"/> at the given instant.</returns>
     /// <exception cref="TimeZoneNotFoundException">
@@ -123,8 +123,8 @@ public interface IValiTimeZone
     /// <param name="zoneId1">The IANA timezone ID of the first timezone.</param>
     /// <param name="zoneId2">The IANA timezone ID of the second timezone.</param>
     /// <param name="at">
-    /// The UTC instant at which to evaluate the offsets.
-    /// Defaults to <see cref="DateTime.UtcNow"/> when <see langword="null"/>.
+    /// The UTC instant at which to evaluate the offset. When <c>null</c>, <see cref="DateTime.UtcNow"/> is used.
+    /// The value is always interpreted as UTC regardless of its <see cref="DateTime.Kind"/>.
     /// </param>
     /// <returns>
     /// The difference <c>offset(zoneId1) - offset(zoneId2)</c> expressed in decimal hours.

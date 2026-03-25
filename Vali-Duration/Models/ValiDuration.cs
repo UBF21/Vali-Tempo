@@ -140,6 +140,9 @@ public readonly struct ValiDuration : IEquatable<ValiDuration>, IComparable<Vali
     /// <see cref="TotalSeconds"/> or <see cref="As"/>.
     /// </remarks>
     /// <returns>A <see cref="TimeSpan"/> approximating this duration.</returns>
+    /// <exception cref="OverflowException">
+    /// Thrown when the duration exceeds <see cref="TimeSpan.MaxValue"/> or is below <see cref="TimeSpan.MinValue"/>.
+    /// </exception>
     public TimeSpan ToTimeSpan() => TimeSpan.FromSeconds((double)_seconds);
 
     /// <summary>
@@ -248,6 +251,9 @@ public readonly struct ValiDuration : IEquatable<ValiDuration>, IComparable<Vali
     /// Precision is limited to the <c>double</c> range of <see cref="TimeSpan.FromSeconds(double)"/>.
     /// </summary>
     /// <param name="d">The <see cref="ValiDuration"/> to convert.</param>
+    /// <exception cref="OverflowException">
+    /// Thrown when the duration is outside the range representable by <see cref="TimeSpan"/>.
+    /// </exception>
     public static implicit operator TimeSpan(ValiDuration d) => d.ToTimeSpan();
 
     // ── IEquatable<ValiDuration> ─────────────────────────────────────────────

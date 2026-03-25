@@ -69,7 +69,7 @@ public class ValiHoliday : IValiHoliday
     public IHolidayProvider For(string countryCode)
     {
         if (string.IsNullOrWhiteSpace(countryCode))
-            throw new ArgumentNullException(nameof(countryCode));
+            throw new ArgumentException("Country code must not be null, empty, or whitespace.", nameof(countryCode));
 
         if (_providers.TryGetValue(countryCode.ToUpperInvariant(), out var p)) return p;
         throw new InvalidOperationException(
@@ -88,7 +88,7 @@ public class ValiHoliday : IValiHoliday
     public bool Supports(string countryCode)
     {
         if (string.IsNullOrWhiteSpace(countryCode))
-            throw new ArgumentNullException(nameof(countryCode));
+            throw new ArgumentException("Country code must not be null, empty, or whitespace.", nameof(countryCode));
 
         return _providers.ContainsKey(countryCode.ToUpperInvariant());
     }
@@ -116,7 +116,7 @@ public class ValiHoliday : IValiHoliday
     public bool IsHoliday(DateTime date, string countryCode)
     {
         if (string.IsNullOrWhiteSpace(countryCode))
-            throw new ArgumentNullException(nameof(countryCode));
+            throw new ArgumentException("Country code must not be null, empty, or whitespace.", nameof(countryCode));
 
         return For(countryCode).IsHoliday(date);
     }
@@ -138,7 +138,7 @@ public class ValiHoliday : IValiHoliday
     public IEnumerable<HolidayInfo> GetHolidays(int year, string countryCode)
     {
         if (string.IsNullOrWhiteSpace(countryCode))
-            throw new ArgumentNullException(nameof(countryCode));
+            throw new ArgumentException("Country code must not be null, empty, or whitespace.", nameof(countryCode));
 
         return For(countryCode).GetHolidays(year);
     }
@@ -204,7 +204,7 @@ public class ValiHoliday : IValiHoliday
     public (HolidayInfo Holiday, int Year)? GetNextHolidayWithYear(DateTime date, string countryCode)
     {
         if (string.IsNullOrWhiteSpace(countryCode))
-            throw new ArgumentNullException(nameof(countryCode));
+            throw new ArgumentException("Country code must not be null, empty, or whitespace.", nameof(countryCode));
 
         var provider = For(countryCode);
         for (int year = date.Year; year <= date.Year + 1; year++)
@@ -264,7 +264,7 @@ public class ValiHoliday : IValiHoliday
     public (HolidayInfo Holiday, int Year)? GetPreviousHolidayWithYear(DateTime date, string countryCode)
     {
         if (string.IsNullOrWhiteSpace(countryCode))
-            throw new ArgumentNullException(nameof(countryCode));
+            throw new ArgumentException("Country code must not be null, empty, or whitespace.", nameof(countryCode));
 
         var provider = For(countryCode);
         for (int year = date.Year; year >= date.Year - 1; year--)
@@ -311,5 +311,9 @@ public class ValiHoliday : IValiHoliday
     /// Thrown when no provider is registered for <paramref name="countryCode"/>.
     /// </exception>
     public IEnumerable<HolidayInfo> HolidaysThisMonth(int year, int month, string countryCode)
-        => For(countryCode).GetHolidays(year).Where(h => h.Month == month);
+    {
+        if (month < 1 || month > 12)
+            throw new ArgumentOutOfRangeException(nameof(month), month, "Month must be between 1 and 12.");
+        return For(countryCode).GetHolidays(year).Where(h => h.Month == month);
+    }
 }
