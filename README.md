@@ -55,6 +55,7 @@ This registers all services with singleton lifetime:
 - `IValiCalendar` → `ValiCalendar`
 - `IValiCountdown` → `ValiCountdown`
 - `IValiAge` → `ValiAge`
+- `IValiSchedule` → `ValiSchedule`
 - `IValiHoliday` → `ValiHoliday`
 - `IValiTimeZone` → `ValiTimeZone`
 
