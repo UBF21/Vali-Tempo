@@ -95,4 +95,30 @@ public class EasterCalculatorTests
             EasterCalculator.CorpusChristi(year).Should().Be(expected);
         }
     }
+
+    // ── VE-1: EasterCalculator pre-Gregorian guard ───────────────────────────
+
+    [Fact]
+    public void Easter_PreGregorianYear_ThrowsArgumentOutOfRangeException()
+    {
+        // Year 1500 predates the Gregorian calendar (adopted 1582/1583)
+        Action act = () => EasterCalculator.Easter(1500);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void Easter_Year1582_ThrowsArgumentOutOfRangeException()
+    {
+        // Year 1582 is the last pre-Gregorian year — must throw
+        Action act = () => EasterCalculator.Easter(1582);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void Easter_Year1583_DoesNotThrow()
+    {
+        // Year 1583 is the first valid Gregorian year — must not throw
+        Action act = () => EasterCalculator.Easter(1583);
+        act.Should().NotThrow();
+    }
 }

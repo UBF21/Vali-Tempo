@@ -549,4 +549,33 @@ public class ValiDateTests
         decimal result = _vali.Diff(from, to, TimeUnit.Months);
         result.Should().BeGreaterThan(2m).And.BeLessThan(3m);
     }
+
+    // ── VD-1: TryPreviousQuarterStart ────────────────────────────────────────
+
+    [Fact]
+    public void TryPreviousQuarterStart_NormalDate_ReturnsTrueAndCorrectDate()
+    {
+        // May 15, 2025 is in Q2; previous quarter start is Jan 1, 2025
+        bool ok = _vali.TryPreviousQuarterStart(new DateTime(2025, 5, 15), out var result);
+        ok.Should().BeTrue();
+        result.Should().Be(new DateTime(2025, 1, 1));
+    }
+
+    [Fact]
+    public void TryPreviousQuarterStart_DateInQ1Year1_ReturnsFalse()
+    {
+        // Feb 1 of year 1 is in Q1 of year 1 — no previous quarter exists
+        bool ok = _vali.TryPreviousQuarterStart(new DateTime(1, 2, 1), out var result);
+        ok.Should().BeFalse();
+        result.Should().Be(DateTime.MinValue);
+    }
+
+    [Fact]
+    public void TryPreviousQuarterStart_DateInQ2_ReturnsPreviousQ1()
+    {
+        // Apr 1, 2025 is the first day of Q2; previous quarter start is Jan 1, 2025
+        bool ok = _vali.TryPreviousQuarterStart(new DateTime(2025, 4, 1), out var result);
+        ok.Should().BeTrue();
+        result.Should().Be(new DateTime(2025, 1, 1));
+    }
 }

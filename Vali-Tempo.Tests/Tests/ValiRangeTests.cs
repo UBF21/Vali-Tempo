@@ -371,4 +371,39 @@ public class ValiRangeTests
         quarters[0].Start.Should().Be(new DateTime(9999, 7, 1));
         quarters[1].Start.Should().Be(new DateTime(9999, 10, 1));
     }
+
+    // ── VR-1: Gaps no spurious gap at DateTime.MaxValue ──────────────────────
+
+    [Fact]
+    public void Gaps_ContainerEndIsMaxValue_NoSpuriousZeroLengthGap()
+    {
+        // When the covered range exactly matches the container (both ending at MaxValue),
+        // there should be no gaps reported.
+        var container = new DateRange(new DateTime(2025, 1, 1), DateTime.MaxValue);
+        var covered   = new[] { new DateRange(new DateTime(2025, 1, 1), DateTime.MaxValue) };
+        _vali.Gaps(covered, container).Should().BeEmpty();
+    }
+
+    // ── VR-2: LastUnits/NextUnits reject non-positive amount ──────────────────
+
+    [Fact]
+    public void LastUnits_NegativeAmount_ThrowsArgumentException()
+    {
+        Action act = () => _vali.LastUnits(-1, TimeUnit.Days);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void LastUnits_ZeroAmount_ThrowsArgumentException()
+    {
+        Action act = () => _vali.LastUnits(0, TimeUnit.Days);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void NextUnits_NegativeAmount_ThrowsArgumentException()
+    {
+        Action act = () => _vali.NextUnits(-5, TimeUnit.Hours);
+        act.Should().Throw<ArgumentException>();
+    }
 }

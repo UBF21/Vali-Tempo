@@ -287,4 +287,27 @@ public class ValiScheduleTests
         results.Should().Contain(new DateTime(2025, 1, 29));
         results.Should().Contain(new DateTime(2025, 3, 29));
     }
+
+    // ── VS-1: AfterOccurrences budget off-by-one ─────────────────────────────
+
+    [Fact]
+    public void Occurrences_AfterOccurrences_WithPreScanOffset_ReturnsCorrectCount()
+    {
+        // Start: Jan 1 2025, Every 1 Day, EndsAfter(5).
+        // Reference: Jan 3 2025.
+        // Pre-scan counts Jan 1 and Jan 2 = 2 occurrences already consumed.
+        // Remaining budget = 5 - 2 = 3. So Occurrences(Jan 3, limit:10) should yield exactly 3:
+        // Jan 3, Jan 4, Jan 5 — then Jan 6 would push the count to 6 > 5, so it stops.
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .EndsAfter(5);
+
+        var results = schedule.Occurrences(new DateTime(2025, 1, 3), 10).ToList();
+
+        results.Should().HaveCount(3);
+        results[0].Should().Be(new DateTime(2025, 1, 3));
+        results[1].Should().Be(new DateTime(2025, 1, 4));
+        results[2].Should().Be(new DateTime(2025, 1, 5));
+    }
 }

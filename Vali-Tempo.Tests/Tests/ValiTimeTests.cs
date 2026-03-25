@@ -509,4 +509,48 @@ public class ValiTimeTests
         Action act = () => _vali.ToTimeSpan(-1m, TimeUnit.Seconds);
         act.Should().Throw<ArgumentException>().WithMessage("*negative*");
     }
+
+    // ── VT-2: ParseColonSeparated validates minutes/seconds in [0,59] ─────────
+
+    [Fact]
+    public void ParseTime_ColonFormat_OutOfRangeMinutes_ThrowsFormatException()
+    {
+        // "0:99" — seconds value 99 is out of range [0,59]
+        Action act = () => _vali.ParseTime("0:99");
+        act.Should().Throw<FormatException>();
+    }
+
+    [Fact]
+    public void ParseTime_ColonFormat_OutOfRangeSeconds_ThrowsFormatException()
+    {
+        // "1:30:99" — seconds value 99 is out of range [0,59]
+        Action act = () => _vali.ParseTime("1:30:99");
+        act.Should().Throw<FormatException>();
+    }
+
+    [Fact]
+    public void ParseTime_ColonFormat_ValidBoundary_DoesNotThrow()
+    {
+        // "59:59" — both minutes and seconds are exactly at boundary 59; result = 59*60+59 = 3599
+        decimal result = _vali.ParseTime("59:59");
+        result.Should().Be(3599m);
+    }
+
+    // ── VT-3: ParseLabelledTokens rejects garbage between tokens ─────────────
+
+    [Fact]
+    public void ParseTime_LabelledTokens_GarbageBetweenTokens_ThrowsFormatException()
+    {
+        // "abc 5h xyz" contains unrecognised tokens — must throw FormatException
+        Action act = () => _vali.ParseTime("abc 5h xyz");
+        act.Should().Throw<FormatException>();
+    }
+
+    [Fact]
+    public void ParseTime_LabelledTokens_ValidInput_DoesNotThrow()
+    {
+        // "2h 30min" is a valid labelled-token string — returns 2*3600 + 30*60 = 9000
+        decimal result = _vali.ParseTime("2h 30min");
+        result.Should().Be(9000m);
+    }
 }

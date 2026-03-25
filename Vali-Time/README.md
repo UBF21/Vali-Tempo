@@ -409,6 +409,19 @@ var endOfTime = new DateTime(9999, 10, 1);
 bool hasNext = valiDate.TryNextQuarterStart(endOfTime, out _); // false
 ```
 
+#### TryPreviousQuarterStart
+
+Safely returns the first day of the previous quarter. Returns `false` when the previous quarter would underflow below `DateTime.MinValue` (i.e., when the date is in Q1 of year 1).
+
+```csharp
+var valiDate = new ValiDate();
+if (valiDate.TryPreviousQuarterStart(new DateTime(2025, 5, 1), out var prev))
+    Console.WriteLine(prev); // 2025-01-01
+
+var earliest = new DateTime(1, 1, 15);
+bool hasPrev = valiDate.TryPreviousQuarterStart(earliest, out _); // false
+```
+
 #### ProgressInYear
 
 Returns the fraction of the year elapsed (0.0 = Jan 1, approaches 1.0 on Dec 31).
