@@ -182,3 +182,12 @@ available target framework without requiring a separate build.
 ## License
 
 MIT © 2025 Felipe Rafael Montenegro Morriberon
+
+## Donations
+
+If Vali-Tempo is useful to you, consider supporting its development:
+
+- **Latin America** — [MercadoPago](https://link.mercadopago.com.pe/felipermm)
+- **International** — [PayPal](https://paypal.me/felipeRMM?country.x=PE&locale.x=es_XC)
+
+---

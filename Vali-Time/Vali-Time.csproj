@@ -11,14 +11,14 @@
         <PackageId>Vali-Time</PackageId>
         <Title>Vali-Time</Title>
         <Product>Vali-Time</Product>
-        <Version>1.0.0</Version>
+        <Version>1.0.1</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
         <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
 
         <!-- Repository -->
         <RepositoryUrl>https://github.com/UBF21/Vali-Tempo</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageProjectUrl>https://github.com/UBF21/Vali-Tempo</PackageProjectUrl>
+        <PackageProjectUrl>https://vali-tempo-docs.netlify.app/docs/vali-time/overview</PackageProjectUrl>
 
         <!-- License -->
         <PackageLicenseExpression>MIT</PackageLicenseExpression>

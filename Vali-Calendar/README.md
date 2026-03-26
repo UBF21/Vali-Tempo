@@ -258,3 +258,12 @@ services.AddSingleton<IValiCalendar>(sp =>
 ## License
 
 MIT
+
+## Donations
+
+If this package is useful to you, consider supporting its development:
+
+- **Latin America** — [MercadoPago](https://link.mercadopago.com.pe/felipermm)
+- **International** — [PayPal](https://paypal.me/felipeRMM?country.x=PE&locale.x=es_XC)
+
+---
