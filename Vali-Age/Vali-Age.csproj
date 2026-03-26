@@ -18,7 +18,7 @@
         <!-- Repository -->
         <RepositoryUrl>https://github.com/UBF21/Vali-Tempo</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageProjectUrl>https://github.com/UBF21/Vali-Tempo</PackageProjectUrl>
+        <PackageProjectUrl>https://vali-tempo-docs.netlify.app/docs/vali-age/overview</PackageProjectUrl>
 
         <!-- License -->
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -46,7 +46,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
+        <PackageReference Include="Vali-Time" Version="1.0.1" />
     </ItemGroup>
 
     <ItemGroup>
