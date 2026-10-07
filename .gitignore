@@ -65,6 +65,7 @@ CHECKPOINT.md
 memory/
 *.claude
 .claudeignore
+.guardian.json
 
 # C# junk / temp files
 *.tmp
@@ -74,3 +75,5 @@ memory/
 *_backup.*
 *.cache
 ~$*
+
+.codegraph/

@@ -179,6 +179,18 @@ available target framework without requiring a separate build.
 - [Vali-TimeZone README](./Vali-TimeZone/README.md)
 - [Vali-Tempo (meta-package) README](./Vali-Tempo/README.md)
 
+## Estándares de Desarrollo
+
+> Generado por `/flows/onboard` — 2026-10-07. Fuente completa en [CONTRIBUTING.md](CONTRIBUTING.md); valores de tamaño/complejidad no cubiertos ahí están en `.claude/memory/project-standards.md` (local, no versionado).
+
+- `decimal` siempre para tiempo/duración — nunca `double`/`float`
+- `readonly struct` para value types (`DateRange`, `ValiDuration`, `AgeResult`, `CalendarWeek`)
+- Cada servicio implementa `IValiX` + expone `AddValiX()`
+- Cero dependencias externas por paquete salvo `Microsoft.Extensions.DependencyInjection.Abstractions`
+- XML `<summary>` obligatorio en miembros públicos
+- Tests con `DateTime` fijo (nunca `.Now`), cubriendo Feb 29/bisiestos/DST/negativos
+- Commits: Conventional Commits con scope de paquete (`fix(Vali-Age): ...`)
+
 ## License
 
 MIT © 2025 Felipe Rafael Montenegro Morriberon
