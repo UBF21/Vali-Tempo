@@ -1,4 +1,5 @@
 using Vali_Time.Enums;
+using Vali_Time.Utils;
 
 namespace Vali_Time.Extensions;
 
@@ -39,8 +40,8 @@ public static class TimeSpanExtensions
             TimeUnit.Hours        => (decimal)ts.Ticks / TimeSpan.TicksPerHour,
             TimeUnit.Days         => (decimal)ts.Ticks / TimeSpan.TicksPerDay,
             TimeUnit.Weeks        => (decimal)ts.Ticks / (TimeSpan.TicksPerDay * 7L),
-            TimeUnit.Months       => (decimal)ts.Ticks / (TimeSpan.TicksPerDay * 30.4375m),
-            TimeUnit.Years        => (decimal)ts.Ticks / (TimeSpan.TicksPerDay * 365.25m),
+            TimeUnit.Months       => (decimal)ts.Ticks / (TimeSpan.TicksPerDay * Constants.DaysInMonthAvg),
+            TimeUnit.Years        => (decimal)ts.Ticks / (TimeSpan.TicksPerDay * Constants.DaysInYearAvg),
             _ => throw new NotSupportedException($"TimeUnit '{unit}' is not supported.")
         };
     }

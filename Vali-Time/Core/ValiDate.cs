@@ -1,5 +1,7 @@
 using System.Globalization;
 using Vali_Time.Enums;
+using Vali_Time.Extensions;
+using Vali_Time.Utils;
 
 namespace Vali_Time.Core;
 
@@ -140,7 +142,7 @@ public class ValiDate : IValiDate
         return part switch
         {
             DatePart.Day     => date.Date,
-            DatePart.Week    => StartOfWeek(date, ws),
+            DatePart.Week    => date.StartOfWeek(ws),
             DatePart.Month   => new DateTime(date.Year, date.Month, 1),
             DatePart.Quarter => QuarterStartDate(date),
             DatePart.Year    => new DateTime(date.Year, 1, 1),
@@ -240,7 +242,7 @@ public class ValiDate : IValiDate
         return part switch
         {
             DatePart.Day     => a.Date == b.Date,
-            DatePart.Week    => StartOfWeek(a, ws) == StartOfWeek(b, ws),
+            DatePart.Week    => a.StartOfWeek(ws) == b.StartOfWeek(ws),
             DatePart.Month   => a.Year == b.Year && a.Month == b.Month,
             DatePart.Quarter => a.Year == b.Year && QuarterOf(a) == QuarterOf(b),
             DatePart.Year    => a.Year == b.Year,
@@ -255,7 +257,7 @@ public class ValiDate : IValiDate
     /// <returns><c>true</c> if the day is Saturday or Sunday.</returns>
     public bool IsWeekend(DateTime date)
     {
-        return date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday;
+        return date.IsWeekend();
     }
 
     /// <summary>
@@ -265,7 +267,7 @@ public class ValiDate : IValiDate
     /// <returns><c>true</c> if the day is Monday through Friday.</returns>
     public bool IsWeekday(DateTime date)
     {
-        return !IsWeekend(date);
+        return date.IsWeekday();
     }
 
     /// <summary>
@@ -619,7 +621,7 @@ public class ValiDate : IValiDate
             DateTime prevMonth = to.AddMonths(-1);
             int daysInPrevMonth = DateTime.DaysInMonth(prevMonth.Year, prevMonth.Month);
             // clamp from.Day to daysInPrevMonth so fraction is always in [0,1)
-            int effectiveFromDay = Math.Min(from.Day, daysInPrevMonth);
+            int effectiveFromDay = Constants.IsClampedMonthEnd(from.Day, prevMonth) ? daysInPrevMonth : from.Day;
             dayDiff = to.Day + (daysInPrevMonth - effectiveFromDay);
             decimal dayFraction = (decimal)dayDiff / daysInPrevMonth;
             return months + dayFraction;
@@ -635,25 +637,10 @@ public class ValiDate : IValiDate
     /// </summary>
     private DateTime WeekEndOf(DateTime date, WeekStart weekStart, TimeSpan endTime)
     {
-        var weekStart_ = StartOfWeek(date, weekStart);
+        var weekStart_ = date.StartOfWeek(weekStart);
         int daysUntilEnd = 6;
         var candidate = weekStart_.AddDays(daysUntilEnd);
         return candidate > DateTime.MaxValue.Date ? DateTime.MaxValue : candidate + endTime;
-    }
-
-    /// <summary>
-    /// Returns the date of the Monday (or Sunday) that begins the week containing
-    /// <paramref name="date"/>, at midnight.
-    /// </summary>
-    /// <param name="date">The reference date.</param>
-    /// <param name="weekStart">The day considered the first day of the week.</param>
-    /// <returns>A <see cref="DateTime"/> set to midnight on the first day of the week.</returns>
-    private DateTime StartOfWeek(DateTime date, WeekStart weekStart)
-    {
-        DayOfWeek firstDay = weekStart == WeekStart.Monday ? DayOfWeek.Monday : DayOfWeek.Sunday;
-        int diff = (7 + (date.DayOfWeek - firstDay)) % 7;
-        int safeDiff = (int)Math.Min(diff, (date.Date - DateTime.MinValue.Date).TotalDays);
-        return date.Date.AddDays(-safeDiff);
     }
 
     /// <summary>

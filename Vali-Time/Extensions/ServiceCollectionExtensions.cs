@@ -10,7 +10,10 @@ namespace Vali_Time.Extensions;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers <see cref="IValiTime"/> and <see cref="IValiDate"/> as singletons.
+    /// Registers <see cref="IValiTime"/> and <see cref="IValiDate"/> as singletons. Also
+    /// registers <see cref="IValiDateQuarter"/>, resolving to the same <see cref="IValiDate"/>
+    /// singleton instance, so consumers that only need quarter operations can depend on the
+    /// narrower interface without pulling in the full <see cref="IValiDate"/> surface.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
@@ -18,6 +21,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IValiTime, ValiTime>();
         services.AddSingleton<IValiDate, ValiDate>();
+        services.AddSingleton<IValiDateQuarter>(sp => sp.GetRequiredService<IValiDate>());
         services.AddSingleton<IClock>(_ => SystemClock.Instance);
         return services;
     }

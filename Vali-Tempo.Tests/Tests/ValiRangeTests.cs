@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Vali_Range.Core;
 using Vali_Range.Models;
+using Vali_Time.Abstractions;
 using Vali_Time.Enums;
 using Xunit;
 
@@ -9,6 +10,14 @@ namespace Vali_Time.Tests.Tests;
 public class ValiRangeTests
 {
     private readonly ValiRange _vali = new();
+
+    private sealed class FixedClock : IClock
+    {
+        private readonly DateTime _fixed;
+        public FixedClock(DateTime fixedValue) => _fixed = fixedValue;
+        public DateTime Now => _fixed;
+        public DateTime Today => _fixed.Date;
+    }
 
     // ── Create ──────────────────────────────────────────────────────────────
 
@@ -339,6 +348,23 @@ public class ValiRangeTests
         range.IsValid.Should().BeTrue();
         decimal days = range.Duration(TimeUnit.Days);
         days.Should().Be(6m); // 7 days inclusive = 6 days span
+    }
+
+    [Theory]
+    [InlineData(WeekStart.Monday)]
+    [InlineData(WeekStart.Sunday)]
+    public void ThisWeek_WhenTodayIsNearDateTimeMinValue_DoesNotThrow(WeekStart weekStart)
+    {
+        // Regression: StartOfWeek used to lack the anti-underflow guard that ValiDate already
+        // had, so a "today" close to DateTime.MinValue could throw ArgumentOutOfRangeException.
+        var vali = new ValiRange(new FixedClock(DateTime.MinValue.AddDays(2)));
+
+        Action act = () => vali.ThisWeek(weekStart);
+
+        act.Should().NotThrow();
+        DateRange range = vali.ThisWeek(weekStart);
+        range.Start.Should().BeOnOrAfter(DateTime.MinValue);
+        range.IsValid.Should().BeTrue();
     }
 
     // ── LastUnits ───────────────────────────────────────────────────────────

@@ -541,6 +541,18 @@ public class ValiDateTests
     }
 
     [Fact]
+    public void MonthsDiff_Jan31ToFeb28_NonLeapYear_LessThanOneMonth()
+    {
+        // Same clamping edge case covered by ValiAge.Exact: Jan 31 + 1 month clamps to Feb 28
+        // (day 31 doesn't exist there). Both call sites share the clamping helper and must
+        // agree that this span is less than one complete calendar month.
+        var from = new DateTime(2023, 1, 31);
+        var to   = new DateTime(2023, 2, 28);
+        decimal result = _vali.Diff(from, to, TimeUnit.Months);
+        result.Should().BeGreaterThanOrEqualTo(0m).And.BeLessThan(1m);
+    }
+
+    [Fact]
     public void MonthsDiff_FromLongMonthToShortMonth_NoOverflow()
     {
         // from = Jan 31, to = Apr 1: should be ~2.03, not > 3 or nonsensical
@@ -577,5 +589,28 @@ public class ValiDateTests
         bool ok = _vali.TryPreviousQuarterStart(new DateTime(2025, 4, 1), out var result);
         ok.Should().BeTrue();
         result.Should().Be(new DateTime(2025, 1, 1));
+    }
+
+    // ── StartOf(Week) underflow guard ─────────────────────────────────────────
+
+    [Theory]
+    [InlineData(WeekStart.Monday)]
+    [InlineData(WeekStart.Sunday)]
+    public void StartOf_Week_AtMinValue_DoesNotThrowAndStaysWithinRange(WeekStart weekStart)
+    {
+        Action act = () => _vali.StartOf(DateTime.MinValue, DatePart.Week, weekStart);
+        act.Should().NotThrow();
+        _vali.StartOf(DateTime.MinValue, DatePart.Week, weekStart).Should().Be(DateTime.MinValue.Date);
+    }
+
+    [Theory]
+    [InlineData(WeekStart.Monday)]
+    [InlineData(WeekStart.Sunday)]
+    public void StartOf_Week_NearMinValue_DoesNotThrow(WeekStart weekStart)
+    {
+        var date = DateTime.MinValue.AddDays(3);
+        Action act = () => _vali.StartOf(date, DatePart.Week, weekStart);
+        act.Should().NotThrow();
+        _vali.StartOf(date, DatePart.Week, weekStart).Should().BeOnOrAfter(DateTime.MinValue);
     }
 }

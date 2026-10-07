@@ -1,6 +1,8 @@
 using Vali_Range.Models;
 using Vali_Time.Abstractions;
 using Vali_Time.Enums;
+using Vali_Time.Extensions;
+using Vali_Time.Utils;
 
 namespace Vali_Range.Core;
 
@@ -50,8 +52,8 @@ public class ValiRange : IValiRange
             TimeUnit.Hours        => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerHour)),
             TimeUnit.Days         => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerDay)),
             TimeUnit.Weeks        => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerDay * 7)),
-            TimeUnit.Months       => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerDay * 30.4375m)),
-            TimeUnit.Years        => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerDay * 365.25m)),
+            TimeUnit.Months       => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerDay * Constants.DaysInMonthAvg)),
+            TimeUnit.Years        => TimeSpan.FromTicks(ClampTicks(amount * TimeSpan.TicksPerDay * Constants.DaysInYearAvg)),
             _                     => throw new ArgumentOutOfRangeException(nameof(unit), unit, "Unrecognised TimeUnit value.")
         };
 
@@ -78,17 +80,6 @@ public class ValiRange : IValiRange
             TimeUnit.Years  => date.AddYears((int)amount),    // fractional values are truncated toward zero
             _               => date + ToTimeSpan(amount, unit)
         };
-
-    /// <summary>
-    /// Returns the first day of the week that contains <paramref name="date"/>,
-    /// according to the specified <paramref name="weekStart"/> convention.
-    /// </summary>
-    private static DateTime StartOfWeek(DateTime date, WeekStart weekStart)
-    {
-        DayOfWeek firstDay = weekStart == WeekStart.Monday ? DayOfWeek.Monday : DayOfWeek.Sunday;
-        int diff = (7 + (date.DayOfWeek - firstDay)) % 7;
-        return date.AddDays(-diff).Date;
-    }
 
     /// <summary>
     /// Returns the first month of the quarter that contains month number <paramref name="month"/>.
@@ -169,7 +160,7 @@ public class ValiRange : IValiRange
     /// <returns>A <see cref="DateRange"/> for the current week.</returns>
     public DateRange ThisWeek(WeekStart weekStart = WeekStart.Monday)
     {
-        DateTime start = StartOfWeek(_clock.Today, weekStart);
+        DateTime start = _clock.Today.StartOfWeek(weekStart);
         DateTime end   = start.AddDays(6);
         return new DateRange(start, end);
     }
@@ -372,7 +363,7 @@ public class ValiRange : IValiRange
     /// <returns>A sequence of <see cref="DateTime"/> values representing the start of each week.</returns>
     public IEnumerable<DateTime> EachWeek(DateRange range, WeekStart weekStart = WeekStart.Monday)
     {
-        DateTime current = StartOfWeek(range.Start.Date, weekStart);
+        DateTime current = range.Start.Date.StartOfWeek(weekStart);
         DateTime end     = range.End.Date;
 
         while (current <= end)
@@ -423,7 +414,7 @@ public class ValiRange : IValiRange
     public IEnumerable<DateRange> SplitByWeek(DateRange range, WeekStart weekStart = WeekStart.Monday)
     {
         DateTime rangeEnd      = range.End.Date;
-        DateTime weekBeginning = StartOfWeek(range.Start.Date, weekStart);
+        DateTime weekBeginning = range.Start.Date.StartOfWeek(weekStart);
 
         while (weekBeginning <= rangeEnd)
         {

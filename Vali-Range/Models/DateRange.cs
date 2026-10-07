@@ -1,4 +1,5 @@
 using Vali_Time.Enums;
+using Vali_Time.Utils;
 
 namespace Vali_Range.Models;
 
@@ -56,8 +57,8 @@ public readonly struct DateRange
             TimeUnit.Hours        => (decimal)ticks / TimeSpan.TicksPerHour,
             TimeUnit.Days         => (decimal)ticks / TimeSpan.TicksPerDay,
             TimeUnit.Weeks        => (decimal)ticks / (TimeSpan.TicksPerDay * 7),
-            TimeUnit.Months       => (decimal)ticks / (TimeSpan.TicksPerDay * 30.4375m),
-            TimeUnit.Years        => (decimal)ticks / (TimeSpan.TicksPerDay * 365.25m),
+            TimeUnit.Months       => (decimal)ticks / (TimeSpan.TicksPerDay * Constants.DaysInMonthAvg),
+            TimeUnit.Years        => (decimal)ticks / (TimeSpan.TicksPerDay * Constants.DaysInYearAvg),
             _                     => throw new ArgumentOutOfRangeException(nameof(unit), unit, "Unrecognised TimeUnit value.")
         };
     }

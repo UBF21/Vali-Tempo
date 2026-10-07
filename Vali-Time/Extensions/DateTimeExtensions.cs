@@ -27,7 +27,8 @@ public static class DateTimeExtensions
     {
         DayOfWeek firstDay = weekStart == WeekStart.Monday ? DayOfWeek.Monday : DayOfWeek.Sunday;
         int diff = (7 + (date.DayOfWeek - firstDay)) % 7;
-        return date.Date.AddDays(-diff);
+        int safeDiff = (int)Math.Min(diff, (date.Date - DateTime.MinValue.Date).TotalDays);
+        return date.Date.AddDays(-safeDiff);
     }
 
     /// <summary>

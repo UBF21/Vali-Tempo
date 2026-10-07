@@ -109,4 +109,19 @@ public  static class Constants
     /// </summary>
     public const string PrefixYears = "yr";
 
+    /// <summary>
+    /// Determines whether <paramref name="candidate"/> is the result of clamping a day-of-month
+    /// that does not exist in the destination month (e.g. adding a month to January 31st lands
+    /// on February 28th/29th because day 31 does not exist in February).
+    /// </summary>
+    /// <param name="originalDay">The day-of-month of the original/reference date before the shift.</param>
+    /// <param name="candidate">The resulting date after adding/subtracting whole calendar months.</param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="originalDay"/> is greater than the number of days in
+    /// <paramref name="candidate"/>'s month, meaning <paramref name="candidate"/>'s day was
+    /// clamped down to the last valid day of that month.
+    /// </returns>
+    public static bool IsClampedMonthEnd(int originalDay, DateTime candidate)
+        => originalDay > DateTime.DaysInMonth(candidate.Year, candidate.Month);
+
 }

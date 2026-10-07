@@ -1,5 +1,6 @@
 using Vali_Time.Abstractions;
 using Vali_Time.Enums;
+using Vali_Time.Utils;
 
 namespace Vali_CountDown.Core;
 
@@ -29,8 +30,6 @@ public class ValiCountdown : IValiCountdown
     private const decimal TicksPerHour        = TicksPerMinute * 60m;
     private const decimal TicksPerDay         = TicksPerHour * 24m;
     private const decimal TicksPerWeek        = TicksPerDay * 7m;
-    private const decimal AvgDaysPerMonth     = 30.4375m;
-    private const decimal AvgDaysPerYear      = 365.25m;
 
     // === EXPIRY ===
 
@@ -203,7 +202,7 @@ public class ValiCountdown : IValiCountdown
     /// Returns <c>true</c> if <paramref name="from"/> is in the past or present (i.e., elapsed time &gt; 0).
     /// </summary>
     /// <param name="from">The start instant to check.</param>
-    /// <returns><c>true</c> if <see cref="TimeElapsed(DateTime, TimeUnit)"/> would return a positive value.</returns>
+    /// <returns><c>true</c> if <see cref="TimeElapsed(DateTime, TimeUnit, int?)"/> would return a positive value.</returns>
     public bool IsStarted(DateTime from) => _clock.Now >= from;
 
     // === IS WITHIN ===
@@ -231,8 +230,8 @@ public class ValiCountdown : IValiCountdown
         TimeUnit.Hours        => ticks / TicksPerHour,
         TimeUnit.Days         => ticks / TicksPerDay,
         TimeUnit.Weeks        => ticks / TicksPerWeek,
-        TimeUnit.Months       => ticks / TicksPerDay / AvgDaysPerMonth,
-        TimeUnit.Years        => ticks / TicksPerDay / AvgDaysPerYear,
+        TimeUnit.Months       => ticks / TicksPerDay / Constants.DaysInMonthAvg,
+        TimeUnit.Years        => ticks / TicksPerDay / Constants.DaysInYearAvg,
         _                     => throw new ArgumentOutOfRangeException(nameof(unit), unit, null)
     };
 }
