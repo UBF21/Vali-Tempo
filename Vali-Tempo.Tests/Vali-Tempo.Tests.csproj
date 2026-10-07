@@ -32,5 +32,7 @@
     <ProjectReference Include="..\Vali-Calendar\Vali-Calendar.csproj" />
     <ProjectReference Include="..\Vali-Duration\Vali-Duration.csproj" />
     <ProjectReference Include="..\Vali-TimeZone\Vali-TimeZone.csproj" />
+    <ProjectReference Include="..\Vali-BusinessHours\Vali-BusinessHours.csproj" />
+    <ProjectReference Include="..\Vali-Bucket\Vali-Bucket.csproj" />
   </ItemGroup>
 </Project>

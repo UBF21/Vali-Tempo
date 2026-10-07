@@ -1,0 +1,64 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <RootNamespace>Vali_BusinessHours</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+        <!-- Package identity -->
+        <PackageId>Vali-BusinessHours</PackageId>
+        <Title>Vali-BusinessHours</Title>
+        <Product>Vali-BusinessHours</Product>
+        <Version>1.0.0</Version>
+        <Authors>Felipe Rafael Montenegro Morriberon</Authors>
+        <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
+
+        <!-- Repository -->
+        <RepositoryUrl>https://github.com/UBF21/Vali-Tempo</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://vali-tempo-docs.netlify.app/docs/vali-businesshours/overview</PackageProjectUrl>
+
+        <!-- License -->
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+        <!-- Discoverability -->
+        <PackageTags>business-hours;timezone;scheduling;overlap;dst;dotnet</PackageTags>
+        <PackageIcon>VT.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+
+        <!-- Source Link / Symbols -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <DebugType>embedded</DebugType>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <Description>Vali-BusinessHours resolves the simultaneous business-hours overlap window between two IANA timezones for a given reference date, with DST-correct offsets and midnight-crossing handling. Composes Vali-Calendar and Vali-TimeZone without coupling either of them to the other.</Description>
+        <PackageReleaseNotes>Vali-BusinessHours v1.0.0 — initial release: pairwise cross-timezone business-hours overlap (Overlap), workday-aware overlap (OverlapOnWorkday).</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Vali-Calendar" Version="1.0.0" />
+        <PackageReference Include="Vali-TimeZone" Version="1.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="VT.png">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
+        <None Include="README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
+
+</Project>

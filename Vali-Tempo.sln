@@ -24,6 +24,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vali-TimeZone", "Vali-TimeZ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vali-Tempo.Benchmarks", "Vali-Tempo.Benchmarks\Vali-Tempo.Benchmarks.csproj", "{5DB52558-B1EF-479E-81C4-2398CB5A83FF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vali-BusinessHours", "Vali-BusinessHours\Vali-BusinessHours.csproj", "{C1D2E3F4-5A6B-4C7D-8E9F-0A1B2C3D4E5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vali-Bucket", "Vali-Bucket\Vali-Bucket.csproj", "{D2E3F4A5-6B7C-4D8E-9F0A-1B2C3D4E5F6A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,5 +82,13 @@ Global
 		{5DB52558-B1EF-479E-81C4-2398CB5A83FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DB52558-B1EF-479E-81C4-2398CB5A83FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DB52558-B1EF-479E-81C4-2398CB5A83FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1D2E3F4-5A6B-4C7D-8E9F-0A1B2C3D4E5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1D2E3F4-5A6B-4C7D-8E9F-0A1B2C3D4E5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1D2E3F4-5A6B-4C7D-8E9F-0A1B2C3D4E5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1D2E3F4-5A6B-4C7D-8E9F-0A1B2C3D4E5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2E3F4A5-6B7C-4D8E-9F0A-1B2C3D4E5F6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2E3F4A5-6B7C-4D8E-9F0A-1B2C3D4E5F6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2E3F4A5-6B7C-4D8E-9F0A-1B2C3D4E5F6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2E3F4A5-6B7C-4D8E-9F0A-1B2C3D4E5F6A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

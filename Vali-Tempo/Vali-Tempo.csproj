@@ -56,6 +56,13 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- ponytail: ProjectReference instead of PackageReference — neither package has been
+             published to NuGet yet. Switch to a pinned PackageReference once they are. -->
+        <ProjectReference Include="..\Vali-BusinessHours\Vali-BusinessHours.csproj" />
+        <ProjectReference Include="..\Vali-Bucket\Vali-Bucket.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
         <None Include="VT.png">
             <Pack>True</Pack>
             <PackagePath></PackagePath>

@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Vali_Age.Extensions;
+using Vali_Bucket.Extensions;
+using Vali_BusinessHours.Extensions;
 using Vali_Calendar.Extensions;
 using Vali_CountDown.Extensions;
 using Vali_Duration.Extensions;
@@ -33,6 +35,8 @@ public static class ServiceCollectionExtensions
     ///   <item><description><c>AddValiHoliday()</c> — registers <c>ValiHoliday</c> as a singleton pre-loaded with all built-in country providers (Latin America + Europe + Other).</description></item>
     ///   <item><description><c>AddValiTimeZone()</c> — registers <c>IValiTimeZone</c> as a singleton.</description></item>
     ///   <item><description><c>AddValiSchedule()</c> — registers <c>IValiSchedule</c> as a transient.</description></item>
+    ///   <item><description><c>AddValiDuration()</c> — registers duration-related services.</description></item>
+    ///   <item><description><c>AddValiBusinessHours()</c> — registers <c>IValiBusinessHours</c> as a singleton.</description></item>
     /// </list>
     /// To customise individual library registrations (e.g., using only specific holiday providers),
     /// call each library's own <c>AddVali*</c> extension method directly instead of this helper.
@@ -50,6 +54,8 @@ public static class ServiceCollectionExtensions
         services.AddValiTimeZone();
         services.AddValiSchedule();
         services.AddValiDuration();
+        services.AddValiBusinessHours();
+        services.AddValiBucket();
         return services;
     }
 
