@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Vali_TimeZone.Core;
+using Vali_TimeZone.Models;
 using Xunit;
 
 namespace Vali_Time.Tests.Tests;
@@ -348,5 +349,30 @@ public class ValiTimeZoneTests
         // Europe/London during winter (GMT) → UTC+0
         var offset = _vali.GetOffset("Europe/London", new DateTime(2025, 1, 15));
         offset.Should().Be(TimeSpan.Zero);
+    }
+
+    // ====================================================================
+    // ValiZoneInfo — record conversion (ToString format + structural equality)
+    // ====================================================================
+
+    [Fact]
+    public void ValiZoneInfo_ToString_KeepsCustomFormat()
+    {
+        // Regression: record must not fall back to the compiler-generated
+        // "ValiZoneInfo { Id = ..., ... }" ToString.
+        var zone = _vali.FindZone("America/Lima");
+
+        zone!.ToString().Should().Be("[PE] America/Lima (UTC-05:00)");
+    }
+
+    [Fact]
+    public void ValiZoneInfo_SameValues_AreStructurallyEqual()
+    {
+        var a = new ValiZoneInfo("America/Lima", "(UTC-05:00) Lima", "SA Pacific Standard Time", TimeSpan.FromHours(-5), false, "PE", "Peru");
+        var b = new ValiZoneInfo("America/Lima", "(UTC-05:00) Lima", "SA Pacific Standard Time", TimeSpan.FromHours(-5), false, "PE", "Peru");
+
+        a.Should().Be(b);
+        (a == b).Should().BeTrue();
+        a.GetHashCode().Should().Be(b.GetHashCode());
     }
 }

@@ -4,7 +4,7 @@ namespace Vali_TimeZone.Models;
 /// Represents a curated timezone entry with IANA-compatible identification,
 /// display metadata, UTC offset, DST support flag, and country information.
 /// </summary>
-public sealed class ValiZoneInfo
+public sealed record ValiZoneInfo
 {
     /// <summary>
     /// Gets the IANA-style timezone identifier, e.g. <c>"America/Lima"</c>.
