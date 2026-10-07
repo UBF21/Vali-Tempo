@@ -1,3 +1,5 @@
+using Vali_Holiday.Core;
+using Vali_Range.Models;
 using Vali_Schedule.Enums;
 using Vali_Schedule.Models;
 using Vali_Time.Enums;
@@ -171,6 +173,37 @@ public class ValiSchedule : IValiSchedule
     }
 
     /// <summary>
+    /// Excludes Saturday and Sunday from the generated occurrences.
+    /// If an occurrence falls on a weekend, it is moved forward to the next
+    /// non-weekend, non-holiday day.
+    /// </summary>
+    /// <returns>The current <see cref="ValiSchedule"/> instance for fluent chaining.</returns>
+    public ValiSchedule SkipWeekends()
+    {
+        _config.SkipWeekendsEnabled = true;
+        return this;
+    }
+
+    /// <summary>
+    /// Excludes dates that are public holidays according to <paramref name="provider"/>,
+    /// resolving collisions per <paramref name="strategy"/>. Combines with
+    /// <see cref="SkipWeekends"/> if both are configured.
+    /// </summary>
+    /// <param name="provider">The holiday provider used to test each candidate date.</param>
+    /// <param name="strategy">
+    /// How to resolve an occurrence that falls on a holiday. Defaults to
+    /// <see cref="HolidaySkipStrategy.NextWorkday"/>.
+    /// </param>
+    /// <returns>The current <see cref="ValiSchedule"/> instance for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="provider"/> is null.</exception>
+    public ValiSchedule SkipHolidays(IHolidayProvider provider, HolidaySkipStrategy strategy = HolidaySkipStrategy.NextWorkday)
+    {
+        _config.HolidayProvider = provider ?? throw new ArgumentNullException(nameof(provider));
+        _config.HolidaySkipStrategy = strategy;
+        return this;
+    }
+
+    /// <summary>
     /// Validates the current configuration and returns the schedule, ready for use.
     /// Throws if the configuration is invalid (e.g., weekly recurrence with no days configured).
     /// </summary>
@@ -215,6 +248,12 @@ public class ValiSchedule : IValiSchedule
 
     /// <inheritdoc/>
     IValiSchedule IValiSchedule.WithCustomPredicate(Func<DateTime, bool> predicate) => WithCustomPredicate(predicate);
+
+    /// <inheritdoc/>
+    IValiSchedule IValiSchedule.SkipWeekends() => SkipWeekends();
+
+    /// <inheritdoc/>
+    IValiSchedule IValiSchedule.SkipHolidays(IHolidayProvider provider, HolidaySkipStrategy strategy) => SkipHolidays(provider, strategy);
 
     /// <inheritdoc/>
     IValiSchedule IValiSchedule.Build() => Build();
@@ -263,6 +302,8 @@ public class ValiSchedule : IValiSchedule
                 // schedule has ended or the lookahead window was exhausted.
                 if (!IsWithinEnd(candidate)) return null;
 
+                var resolved = ResolveSkip(candidate);
+
                 yielded++;
                 occurrenceCount = preScanCount + yielded;
                 if (_config.EndType == RecurrenceEnd.AfterOccurrences
@@ -270,9 +311,13 @@ public class ValiSchedule : IValiSchedule
                     && occurrenceCount > _config.MaxOccurrences.Value)
                     return null;
 
-                return _config.TimeOfDay.HasValue
-                    ? candidate.Add(_config.TimeOfDay.Value.ToTimeSpan())
-                    : candidate;
+                if (resolved.HasValue)
+                {
+                    return _config.TimeOfDay.HasValue
+                        ? resolved.Value.Add(_config.TimeOfDay.Value.ToTimeSpan())
+                        : resolved.Value;
+                }
+                // Dropped by the skip strategy (consumed a budget slot above) — keep scanning.
             }
             if (candidate >= DateTime.MaxValue.AddDays(-1)) break;
             candidate = candidate.AddDays(1);
@@ -320,9 +365,14 @@ public class ValiSchedule : IValiSchedule
                     if (backScan < EffectiveStartDate.Date) return null;
                     if (IsValidOccurrence(backScan) && IsWithinEnd(backScan))
                     {
-                        return _config.TimeOfDay.HasValue
-                            ? backScan.Add(_config.TimeOfDay.Value.ToTimeSpan())
-                            : backScan;
+                        var backResolved = ResolveSkip(backScan);
+                        if (backResolved.HasValue)
+                        {
+                            return _config.TimeOfDay.HasValue
+                                ? backResolved.Value.Add(_config.TimeOfDay.Value.ToTimeSpan())
+                                : backResolved.Value;
+                        }
+                        // Dropped by the skip strategy — keep scanning backward.
                     }
                     if (backScan <= DateTime.MinValue.AddDays(1)) break;
                     backScan = backScan.AddDays(-1);
@@ -337,9 +387,14 @@ public class ValiSchedule : IValiSchedule
             if (candidate < EffectiveStartDate.Date) return null;
             if (IsValidOccurrence(candidate) && IsWithinEnd(candidate))
             {
-                return _config.TimeOfDay.HasValue
-                    ? candidate.Add(_config.TimeOfDay.Value.ToTimeSpan())
-                    : candidate;
+                var resolved = ResolveSkip(candidate);
+                if (resolved.HasValue)
+                {
+                    return _config.TimeOfDay.HasValue
+                        ? resolved.Value.Add(_config.TimeOfDay.Value.ToTimeSpan())
+                        : resolved.Value;
+                }
+                // Dropped by the skip strategy — keep scanning backward.
             }
             if (candidate <= DateTime.MinValue.AddDays(1)) break;
             candidate = candidate.AddDays(-1);
@@ -384,12 +439,15 @@ public class ValiSchedule : IValiSchedule
         }
 
         int preScanCount = occurrenceCount;
+        DateTime? lastResolved = null;
 
         while (yielded < limit && count < MaxScanDays)
         {
             if (IsValidOccurrence(candidate))
             {
                 if (!IsWithinEnd(candidate)) yield break;
+
+                var resolved = ResolveSkip(candidate);
 
                 yielded++;
                 occurrenceCount = preScanCount + yielded;
@@ -399,9 +457,16 @@ public class ValiSchedule : IValiSchedule
                     && occurrenceCount > _config.MaxOccurrences.Value)
                     yield break;
 
-                yield return _config.TimeOfDay.HasValue
-                    ? candidate.Add(_config.TimeOfDay.Value.ToTimeSpan())
-                    : candidate;
+                // A resolved date identical to the previous emission means two distinct base
+                // cadence hits (e.g. Saturday and Sunday under SkipWeekends) collapsed onto the
+                // same replacement workday — emit it only once.
+                if (resolved.HasValue && resolved.Value.Date != lastResolved)
+                {
+                    lastResolved = resolved.Value.Date;
+                    yield return _config.TimeOfDay.HasValue
+                        ? resolved.Value.Add(_config.TimeOfDay.Value.ToTimeSpan())
+                        : resolved.Value;
+                }
             }
             if (candidate >= DateTime.MaxValue.AddDays(-1)) break;
             candidate = candidate.AddDays(1);
@@ -446,11 +511,14 @@ public class ValiSchedule : IValiSchedule
 
         int preScanCount = occurrenceCount;
         int rangeYielded = 0;
+        DateTime? lastResolved = null;
 
         while (candidate <= to.Date && scanCount < MaxScanDays * 10)
         {
             if (IsValidOccurrence(candidate) && IsWithinEnd(candidate))
             {
+                var resolved = ResolveSkip(candidate);
+
                 rangeYielded++;
                 occurrenceCount = preScanCount + rangeYielded;
 
@@ -459,15 +527,72 @@ public class ValiSchedule : IValiSchedule
                     && occurrenceCount > _config.MaxOccurrences.Value)
                     yield break;
 
-                yield return _config.TimeOfDay.HasValue
-                    ? candidate.Add(_config.TimeOfDay.Value.ToTimeSpan())
-                    : candidate;
+                // See Occurrences(): collapse duplicate replacement dates from distinct base hits.
+                if (resolved.HasValue && resolved.Value.Date != lastResolved)
+                {
+                    lastResolved = resolved.Value.Date;
+                    yield return _config.TimeOfDay.HasValue
+                        ? resolved.Value.Add(_config.TimeOfDay.Value.ToTimeSpan())
+                        : resolved.Value;
+                }
             }
             if (candidate >= DateTime.MaxValue.AddDays(-1)) break;
             candidate = candidate.AddDays(1);
             scanCount++;
         }
     }
+
+    /// <summary>
+    /// Pairs each occurrence in [<paramref name="from"/>, <paramref name="to"/>] with the
+    /// schedule's next real occurrence to produce a sequence of closed periods.
+    /// Each period is <c>[occurrence_i, occurrence_(i+1) − 1 tick]</c>. The closing occurrence
+    /// is looked up via <see cref="NextOccurrence"/> and may fall beyond <paramref name="to"/> —
+    /// a period is never truncated at <paramref name="to"/>. If the last occurrence in range has
+    /// no further real occurrence (the schedule ended), that occurrence produces no period
+    /// rather than a synthetic one closed at <paramref name="to"/>.
+    /// </summary>
+    /// <param name="from">The inclusive start of the date range.</param>
+    /// <param name="to">The inclusive end of the date range.</param>
+    /// <returns>A sequence of closed <see cref="DateRange"/> periods between consecutive occurrences.</returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="from"/> is later than <paramref name="to"/>.
+    /// </exception>
+    public IEnumerable<DateRange> OccurrencePeriods(DateTime from, DateTime to)
+    {
+        if (from.Date > to.Date)
+            throw new ArgumentException(
+                $"'from' ({from:yyyy-MM-dd}) must be less than or equal to 'to' ({to:yyyy-MM-dd}).",
+                nameof(from));
+
+        DateTime? previous = null;
+
+        foreach (var occurrence in OccurrencesInRange(from, to))
+        {
+            if (previous.HasValue)
+                yield return BuildPeriod(previous.Value, occurrence);
+
+            previous = occurrence;
+        }
+
+        // Close the last period with the schedule's real next occurrence, even if it falls
+        // beyond `to` — a period is never truncated at the query boundary. If there is no
+        // further occurrence (the schedule ended), the last occurrence produces no period.
+        // NextOccurrence works at day granularity (it truncates its reference to .Date), so
+        // the search must start on the day *after* `previous`, not merely one tick later.
+        if (previous.HasValue)
+        {
+            var next = NextOccurrence(previous.Value.Date.AddDays(1));
+            if (next.HasValue)
+                yield return BuildPeriod(previous.Value, next.Value);
+        }
+    }
+
+    /// <summary>
+    /// Builds a closed period starting at <paramref name="start"/> and ending one tick before
+    /// <paramref name="nextOccurrence"/>, emulating a half-open range on an inclusive-end type.
+    /// </summary>
+    private static DateRange BuildPeriod(DateTime start, DateTime nextOccurrence)
+        => new DateRange(start, nextOccurrence.AddTicks(-1));
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
@@ -536,6 +661,51 @@ public class ValiSchedule : IValiSchedule
         if (_config.EndType == RecurrenceEnd.OnDate && _config.EndDate.HasValue)
             return date <= _config.EndDate.Value;
         return true;
+    }
+
+    /// <summary>Maximum number of days <see cref="ResolveSkip"/> searches in either direction.</summary>
+    private const int MaxSkipSearchDays = 366;
+
+    /// <summary>
+    /// Determines whether <paramref name="date"/> is excluded by <see cref="ScheduleConfig.SkipWeekendsEnabled"/>
+    /// and/or <see cref="ScheduleConfig.HolidayProvider"/>, treating both rules as a single union of excluded dates.
+    /// </summary>
+    private bool IsSkipExcluded(DateTime date) =>
+        (_config.SkipWeekendsEnabled && (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday))
+        || (_config.HolidayProvider != null && _config.HolidayProvider.IsHoliday(date));
+
+    /// <summary>
+    /// Resolves <paramref name="candidate"/> against the configured <c>SkipWeekends</c>/<c>SkipHolidays</c>
+    /// rules. Returns the original date unchanged when no skip rule is active or the date is not excluded;
+    /// otherwise shifts it per the effective <see cref="HolidaySkipStrategy"/>, or returns <c>null</c> when
+    /// the occurrence must be dropped (explicit <see cref="HolidaySkipStrategy.Skip"/>, or no valid
+    /// replacement found within <see cref="MaxSkipSearchDays"/> days, or a backward search crossing the
+    /// schedule's start date).
+    /// </summary>
+    private DateTime? ResolveSkip(DateTime candidate)
+    {
+        if (!_config.SkipWeekendsEnabled && _config.HolidayProvider == null)
+            return candidate;
+        if (!IsSkipExcluded(candidate))
+            return candidate;
+
+        // Weekend-only exclusion (no holiday provider configured) always resolves forward;
+        // the strategy knob only applies once a holiday provider is active.
+        var strategy = _config.HolidayProvider != null ? _config.HolidaySkipStrategy : HolidaySkipStrategy.NextWorkday;
+        if (strategy == HolidaySkipStrategy.Skip)
+            return null;
+
+        int direction = strategy == HolidaySkipStrategy.PreviousWorkday ? -1 : 1;
+        var resolved = candidate;
+        for (int i = 0; i < MaxSkipSearchDays; i++)
+        {
+            resolved = resolved.AddDays(direction);
+            if (direction < 0 && resolved.Date < EffectiveStartDate.Date)
+                return null;
+            if (!IsSkipExcluded(resolved))
+                return resolved;
+        }
+        return null;
     }
 
     /// <summary>

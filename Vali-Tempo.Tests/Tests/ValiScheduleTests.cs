@@ -1,5 +1,9 @@
 using FluentAssertions;
+using Vali_Holiday.Core;
+using Vali_Holiday.Models;
+using Vali_Range.Models;
 using Vali_Schedule.Core;
+using Vali_Schedule.Enums;
 using Vali_Time.Enums;
 using Xunit;
 
@@ -7,6 +11,156 @@ namespace Vali_Time.Tests.Tests;
 
 public class ValiScheduleTests
 {
+    /// <summary>Test-only holiday provider backed by a fixed set of dates.</summary>
+    private sealed class FixedDateHolidayProvider : IHolidayProvider
+    {
+        private readonly HashSet<DateTime> _holidays;
+
+        public FixedDateHolidayProvider(params DateTime[] holidays) => _holidays = holidays.Select(d => d.Date).ToHashSet();
+
+        public string CountryCode => "ZZ";
+        public string CountryName => "Test";
+        public string PrimaryLanguage => "en";
+        public bool IsHoliday(DateTime date) => _holidays.Contains(date.Date);
+        public bool IsHoliday(DateOnly date) => _holidays.Contains(date.ToDateTime(TimeOnly.MinValue));
+        public IEnumerable<HolidayInfo> GetHolidays(int year) => throw new NotSupportedException();
+        public HolidayInfo? GetHoliday(DateTime date) => throw new NotSupportedException();
+        public IEnumerable<HolidayInfo> GetHolidaysInRange(DateTime from, DateTime to) => throw new NotSupportedException();
+        public string GetName(HolidayInfo holiday, string languageCode) => throw new NotSupportedException();
+    }
+
+    // ── SkipWeekends / SkipHolidays ──────────────────────────────────────────
+
+    [Fact]
+    public void SkipWeekends_OccurrenceOnWeekend_MovesToNextMonday()
+    {
+        // Jan 1 2025 is a Wednesday; Jan 4/5 are Sat/Sun.
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .SkipWeekends();
+
+        var results = schedule.OccurrencesInRange(new DateTime(2025, 1, 4), new DateTime(2025, 1, 6)).ToList();
+
+        results.Should().ContainSingle().Which.Should().Be(new DateTime(2025, 1, 6));
+    }
+
+    [Fact]
+    public void SkipWeekends_OccurrenceOnWeekday_IsUnchanged()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .SkipWeekends();
+
+        var result = schedule.NextOccurrence(new DateTime(2025, 1, 1));
+
+        result.Should().Be(new DateTime(2025, 1, 1));
+    }
+
+    [Fact]
+    public void SkipHolidays_NextWorkday_MovesForwardPastHoliday()
+    {
+        var holidayProvider = new FixedDateHolidayProvider(new DateTime(2025, 1, 2));
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .SkipHolidays(holidayProvider, HolidaySkipStrategy.NextWorkday);
+
+        var result = schedule.NextOccurrence(new DateTime(2025, 1, 2));
+
+        result.Should().Be(new DateTime(2025, 1, 3));
+    }
+
+    [Fact]
+    public void SkipHolidays_PreviousWorkday_MovesBackward_DropsIfCrossesStartingFrom()
+    {
+        var holidayProvider = new FixedDateHolidayProvider(new DateTime(2025, 1, 1));
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .SkipHolidays(holidayProvider, HolidaySkipStrategy.PreviousWorkday);
+
+        // Jan 1 is both the only possible backward replacement and StartingFrom; resolving it
+        // crosses the start date immediately, so that single candidate is dropped — but the
+        // schedule itself does not stop, it keeps scanning forward and finds Jan 2.
+        var result = schedule.NextOccurrence(new DateTime(2025, 1, 1));
+
+        result.Should().Be(new DateTime(2025, 1, 2));
+    }
+
+    [Fact]
+    public void SkipHolidays_Skip_OmitsOccurrenceWithoutReplacement()
+    {
+        var holidayProvider = new FixedDateHolidayProvider(new DateTime(2025, 1, 2));
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .SkipHolidays(holidayProvider, HolidaySkipStrategy.Skip);
+
+        var results = schedule.OccurrencesInRange(new DateTime(2025, 1, 1), new DateTime(2025, 1, 3)).ToList();
+
+        results.Should().BeEquivalentTo([new DateTime(2025, 1, 1), new DateTime(2025, 1, 3)]);
+    }
+
+    [Fact]
+    public void SkipWeekendsAndSkipHolidays_Combined_ResolvesInOneUnifiedSearch()
+    {
+        // Friday Jan 3 2025 is a holiday; Sat 4th/Sun 5th are weekend; Monday 6th is free.
+        var holidayProvider = new FixedDateHolidayProvider(new DateTime(2025, 1, 3));
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .SkipWeekends()
+            .SkipHolidays(holidayProvider, HolidaySkipStrategy.NextWorkday);
+
+        var result = schedule.NextOccurrence(new DateTime(2025, 1, 3));
+
+        result.Should().Be(new DateTime(2025, 1, 6));
+    }
+
+    [Fact]
+    public void SkipWeekends_WithCustomPredicateEquivalent_AppliesAfterResolution()
+    {
+        // WithCustomPredicate replaces the recurrence evaluator for RecurrenceType.Custom,
+        // so this exercises skip resolution combined with a custom recurrence definition.
+        var schedule = new ValiSchedule()
+            .WithCustomPredicate(d => d.Day is 4 or 5 or 6) // Sat, Sun, Mon
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .SkipWeekends();
+
+        var results = schedule.OccurrencesInRange(new DateTime(2025, 1, 4), new DateTime(2025, 1, 6)).ToList();
+
+        results.Should().ContainSingle().Which.Should().Be(new DateTime(2025, 1, 6));
+    }
+
+    [Fact]
+    public void SkipHolidays_NullProvider_ThrowsArgumentNullException()
+    {
+        var schedule = new ValiSchedule();
+
+        var act = () => schedule.SkipHolidays(null!);
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void SkipHolidays_Skip_StillConsumesEndsAfterBudgetSlot()
+    {
+        var holidayProvider = new FixedDateHolidayProvider(new DateTime(2025, 1, 2));
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .SkipHolidays(holidayProvider, HolidaySkipStrategy.Skip)
+            .EndsAfter(3);
+
+        // Budget of 3 covers Jan 1, Jan 2 (dropped), Jan 3 — only 2 dates are actually returned.
+        var results = schedule.Occurrences(new DateTime(2025, 1, 1), 10).ToList();
+
+        results.Should().BeEquivalentTo([new DateTime(2025, 1, 1), new DateTime(2025, 1, 3)]);
+    }
+
+
     // ── Daily recurrence ─────────────────────────────────────────────────────
 
     [Fact]
@@ -286,6 +440,141 @@ public class ValiScheduleTests
         results.Should().NotContain(d => d.Month == 2); // Feb 2025 has only 28 days
         results.Should().Contain(new DateTime(2025, 1, 29));
         results.Should().Contain(new DateTime(2025, 3, 29));
+    }
+
+    // ── OccurrencePeriods ─────────────────────────────────────────────────────
+
+    [Fact]
+    public void OccurrencePeriods_MonthlySchedule_PairsConsecutiveOccurrencesExactly()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .OnDayOfMonth(1)
+            .StartingFrom(new DateTime(2026, 1, 1));
+
+        var periods = schedule.OccurrencePeriods(
+            new DateTime(2026, 1, 1), new DateTime(2026, 3, 15)).ToList();
+
+        periods.Should().HaveCount(3);
+        periods[0].Start.Should().Be(new DateTime(2026, 1, 1));
+        periods[0].End.Should().Be(new DateTime(2026, 2, 1).AddTicks(-1));
+        periods[1].Start.Should().Be(new DateTime(2026, 2, 1));
+        periods[1].End.Should().Be(new DateTime(2026, 3, 1).AddTicks(-1));
+        periods[2].Start.Should().Be(new DateTime(2026, 3, 1));
+        // Closes with the real next occurrence (Apr 1), even though it falls beyond `to`.
+        periods[2].End.Should().Be(new DateTime(2026, 4, 1).AddTicks(-1));
+    }
+
+    [Fact]
+    public void OccurrencePeriods_NoOverlapBetweenConsecutivePeriods()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .OnDayOfMonth(1)
+            .StartingFrom(new DateTime(2026, 1, 1));
+
+        var periods = schedule.OccurrencePeriods(
+            new DateTime(2026, 1, 1), new DateTime(2026, 4, 1)).ToList();
+
+        for (int i = 1; i < periods.Count; i++)
+            periods[i - 1].End.Should().BeBefore(periods[i].Start);
+    }
+
+    [Fact]
+    public void OccurrencePeriods_EndsAfterExhaustedMidRange_ExcludesLastOccurrenceWithoutPeriod()
+    {
+        // EndsAfter(2): Jan 1 and Feb 1 are valid; Mar 1 is beyond the budget, so Feb 1 has
+        // no real next occurrence and must be excluded rather than closed at `to`.
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .OnDayOfMonth(1)
+            .StartingFrom(new DateTime(2026, 1, 1))
+            .EndsAfter(2);
+
+        var periods = schedule.OccurrencePeriods(
+            new DateTime(2026, 1, 1), new DateTime(2026, 6, 1)).ToList();
+
+        periods.Should().ContainSingle();
+        periods[0].Start.Should().Be(new DateTime(2026, 1, 1));
+        periods[0].End.Should().Be(new DateTime(2026, 2, 1).AddTicks(-1));
+    }
+
+    [Fact]
+    public void OccurrencePeriods_EndsOnExhaustedMidRange_ExcludesLastOccurrenceWithoutPeriod()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .OnDayOfMonth(1)
+            .StartingFrom(new DateTime(2026, 1, 1))
+            .EndsOn(new DateTime(2026, 2, 15));
+
+        var periods = schedule.OccurrencePeriods(
+            new DateTime(2026, 1, 1), new DateTime(2026, 6, 1)).ToList();
+
+        periods.Should().ContainSingle();
+        periods[0].Start.Should().Be(new DateTime(2026, 1, 1));
+        periods[0].End.Should().Be(new DateTime(2026, 2, 1).AddTicks(-1));
+    }
+
+    [Fact]
+    public void OccurrencePeriods_NoOccurrencesInRange_ReturnsEmptySequence()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .OnDayOfMonth(1)
+            .StartingFrom(new DateTime(2026, 1, 1));
+
+        var periods = schedule.OccurrencePeriods(
+            new DateTime(2026, 1, 2), new DateTime(2026, 1, 31)).ToList();
+
+        periods.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void OccurrencePeriods_SingleOccurrenceInRange_ClosesBeyondTo()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .OnDayOfMonth(1)
+            .StartingFrom(new DateTime(2026, 1, 1));
+
+        var periods = schedule.OccurrencePeriods(
+            new DateTime(2026, 1, 1), new DateTime(2026, 1, 20)).ToList();
+
+        periods.Should().ContainSingle();
+        periods[0].Start.Should().Be(new DateTime(2026, 1, 1));
+        periods[0].End.Should().Be(new DateTime(2026, 2, 1).AddTicks(-1));
+        periods[0].End.Should().BeAfter(new DateTime(2026, 1, 20));
+    }
+
+    [Fact]
+    public void OccurrencePeriods_FromAfterTo_ThrowsArgumentException()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .OnDayOfMonth(1)
+            .StartingFrom(new DateTime(2026, 1, 1));
+
+        var act = () => schedule.OccurrencePeriods(new DateTime(2026, 2, 1), new DateTime(2026, 1, 1)).ToList();
+
+        act.Should().Throw<ArgumentException>().WithParameterName("from");
+    }
+
+    [Fact]
+    public void OccurrencePeriods_WithCustomPredicate_PairsCorrectly()
+    {
+        var schedule = new ValiSchedule()
+            .WithCustomPredicate(d => d.Day is 1 or 15)
+            .StartingFrom(new DateTime(2026, 1, 1));
+
+        // Only Jan 1 falls in range; it closes with the next real occurrence (Jan 15),
+        // which falls beyond `to` (Jan 10) — same "closes beyond to" rule as any other type.
+        var periods = schedule.OccurrencePeriods(
+            new DateTime(2026, 1, 1), new DateTime(2026, 1, 10)).ToList();
+
+        periods.Should().ContainSingle();
+        periods[0].Start.Should().Be(new DateTime(2026, 1, 1));
+        periods[0].End.Should().Be(new DateTime(2026, 1, 15).AddTicks(-1));
     }
 
     // ── VS-1: AfterOccurrences budget off-by-one ─────────────────────────────

@@ -106,6 +106,52 @@ Pins a monthly schedule to a specific calendar day.
 
 ---
 
+#### `SkipWeekends()`
+
+Excludes Saturday/Sunday. An occurrence that lands on a weekend is moved forward to the
+next non-excluded day.
+
+```csharp
+var schedule = new ValiSchedule()
+    .Every(1, TimeUnit.Days)
+    .StartingFrom(new DateTime(2025, 1, 1))
+    .SkipWeekends();
+```
+
+#### `SkipHolidays(IHolidayProvider provider, HolidaySkipStrategy strategy = HolidaySkipStrategy.NextWorkday)`
+
+Excludes dates that are public holidays according to a `Vali-Holiday` provider. Requires
+adding `Vali-Holiday` as a dependency (installing `Vali-Schedule` alone is enough for
+`SkipWeekends()`, but `SkipHolidays()` needs a concrete `IHolidayProvider`, e.g.
+`HolidayProviderFactory.Create("PE")`).
+
+```csharp
+using Vali_Holiday.Core;
+using Vali_Schedule.Enums;
+
+IHolidayProvider peru = HolidayProviderFactory.Create("PE");
+
+var schedule = new ValiSchedule()
+    .Every(1, TimeUnit.Days)
+    .StartingFrom(new DateTime(2025, 1, 1))
+    .SkipWeekends()
+    .SkipHolidays(peru, HolidaySkipStrategy.NextWorkday);
+```
+
+`HolidaySkipStrategy` controls how a collision is resolved:
+
+| Value | Behavior |
+|---|---|
+| `NextWorkday` (default) | Moves forward until a non-excluded date is found. |
+| `PreviousWorkday` | Moves backward; drops the occurrence if it crosses `StartingFrom`. |
+| `Skip` | Omits the occurrence with no replacement. Still consumes one `EndsAfter` slot. |
+
+`SkipWeekends()` and `SkipHolidays()` combine into a single unified exclusion set — a
+Friday holiday followed by a weekend resolves to the next real business day in one pass,
+not two independent shifts.
+
+---
+
 ### Query API
 
 #### `NextOccurrence(DateTime reference)`
@@ -147,6 +193,32 @@ Returns all occurrences within the inclusive date range.
 ```csharp
 IEnumerable<DateTime> OccurrencesInRange(DateTime from, DateTime to);
 ```
+
+#### `OccurrencePeriods(DateTime from, DateTime to)`
+
+Pairs each occurrence with the schedule's next real occurrence, returning closed
+`Vali_Range.Models.DateRange` periods instead of single instants — useful for billing
+cycles, maintenance windows, or any "time between occurrences" use case. Requires
+`Vali-Range` (added automatically as a dependency).
+
+```csharp
+using Vali_Range.Models;
+
+var schedule = new ValiSchedule()
+    .Every(1, TimeUnit.Months).OnDayOfMonth(1)
+    .StartingFrom(new DateTime(2026, 1, 1));
+
+IEnumerable<DateRange> periods = schedule.OccurrencePeriods(
+    new DateTime(2026, 1, 1), new DateTime(2026, 3, 15));
+// [2026-01-01 → 2026-01-31 23:59:59.9999999]
+// [2026-02-01 → 2026-02-28 23:59:59.9999999]
+// [2026-03-01 → 2026-03-31 23:59:59.9999999]  ← closes with the real next occurrence,
+//                                                even though it falls beyond `to`.
+```
+
+A period is never truncated at `to`, and the last occurrence in range is excluded (no
+period emitted) if the schedule has no further real occurrence — the method never
+synthesizes `End = to`.
 
 ---
 

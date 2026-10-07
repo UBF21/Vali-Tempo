@@ -47,6 +47,8 @@
 
     <ItemGroup>
         <PackageReference Include="Vali-Time" Version="1.0.1" />
+        <PackageReference Include="Vali-Holiday" Version="1.0.0" />
+        <PackageReference Include="Vali-Range" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>

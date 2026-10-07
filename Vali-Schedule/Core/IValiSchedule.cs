@@ -1,5 +1,8 @@
 namespace Vali_Schedule.Core;
 
+using Vali_Holiday.Core;
+using Vali_Range.Models;
+using Vali_Schedule.Enums;
 using Vali_Time.Enums;
 
 /// <summary>
@@ -79,6 +82,29 @@ public interface IValiSchedule
     IValiSchedule WithCustomPredicate(Func<DateTime, bool> predicate);
 
     /// <summary>
+    /// Excludes Saturday and Sunday from the generated occurrences.
+    /// If an occurrence falls on a weekend, it is moved forward to the next
+    /// non-weekend, non-holiday day (see <see cref="HolidaySkipStrategy.NextWorkday"/>).
+    /// </summary>
+    /// <returns>The current <see cref="IValiSchedule"/> instance for fluent chaining.</returns>
+    IValiSchedule SkipWeekends();
+
+    /// <summary>
+    /// Excludes dates that are public holidays according to <paramref name="provider"/>,
+    /// resolving collisions per <paramref name="strategy"/>. Combines with
+    /// <see cref="SkipWeekends"/> if both are configured — a candidate date is resolved
+    /// against the union of excluded dates, not two independent passes.
+    /// </summary>
+    /// <param name="provider">The holiday provider used to test each candidate date.</param>
+    /// <param name="strategy">
+    /// How to resolve an occurrence that falls on a holiday. Defaults to
+    /// <see cref="HolidaySkipStrategy.NextWorkday"/>.
+    /// </param>
+    /// <returns>The current <see cref="IValiSchedule"/> instance for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="provider"/> is null.</exception>
+    IValiSchedule SkipHolidays(IHolidayProvider provider, HolidaySkipStrategy strategy = HolidaySkipStrategy.NextWorkday);
+
+    /// <summary>
     /// Returns the next occurrence on or after the given reference date.
     /// </summary>
     /// <param name="reference">The date from which to search forward.</param>
@@ -122,6 +148,23 @@ public interface IValiSchedule
     /// <param name="to">The inclusive end of the date range.</param>
     /// <returns>A sequence of all occurrences within the specified range.</returns>
     IEnumerable<DateTime> OccurrencesInRange(DateTime from, DateTime to);
+
+    /// <summary>
+    /// Pairs each occurrence in [<paramref name="from"/>, <paramref name="to"/>] with the
+    /// schedule's next real occurrence to produce a sequence of closed periods.
+    /// Each period is <c>[occurrence_i, occurrence_(i+1) − 1 tick]</c>. The closing occurrence
+    /// is looked up via <see cref="NextOccurrence"/> and may fall beyond <paramref name="to"/> —
+    /// a period is never truncated at <paramref name="to"/>. If the last occurrence in range has
+    /// no further real occurrence (the schedule ended), that occurrence produces no period
+    /// rather than a synthetic one closed at <paramref name="to"/>.
+    /// </summary>
+    /// <param name="from">The inclusive start of the date range.</param>
+    /// <param name="to">The inclusive end of the date range.</param>
+    /// <returns>A sequence of closed <see cref="DateRange"/> periods between consecutive occurrences.</returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="from"/> is later than <paramref name="to"/>.
+    /// </exception>
+    IEnumerable<DateRange> OccurrencePeriods(DateTime from, DateTime to);
 
     /// <summary>
     /// Validates the current configuration and returns the schedule, ready for use.

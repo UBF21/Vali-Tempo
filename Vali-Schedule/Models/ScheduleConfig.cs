@@ -1,3 +1,4 @@
+using Vali_Holiday.Core;
 using Vali_Schedule.Enums;
 
 namespace Vali_Schedule.Models;
@@ -72,4 +73,22 @@ public class ScheduleConfig
     /// Receives a candidate date and returns whether it is a valid occurrence.
     /// </summary>
     public Func<DateTime, bool>? CustomPredicate { get; internal set; }
+
+    /// <summary>
+    /// Gets whether Saturday/Sunday occurrences are excluded and resolved via
+    /// <see cref="HolidaySkipStrategy.NextWorkday"/>. Set via <c>SkipWeekends()</c>.
+    /// </summary>
+    public bool SkipWeekendsEnabled { get; internal set; }
+
+    /// <summary>
+    /// Gets the holiday provider used to exclude occurrences, or <c>null</c> if
+    /// <c>SkipHolidays()</c> was never called.
+    /// </summary>
+    public IHolidayProvider? HolidayProvider { get; internal set; }
+
+    /// <summary>
+    /// Gets the strategy used to resolve an occurrence excluded by <see cref="HolidayProvider"/>.
+    /// Only meaningful when <see cref="HolidayProvider"/> is not <c>null</c>.
+    /// </summary>
+    public HolidaySkipStrategy HolidaySkipStrategy { get; internal set; }
 }
