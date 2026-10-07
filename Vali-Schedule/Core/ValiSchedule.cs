@@ -31,7 +31,21 @@ public class ValiSchedule : IValiSchedule
 {
     private const int MaxScanDays = 1825; // 5-year lookahead/lookback window
 
+    // OccurrencesInRange accepts an explicit [from, to] window that can legitimately span far
+    // beyond MaxScanDays; it needs its own, separately-reviewed ceiling instead of silently
+    // inheriting a 10x multiple of MaxScanDays wherever that constant happens to change.
+    private const int MaxRangeScanDays = MaxScanDays * 10;
+
     private readonly ScheduleConfig _config = new();
+    private readonly OccurrenceSkipResolver _skipResolver;
+
+    /// <summary>
+    /// Creates a new, unconfigured schedule builder.
+    /// </summary>
+    public ValiSchedule()
+    {
+        _skipResolver = new OccurrenceSkipResolver(_config);
+    }
 
     /// <summary>
     /// Returns the effective start date, resolving <see cref="DateTime.MinValue"/> (the sentinel
@@ -213,14 +227,28 @@ public class ValiSchedule : IValiSchedule
     /// </exception>
     public ValiSchedule Build()
     {
-        if (_config.Type == RecurrenceType.Weekly
-            && (_config.DaysOfWeek == null || _config.DaysOfWeek.Count == 0))
-            throw new InvalidOperationException(
-                "Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.");
+        EnsureWeeklyConfigured();
         if (_config.Type == RecurrenceType.Custom && _config.CustomPredicate == null)
             throw new InvalidOperationException(
                 "A custom predicate must be set via WithCustomPredicate() before calling Build() with RecurrenceType.Custom.");
         return this;
+    }
+
+    /// <summary>
+    /// Throws if <see cref="RecurrenceType.Weekly"/> is configured without at least one day of
+    /// week. Shared by <see cref="Build"/> and <see cref="IsValidOccurrence"/> so the rule is
+    /// defined and enforced in exactly one place, regardless of whether <c>Build()</c> was called
+    /// before a query method.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="RecurrenceType.Weekly"/> is set but no days of week have been configured.
+    /// </exception>
+    private void EnsureWeeklyConfigured()
+    {
+        if (_config.Type == RecurrenceType.Weekly
+            && (_config.DaysOfWeek == null || _config.DaysOfWeek.Count == 0))
+            throw new InvalidOperationException(
+                "Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.");
     }
 
     // ── IValiSchedule explicit implementation (delegates to typed methods) ───
@@ -302,7 +330,7 @@ public class ValiSchedule : IValiSchedule
                 // schedule has ended or the lookahead window was exhausted.
                 if (!IsWithinEnd(candidate)) return null;
 
-                var resolved = ResolveSkip(candidate);
+                var resolved = _skipResolver.Resolve(candidate, EffectiveStartDate);
 
                 yielded++;
                 occurrenceCount = preScanCount + yielded;
@@ -365,7 +393,7 @@ public class ValiSchedule : IValiSchedule
                     if (backScan < EffectiveStartDate.Date) return null;
                     if (IsValidOccurrence(backScan) && IsWithinEnd(backScan))
                     {
-                        var backResolved = ResolveSkip(backScan);
+                        var backResolved = _skipResolver.Resolve(backScan, EffectiveStartDate);
                         if (backResolved.HasValue)
                         {
                             return _config.TimeOfDay.HasValue
@@ -387,7 +415,7 @@ public class ValiSchedule : IValiSchedule
             if (candidate < EffectiveStartDate.Date) return null;
             if (IsValidOccurrence(candidate) && IsWithinEnd(candidate))
             {
-                var resolved = ResolveSkip(candidate);
+                var resolved = _skipResolver.Resolve(candidate, EffectiveStartDate);
                 if (resolved.HasValue)
                 {
                     return _config.TimeOfDay.HasValue
@@ -447,26 +475,11 @@ public class ValiSchedule : IValiSchedule
             {
                 if (!IsWithinEnd(candidate)) yield break;
 
-                var resolved = ResolveSkip(candidate);
-
-                yielded++;
-                occurrenceCount = preScanCount + yielded;
-
-                if (_config.EndType == RecurrenceEnd.AfterOccurrences
-                    && _config.MaxOccurrences.HasValue
-                    && occurrenceCount > _config.MaxOccurrences.Value)
+                if (!TryResolveEmission(candidate, preScanCount, ref yielded, ref lastResolved, out var emission, out _))
                     yield break;
 
-                // A resolved date identical to the previous emission means two distinct base
-                // cadence hits (e.g. Saturday and Sunday under SkipWeekends) collapsed onto the
-                // same replacement workday — emit it only once.
-                if (resolved.HasValue && resolved.Value.Date != lastResolved)
-                {
-                    lastResolved = resolved.Value.Date;
-                    yield return _config.TimeOfDay.HasValue
-                        ? resolved.Value.Add(_config.TimeOfDay.Value.ToTimeSpan())
-                        : resolved.Value;
-                }
+                if (emission.HasValue)
+                    yield return emission.Value;
             }
             if (candidate >= DateTime.MaxValue.AddDays(-1)) break;
             candidate = candidate.AddDays(1);
@@ -477,7 +490,7 @@ public class ValiSchedule : IValiSchedule
     /// <summary>
     /// Enumerates all occurrences within the inclusive date range
     /// [<paramref name="from"/>, <paramref name="to"/>].
-    /// The scan is limited to <see cref="MaxScanDays"/> * 10 days to prevent runaway iteration
+    /// The scan is limited to <see cref="MaxRangeScanDays"/> days to prevent runaway iteration
     /// on unbounded or extremely large ranges.
     /// </summary>
     /// <param name="from">The inclusive start of the date range.</param>
@@ -513,28 +526,15 @@ public class ValiSchedule : IValiSchedule
         int rangeYielded = 0;
         DateTime? lastResolved = null;
 
-        while (candidate <= to.Date && scanCount < MaxScanDays * 10)
+        while (candidate <= to.Date && scanCount < MaxRangeScanDays)
         {
             if (IsValidOccurrence(candidate) && IsWithinEnd(candidate))
             {
-                var resolved = ResolveSkip(candidate);
-
-                rangeYielded++;
-                occurrenceCount = preScanCount + rangeYielded;
-
-                if (_config.EndType == RecurrenceEnd.AfterOccurrences
-                    && _config.MaxOccurrences.HasValue
-                    && occurrenceCount > _config.MaxOccurrences.Value)
+                if (!TryResolveEmission(candidate, preScanCount, ref rangeYielded, ref lastResolved, out var emission, out _))
                     yield break;
 
-                // See Occurrences(): collapse duplicate replacement dates from distinct base hits.
-                if (resolved.HasValue && resolved.Value.Date != lastResolved)
-                {
-                    lastResolved = resolved.Value.Date;
-                    yield return _config.TimeOfDay.HasValue
-                        ? resolved.Value.Add(_config.TimeOfDay.Value.ToTimeSpan())
-                        : resolved.Value;
-                }
+                if (emission.HasValue)
+                    yield return emission.Value;
             }
             if (candidate >= DateTime.MaxValue.AddDays(-1)) break;
             candidate = candidate.AddDays(1);
@@ -597,6 +597,47 @@ public class ValiSchedule : IValiSchedule
     // ── Private helpers ──────────────────────────────────────────────────────
 
     /// <summary>
+    /// Resolves one structurally valid, within-end candidate through the skip resolver, advances
+    /// the occurrence budget counter, and determines whether it should be emitted. Centralizes the
+    /// sequence shared by <see cref="Occurrences"/> and <see cref="OccurrencesInRange"/>: resolve →
+    /// budget check → dedup against the previous emission → apply <see cref="ScheduleConfig.TimeOfDay"/>.
+    /// </summary>
+    /// <param name="candidate">A candidate that already passed <see cref="IsValidOccurrence"/> and <see cref="IsWithinEnd"/>.</param>
+    /// <param name="preScanCount">Occurrences already counted before the enumeration window started.</param>
+    /// <param name="yielded">Running count of structurally valid occurrences seen so far; incremented in place.</param>
+    /// <param name="lastResolved">The date portion of the previously emitted occurrence, used to collapse duplicate skip replacements.</param>
+    /// <param name="emission">The value to yield, or <c>null</c> if this candidate collapsed into a duplicate (not an error).</param>
+    /// <param name="budgetExceeded"><c>true</c> when the <see cref="RecurrenceEnd.AfterOccurrences"/> budget was just exceeded.</param>
+    /// <returns><c>true</c> if enumeration should continue; <c>false</c> if <paramref name="budgetExceeded"/> is set and the caller must stop.</returns>
+    private bool TryResolveEmission(DateTime candidate, int preScanCount, ref int yielded, ref DateTime? lastResolved, out DateTime? emission, out bool budgetExceeded)
+    {
+        var resolved = _skipResolver.Resolve(candidate, EffectiveStartDate);
+
+        yielded++;
+        int occurrenceCount = preScanCount + yielded;
+
+        budgetExceeded = _config.EndType == RecurrenceEnd.AfterOccurrences
+            && _config.MaxOccurrences.HasValue
+            && occurrenceCount > _config.MaxOccurrences.Value;
+
+        emission = null;
+        if (budgetExceeded) return false;
+
+        // A resolved date identical to the previous emission means two distinct base cadence hits
+        // (e.g. Saturday and Sunday under SkipWeekends) collapsed onto the same replacement workday
+        // — emit it only once.
+        if (resolved.HasValue && resolved.Value.Date != lastResolved)
+        {
+            lastResolved = resolved.Value.Date;
+            emission = _config.TimeOfDay.HasValue
+                ? resolved.Value.Add(_config.TimeOfDay.Value.ToTimeSpan())
+                : resolved.Value;
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Determines whether <paramref name="date"/> is a structurally valid occurrence
     /// given the current recurrence configuration, without considering end conditions.
     /// </summary>
@@ -607,16 +648,17 @@ public class ValiSchedule : IValiSchedule
         var effectiveStart = EffectiveStartDate;
         if (date < effectiveStart.Date) return false;
 
+        if (_config.Type == RecurrenceType.Weekly)
+            EnsureWeeklyConfigured();
+
         return _config.Type switch
         {
             RecurrenceType.Daily =>
                 (date - effectiveStart.Date).Days % _config.Interval == 0,
 
             RecurrenceType.Weekly =>
-                (_config.DaysOfWeek == null || _config.DaysOfWeek.Count == 0)
-                    ? throw new InvalidOperationException("Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.")
-                    : _config.DaysOfWeek.Contains(date.DayOfWeek)
-                      && IsInValidWeekInterval(date, effectiveStart),
+                _config.DaysOfWeek!.Contains(date.DayOfWeek)
+                && IsInValidWeekInterval(date, effectiveStart),
 
             RecurrenceType.Monthly =>
                 (_config.DayOfMonth == null || _config.DayOfMonth <= DateTime.DaysInMonth(date.Year, date.Month))
@@ -661,77 +703,6 @@ public class ValiSchedule : IValiSchedule
         if (_config.EndType == RecurrenceEnd.OnDate && _config.EndDate.HasValue)
             return date <= _config.EndDate.Value;
         return true;
-    }
-
-    /// <summary>Maximum number of days <see cref="ResolveSkip"/> searches in either direction.</summary>
-    private const int MaxSkipSearchDays = 366;
-
-    /// <summary>
-    /// Determines whether <paramref name="date"/> is excluded by <see cref="ScheduleConfig.SkipWeekendsEnabled"/>
-    /// and/or <see cref="ScheduleConfig.HolidayProvider"/>, treating both rules as a single union of excluded dates.
-    /// </summary>
-    private bool IsSkipExcluded(DateTime date) =>
-        (_config.SkipWeekendsEnabled && (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday))
-        || (_config.HolidayProvider != null && _config.HolidayProvider.IsHoliday(date));
-
-    /// <summary>
-    /// Resolves <paramref name="candidate"/> against the configured <c>SkipWeekends</c>/<c>SkipHolidays</c>
-    /// rules. Returns the original date unchanged when no skip rule is active or the date is not excluded;
-    /// otherwise shifts it per the effective <see cref="HolidaySkipStrategy"/>, or returns <c>null</c> when
-    /// the occurrence must be dropped (explicit <see cref="HolidaySkipStrategy.Skip"/>, or no valid
-    /// replacement found within <see cref="MaxSkipSearchDays"/> days, or a backward search crossing the
-    /// schedule's start date).
-    /// </summary>
-    private DateTime? ResolveSkip(DateTime candidate)
-    {
-        if (!_config.SkipWeekendsEnabled && _config.HolidayProvider == null)
-            return candidate;
-        if (!IsSkipExcluded(candidate))
-            return candidate;
-
-        // Weekend-only exclusion (no holiday provider configured) always resolves forward;
-        // the strategy knob only applies once a holiday provider is active.
-        var strategy = _config.HolidayProvider != null ? _config.HolidaySkipStrategy : HolidaySkipStrategy.NextWorkday;
-        if (strategy == HolidaySkipStrategy.Skip)
-            return null;
-
-        int direction = strategy == HolidaySkipStrategy.PreviousWorkday ? -1 : 1;
-        var resolved = candidate;
-        for (int i = 0; i < MaxSkipSearchDays; i++)
-        {
-            resolved = resolved.AddDays(direction);
-            if (direction < 0 && resolved.Date < EffectiveStartDate.Date)
-                return null;
-            if (!IsSkipExcluded(resolved))
-                return resolved;
-        }
-        return null;
-    }
-
-    /// <summary>
-    /// Counts how many valid occurrences exist between <paramref name="from"/> and
-    /// <paramref name="to"/> (both inclusive) using a forward linear scan.
-    /// </summary>
-    /// <param name="from">The start of the counting window.</param>
-    /// <param name="to">The end of the counting window.</param>
-    /// <returns>The number of valid occurrences in the given window.</returns>
-    /// <remarks>
-    /// This method is no longer used internally. <see cref="Occurrences"/> and
-    /// <see cref="OccurrencesInRange"/> now maintain an incremental counter to avoid the
-    /// O(n²) complexity that resulted from calling this method inside the iteration loop.
-    /// </remarks>
-    [Obsolete("CountOccurrencesBetween causes O(n²) when called inside an iteration loop. " +
-              "Use an incremental counter instead. This method will be removed in a future version.")]
-    private int CountOccurrencesBetween(DateTime from, DateTime to)
-    {
-        int count = 0;
-        var candidate = from;
-        while (candidate <= to)
-        {
-            if (IsValidOccurrence(candidate)) count++;
-            candidate = candidate.AddDays(1);
-        }
-        return count;
     }
 
     /// <summary>

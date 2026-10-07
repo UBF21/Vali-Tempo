@@ -27,6 +27,7 @@ public class ValiScheduleTests
         public HolidayInfo? GetHoliday(DateTime date) => throw new NotSupportedException();
         public IEnumerable<HolidayInfo> GetHolidaysInRange(DateTime from, DateTime to) => throw new NotSupportedException();
         public string GetName(HolidayInfo holiday, string languageCode) => throw new NotSupportedException();
+        public DateTime? GetObservedDate(HolidayInfo holiday, int year) => throw new NotSupportedException();
     }
 
     // ── SkipWeekends / SkipHolidays ──────────────────────────────────────────
@@ -598,5 +599,35 @@ public class ValiScheduleTests
         results[0].Should().Be(new DateTime(2025, 1, 3));
         results[1].Should().Be(new DateTime(2025, 1, 4));
         results[2].Should().Be(new DateTime(2025, 1, 5));
+    }
+
+    // ── Weekly-without-days validation: unified between Build() and direct queries ──
+
+    [Fact]
+    public void Build_WeeklyWithoutDays_ThrowsInvalidOperationException()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Weeks)
+            .StartingFrom(new DateTime(2025, 1, 1));
+
+        var act = () => schedule.Build();
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.");
+    }
+
+    [Fact]
+    public void DirectQuery_WeeklyWithoutDays_WithoutBuild_ThrowsSameInvalidOperationException()
+    {
+        // No .On(...) and no .Build() call — the query path must enforce the same rule
+        // that Build() enforces, since Build() is never mandatory before querying.
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Weeks)
+            .StartingFrom(new DateTime(2025, 1, 1));
+
+        var act = () => schedule.NextOccurrence(new DateTime(2025, 1, 1));
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.");
     }
 }
