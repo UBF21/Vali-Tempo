@@ -102,7 +102,7 @@ public class ValiAge : IValiAge
             var candidate = afterYears.AddMonths(months + 1);
             // If the day was clamped (birthday day > candidate's days in month) AND
             // the candidate date equals reference exactly, don't count it as a full month
-            bool clamped = afterYears.Day > DateTime.DaysInMonth(candidate.Year, candidate.Month);
+            bool clamped = Constants.IsClampedMonthEnd(afterYears.Day, candidate);
             if (clamped && candidate.Date == reference.Date) break;
             months++;
         }
@@ -186,6 +186,7 @@ public class ValiAge : IValiAge
     /// <param name="date">The date to describe relative to <paramref name="reference"/>.</param>
     /// <param name="reference">The reference point in time.</param>
     /// <returns>A human-readable relative time string.</returns>
+    /// <seealso cref="Humanize(DateTime, DateTime?, HumanizeCulture, TimeUnit?)"/>
     public string Relative(DateTime date, DateTime reference)
     {
         TimeSpan diff    = reference - date;
@@ -390,6 +391,42 @@ public class ValiAge : IValiAge
     {
         DateTime next = NextBirthday(birthDate, reference);
         return (next - reference.Date).Days;
+    }
+
+    // =========================================================================
+    // HUMANIZE
+    // =========================================================================
+
+    /// <summary>
+    /// Returns a human-readable, culturally-localized relative time description of
+    /// <paramref name="date"/> compared to <paramref name="relativeTo"/> (or the injected clock's
+    /// current time when omitted).
+    /// </summary>
+    /// <param name="date">The date/time to describe.</param>
+    /// <param name="relativeTo">
+    /// The reference point in time. Defaults to the clock injected into this
+    /// <see cref="ValiAge"/> instance (<see cref="IClock.Now"/>-equivalent) when <c>null</c>.
+    /// </param>
+    /// <param name="culture">The output language. Defaults to <see cref="HumanizeCulture.En"/>.</param>
+    /// <param name="maxPrecision">
+    /// The finest <see cref="TimeUnit"/> allowed in the output. When the actual difference is
+    /// finer than this unit, the output collapses to a "less than one &lt;unit&gt;" phrasing
+    /// instead of a smaller unit. Supported values: <see cref="TimeUnit.Minutes"/>,
+    /// <see cref="TimeUnit.Hours"/>, <see cref="TimeUnit.Days"/>, <see cref="TimeUnit.Weeks"/>,
+    /// <see cref="TimeUnit.Months"/>, <see cref="TimeUnit.Years"/>. <c>null</c> (default) applies
+    /// no floor — the "a moment ago" bucket is reachable.
+    /// </param>
+    /// <returns>A localized, human-readable relative time string.</returns>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when <paramref name="culture"/> is not a recognised <see cref="HumanizeCulture"/>
+    /// value, or <paramref name="maxPrecision"/> is <see cref="TimeUnit.Milliseconds"/> or
+    /// <see cref="TimeUnit.Seconds"/> (too fine to act as a floor).
+    /// </exception>
+    /// <seealso cref="Relative(DateTime, DateTime)"/>
+    public string Humanize(DateTime date, DateTime? relativeTo = null, HumanizeCulture culture = HumanizeCulture.En, TimeUnit? maxPrecision = null)
+    {
+        DateTime reference = relativeTo ?? _clock.Now;
+        return Vali_Age.Internal.HumanizeEngine.Humanize(date, reference, culture, maxPrecision);
     }
 
     // =========================================================================

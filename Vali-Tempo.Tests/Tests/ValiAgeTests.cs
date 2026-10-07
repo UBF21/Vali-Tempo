@@ -435,4 +435,19 @@ public class ValiAgeTests
         DateTime result = _vali.PreviousBirthday(birthDate, reference);
         result.Should().Be(new DateTime(2025, 3, 10));
     }
+
+    // ── Exact — month-end clamping (shared helper with ValiDate.MonthsDiff) ──
+
+    [Fact]
+    public void Exact_Jan31ToFeb28_NonLeapYear_DoesNotCountClampedMonthAsComplete()
+    {
+        // born 2023-01-31, reference 2023-02-28: Jan 31 + 1 month clamps to Feb 28, which equals
+        // the reference exactly — that clamped month must not be counted as a complete month.
+        var birthDate = new DateTime(2023, 1, 31);
+        var reference = new DateTime(2023, 2, 28);
+        AgeResult result = _vali.Exact(birthDate, reference);
+        result.Years.Should().Be(0);
+        result.Months.Should().Be(0);
+        result.Days.Should().Be(28);
+    }
 }

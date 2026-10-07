@@ -77,6 +77,33 @@ public interface IValiAge
     string Relative(DateTime date, DateTime reference);
 
     /// <summary>
+    /// Returns a human-readable, culturally-localized relative time description of
+    /// <paramref name="date"/> compared to <paramref name="relativeTo"/> (or the injected clock's
+    /// current time when omitted).
+    /// </summary>
+    /// <param name="date">The date/time to describe.</param>
+    /// <param name="relativeTo">
+    /// The reference point in time. Defaults to the clock injected into this
+    /// <see cref="ValiAge"/> instance (<see cref="IClock.Now"/>-equivalent) when <c>null</c>.
+    /// </param>
+    /// <param name="culture">The output language. Defaults to <see cref="HumanizeCulture.En"/>.</param>
+    /// <param name="maxPrecision">
+    /// The finest <see cref="TimeUnit"/> allowed in the output. When the actual difference is
+    /// finer than this unit, the output collapses to a "less than one &lt;unit&gt;" phrasing
+    /// instead of a smaller unit. Supported values: <see cref="TimeUnit.Minutes"/>,
+    /// <see cref="TimeUnit.Hours"/>, <see cref="TimeUnit.Days"/>, <see cref="TimeUnit.Weeks"/>,
+    /// <see cref="TimeUnit.Months"/>, <see cref="TimeUnit.Years"/>. <c>null</c> (default) applies
+    /// no floor — the "a moment ago" bucket is reachable.
+    /// </param>
+    /// <returns>A localized, human-readable relative time string.</returns>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when <paramref name="culture"/> is not a recognised <see cref="HumanizeCulture"/>
+    /// value, or <paramref name="maxPrecision"/> is <see cref="TimeUnit.Milliseconds"/> or
+    /// <see cref="TimeUnit.Seconds"/> (too fine to act as a floor).
+    /// </exception>
+    string Humanize(DateTime date, DateTime? relativeTo = null, HumanizeCulture culture = HumanizeCulture.En, TimeUnit? maxPrecision = null);
+
+    /// <summary>
     /// Determines whether the person born on <paramref name="birthDate"/> has reached at least
     /// <paramref name="amount"/> of the specified <paramref name="part"/> as of today.
     /// </summary>

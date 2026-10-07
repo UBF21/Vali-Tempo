@@ -46,7 +46,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Vali-Time" Version="1.0.1" />
+        <!-- ponytail: ProjectReference instead of the published PackageReference so the new
+             HumanizeCulture enum (added to Vali-Time source in this change) is visible at build
+             time; the NuGet package "Vali-Time 1.0.1" on nuget.org predates it. Revert to
+             PackageReference once Vali-Time is republished with HumanizeCulture included. -->
+        <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
     </ItemGroup>
 
     <ItemGroup>
