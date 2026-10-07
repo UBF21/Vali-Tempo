@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Vali-Holiday
+- `IValiHoliday.IsHoliday(DateTime, params string[])` (ANY) and `IsHolidayInAll(DateTime, params string[])` (ALL) multi-country overloads
+
+### Added — Vali-Range
+- `IValiRange.Subtract(DateRange a, DateRange b)` — set-theoretic difference A \ B, completing the Intersection/Union/Subtract trio
+
+### Added — Vali-Schedule
+- `IValiSchedule.SkipWeekends()` and `SkipHolidays(IHolidayProvider, HolidaySkipStrategy)` to exclude weekend/holiday occurrences, resolved via `NextWorkday`/`PreviousWorkday`/`Skip`
+- `HolidaySkipStrategy` enum
+- `IValiSchedule.OccurrencePeriods(DateTime from, DateTime to)` — pairs consecutive occurrences into `Vali_Range.Models.DateRange` periods
+
+### Changed — Vali-Schedule
+- New cross-package dependencies: `Vali-Schedule` now references `Vali-Holiday` and `Vali-Range` (`PackageReference`, same pattern already used by `Vali-Calendar`). Only `SkipHolidays()` requires a concrete `IHolidayProvider`; `SkipWeekends()` has no such requirement.
+
 ## [1.0.0] - 2025-07-01
 
 ### Added — Vali-Time
