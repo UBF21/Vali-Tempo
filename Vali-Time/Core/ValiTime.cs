@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 using Vali_Time.Enums;
 using Vali_Time.Utils;
 
@@ -316,12 +315,7 @@ public class ValiTime : IValiTime
         if (string.IsNullOrWhiteSpace(input))
             throw new ArgumentException("Input cannot be empty or whitespace.", nameof(input));
 
-        string trimmed = input.Trim().ToLowerInvariant();
-
-        if (trimmed.Contains(':'))
-            return ParseColonSeparated(trimmed);
-
-        return ParseLabelledTokens(trimmed);
+        return DurationStringParser.Parse(input);
     }
 
     /// <summary>
@@ -347,81 +341,6 @@ public class ValiTime : IValiTime
             seconds = 0;
             return false;
         }
-    }
-
-    // ── ParseTime helpers ────────────────────────────────────────────────────
-
-    private static decimal ParseColonSeparated(string input)
-    {
-        string[] parts = input.Split(':');
-
-        if (parts.Length == 2)
-        {
-            if (!decimal.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal minutes) ||
-                !decimal.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal secs))
-                throw new FormatException($"Unable to parse time string: '{input}'.");
-
-            if (minutes < 0 || minutes > 59 || secs < 0 || secs > 59)
-                throw new FormatException($"Invalid time format: minutes and seconds must be between 0 and 59 in '{input}'.");
-
-            return minutes * Constants.SecondsInMinute + secs;
-        }
-
-        if (parts.Length == 3)
-        {
-            if (!decimal.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal hours) ||
-                !decimal.TryParse(parts[1], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal minutes) ||
-                !decimal.TryParse(parts[2], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal secs))
-                throw new FormatException($"Unable to parse time string: '{input}'.");
-
-            if (minutes < 0 || minutes > 59 || secs < 0 || secs > 59)
-                throw new FormatException($"Invalid time format: minutes and seconds must be between 0 and 59 in '{input}'.");
-
-            return hours * Constants.SecondsInHour + minutes * Constants.SecondsInMinute + secs;
-        }
-
-        throw new FormatException($"Unable to parse time string: '{input}'. Expected 'mm:ss' or 'hh:mm:ss' format.");
-    }
-
-    private static readonly Regex TokenRegex = new(
-        @"(\d+(?:\.\d+)?)\s*(milliseconds?|ms|months?|mo|sec(?:onds)?|min(?:utes)?|hours?|hr|days?|weeks?|years?|yr|[smhdw])",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-    private static decimal ParseLabelledTokens(string input)
-    {
-        string trimmed = input.Trim();
-        var matches = TokenRegex.Matches(trimmed);
-
-        if (matches.Count == 0)
-            throw new FormatException($"Unable to parse time string: '{input}'. No recognised time tokens found.");
-
-        string matched = string.Concat(matches.Select(m => m.Value)).Replace(" ", "");
-        string expected = trimmed.Replace(" ", "");
-        if (matched != expected)
-            throw new FormatException($"Unrecognised tokens in time string: '{input}'.");
-
-        decimal totalSeconds = 0m;
-
-        foreach (Match match in matches)
-        {
-            decimal value = decimal.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-            string unitToken = match.Groups[2].Value.ToLowerInvariant();
-
-            totalSeconds += unitToken switch
-            {
-                "ms" or "millisecond" or "milliseconds"           => value / Constants.MillisecondsInSecond,
-                "s" or "sec" or "second" or "seconds"             => value,
-                "m" or "min" or "minute" or "minutes"             => value * Constants.SecondsInMinute,
-                "h" or "hr" or "hour" or "hours"                  => value * Constants.SecondsInHour,
-                "d" or "day" or "days"                            => value * Constants.SecondsInDay,
-                "w" or "week" or "weeks"                          => value * Constants.SecondsInWeek,
-                "mo" or "month" or "months"                       => value * Constants.SecondsInMonth,
-                "yr" or "year" or "years"                         => value * Constants.SecondsInYear,
-                _ => throw new FormatException($"Unrecognised time unit token: '{unitToken}'.")
-            };
-        }
-
-        return totalSeconds;
     }
 
     /// <summary>

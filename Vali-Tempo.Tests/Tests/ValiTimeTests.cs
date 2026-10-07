@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Vali_Time.Core;
 using Vali_Time.Enums;
+using Vali_Time.Utils;
 using Xunit;
 
 namespace Vali_Time.Tests.Tests;
@@ -202,6 +203,68 @@ public class ValiTimeTests
         // 2d 4h = 2*86400 + 4*3600 = 172800 + 14400 = 187200
         decimal result = _vali.ParseTime("2d 4h");
         result.Should().Be(187200m);
+    }
+
+    // ── DurationStringParser (ParseTime now delegates to it) ─────────────────
+
+    [Theory]
+    [InlineData("1h 30m")]
+    [InlineData("1:30:00")]
+    [InlineData("90 minutes")]
+    [InlineData("500ms")]
+    [InlineData("2d 4h")]
+    [InlineData("2h 30min")]
+    [InlineData("59:59")]
+    public void DurationStringParser_Parse_MatchesParseTime_ForSameInput(string input)
+    {
+        decimal fromParseTime = _vali.ParseTime(input);
+        decimal fromParser = DurationStringParser.Parse(input);
+        fromParser.Should().Be(fromParseTime);
+    }
+
+    [Fact]
+    public void DurationStringParser_Parse_NullInput_ThrowsArgumentNullException()
+    {
+        Action act = () => DurationStringParser.Parse(null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void DurationStringParser_Parse_EmptyInput_ThrowsFormatException()
+    {
+        Action act = () => DurationStringParser.Parse("");
+        act.Should().Throw<FormatException>();
+    }
+
+    [Fact]
+    public void DurationStringParser_Parse_InvalidInput_ThrowsFormatException()
+    {
+        Action act = () => DurationStringParser.Parse("not a duration");
+        act.Should().Throw<FormatException>();
+    }
+
+    [Fact]
+    public void DurationStringParser_TryParse_ValidInput_ReturnsTrueAndValue()
+    {
+        bool success = DurationStringParser.TryParse("2h", out decimal seconds);
+        success.Should().BeTrue();
+        seconds.Should().Be(7200m);
+    }
+
+    [Fact]
+    public void DurationStringParser_TryParse_NullInput_ReturnsFalseAndZero()
+    {
+        bool success = DurationStringParser.TryParse(null, out decimal seconds);
+        success.Should().BeFalse();
+        seconds.Should().Be(0m);
+    }
+
+    [Fact]
+    public void DurationStringParser_TryParse_GarbageInput_ReturnsFalseAndZero()
+    {
+        bool success = DurationStringParser.TryParse("garbage", out decimal seconds);
+        success.Should().BeFalse();
+        seconds.Should().Be(0m);
     }
 
     // ── TryParseTime ────────────────────────────────────────────────────────

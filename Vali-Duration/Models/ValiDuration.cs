@@ -1,5 +1,6 @@
 using System.Globalization;
 using Vali_Time.Enums;
+using Vali_Time.Utils;
 
 namespace Vali_Duration.Models;
 
@@ -21,7 +22,9 @@ namespace Vali_Duration.Models;
 /// use <see cref="Vali_Time.Core.ValiDate"/>.
 /// </para>
 /// </remarks>
-public readonly struct ValiDuration : IEquatable<ValiDuration>, IComparable<ValiDuration>
+public readonly struct ValiDuration :
+    IEquatable<ValiDuration>, IComparable<ValiDuration>,
+    IParsable<ValiDuration>, IFormattable
 {
     /// <summary>The canonical internal representation: total elapsed seconds as a decimal.</summary>
     private readonly decimal _seconds;
@@ -183,6 +186,65 @@ public readonly struct ValiDuration : IEquatable<ValiDuration>, IComparable<Vali
         if (_seconds >= 60m)     return $"{As(TimeUnit.Minutes).ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture)} min";
         if (_seconds >= 1m)      return $"{As(TimeUnit.Seconds).ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture)} s";
         return $"{As(TimeUnit.Milliseconds).ToString($"F{decimalPlaces}", CultureInfo.InvariantCulture)} ms";
+    }
+
+    // ── IParsable<ValiDuration> ──────────────────────────────────────────────
+
+    /// <summary>
+    /// Parses a human-readable duration string into a <see cref="ValiDuration"/>.
+    /// Accepts the same grammar as <see cref="Vali_Time.Core.IValiTime.ParseTime"/>:
+    /// colon-separated (<c>"hh:mm:ss"</c>, <c>"mm:ss"</c>) or unit-labelled tokens
+    /// (<c>"1h 30m"</c>, <c>"2d 4h"</c>, <c>"500ms"</c>).
+    /// </summary>
+    /// <param name="s">The duration string to parse.</param>
+    /// <param name="provider">Ignored — parsing is always culture-invariant.</param>
+    /// <returns>The parsed <see cref="ValiDuration"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="s"/> is <c>null</c>.</exception>
+    /// <exception cref="FormatException"><paramref name="s"/> is empty, whitespace, or not a recognised duration format.</exception>
+    public static ValiDuration Parse(string s, IFormatProvider? provider = null) => new(DurationStringParser.Parse(s));
+
+    /// <summary>
+    /// Attempts to parse a human-readable duration string into a <see cref="ValiDuration"/>,
+    /// without throwing on invalid input.
+    /// </summary>
+    /// <param name="s">The duration string to parse, or <c>null</c>.</param>
+    /// <param name="provider">Ignored — parsing is always culture-invariant.</param>
+    /// <param name="result">
+    /// When this method returns <c>true</c>, the parsed <see cref="ValiDuration"/>;
+    /// otherwise <see cref="Zero"/>.
+    /// </param>
+    /// <returns><c>true</c> if <paramref name="s"/> was parsed successfully.</returns>
+    public static bool TryParse(string? s, IFormatProvider? provider, out ValiDuration result)
+    {
+        if (DurationStringParser.TryParse(s, out decimal seconds))
+        {
+            result = new ValiDuration(seconds);
+            return true;
+        }
+
+        result = Zero;
+        return false;
+    }
+
+    // ── IFormattable ──────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Formats this duration using <see cref="Format(int)"/>.
+    /// </summary>
+    /// <param name="format">
+    /// When non-null and parseable as a non-negative integer, used as the decimal-places
+    /// argument to <see cref="Format(int)"/> (e.g. <c>"0"</c>, <c>"3"</c>). Any other value,
+    /// including <c>null</c> or <c>"G"</c>, uses the 2-decimal-place default.
+    /// </param>
+    /// <param name="formatProvider">Ignored — formatting is always culture-invariant.</param>
+    /// <returns>The formatted duration string.</returns>
+    public string ToString(string? format, IFormatProvider? formatProvider)
+    {
+        if (!string.IsNullOrEmpty(format) &&
+            int.TryParse(format, NumberStyles.None, CultureInfo.InvariantCulture, out int decimalPlaces))
+            return Format(decimalPlaces);
+
+        return Format();
     }
 
     // ── Arithmetic operators ─────────────────────────────────────────────────

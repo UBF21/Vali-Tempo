@@ -157,4 +157,136 @@ public class ValiDurationTests
         ValiDuration duration = ValiDuration.FromWeeks(2m);
         duration.TotalDays.Should().Be(14m);
     }
+
+    // ── IParsable<ValiDuration>.Parse: valid formats ─────────────────────────
+
+    [Theory]
+    [InlineData("1h30m",        5400)]
+    [InlineData("1:30:00",      5400)]
+    [InlineData("45:30",        2730)]
+    [InlineData("500ms",        0.5)]
+    [InlineData("90 minutes",   5400)]
+    public void Parse_KnownFormats_ReturnsExpectedDuration(string input, double expectedSeconds)
+    {
+        ValiDuration duration = ValiDuration.Parse(input, null);
+        duration.TotalSeconds.Should().BeApproximately((decimal)expectedSeconds, 0.001m);
+    }
+
+    [Fact]
+    public void Parse_TwoDaysFourHoursThirtyMinFifteenSec_ReturnsExpectedDuration()
+    {
+        ValiDuration duration = ValiDuration.Parse("2d 4h 30m 15s", null);
+        decimal expected = 2 * 86400m + 4 * 3600m + 30 * 60m + 15m;
+        duration.TotalSeconds.Should().Be(expected);
+    }
+
+    // ── IParsable<ValiDuration>.Parse: invalid input ─────────────────────────
+
+    [Fact]
+    public void Parse_NullInput_ThrowsArgumentNullException()
+    {
+        Action act = () => ValiDuration.Parse(null!, null);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void Parse_EmptyInput_ThrowsFormatException()
+    {
+        Action act = () => ValiDuration.Parse("", null);
+        act.Should().Throw<FormatException>();
+    }
+
+    [Fact]
+    public void Parse_GarbageInput_ThrowsFormatException()
+    {
+        Action act = () => ValiDuration.Parse("not a duration", null);
+        act.Should().Throw<FormatException>();
+    }
+
+    [Fact]
+    public void Parse_OutOfRangeMinutesSeconds_ThrowsFormatException()
+    {
+        Action act = () => ValiDuration.Parse("99:99", null);
+        act.Should().Throw<FormatException>();
+    }
+
+    // ── IParsable<ValiDuration>.TryParse ──────────────────────────────────────
+
+    [Fact]
+    public void TryParse_ValidInput_ReturnsTrueAndExpectedDuration()
+    {
+        bool success = ValiDuration.TryParse("1h30m", null, out ValiDuration result);
+        success.Should().BeTrue();
+        result.Should().Be(ValiDuration.FromSeconds(5400m));
+    }
+
+    [Fact]
+    public void TryParse_NullInput_ReturnsFalseAndZero()
+    {
+        bool success = ValiDuration.TryParse(null, null, out ValiDuration result);
+        success.Should().BeFalse();
+        result.Should().Be(ValiDuration.Zero);
+    }
+
+    [Fact]
+    public void TryParse_GarbageInput_ReturnsFalseAndZero()
+    {
+        bool success = ValiDuration.TryParse("garbage", null, out ValiDuration result);
+        success.Should().BeFalse();
+        result.Should().Be(ValiDuration.Zero);
+    }
+
+    // ── Round-trip: Parse(duration.Format()) ─────────────────────────────────
+
+    [Theory]
+    [InlineData(2 * 604800.0)]  // 2 weeks
+    [InlineData(3 * 86400.0)]   // 3 days
+    [InlineData(5 * 3600.0)]    // 5 hours
+    [InlineData(45 * 60.0)]     // 45 minutes
+    [InlineData(10.0)]          // 10 seconds
+    [InlineData(0.5)]           // 500 ms
+    public void Parse_RoundTripsThroughFormat_WithinTolerance(double seconds)
+    {
+        ValiDuration original = ValiDuration.FromSeconds((decimal)seconds);
+        string formatted = original.Format(2).Replace(" ", "");
+
+        ValiDuration roundTripped = ValiDuration.Parse(formatted, null);
+
+        roundTripped.TotalSeconds.Should().BeApproximately(original.TotalSeconds, 0.01m);
+    }
+
+    [Fact]
+    public void Parse_NegativeFormattedDuration_ThrowsFormatException()
+    {
+        // Parse does not support a leading '-' (same limitation as DurationStringParser/ParseTime).
+        string formatted = ValiDuration.FromHours(-2m).Format(0).Replace(" ", "");
+        Action act = () => ValiDuration.Parse(formatted, null);
+        act.Should().Throw<FormatException>();
+    }
+
+    // ── IFormattable.ToString(format, provider) ──────────────────────────────
+
+    [Fact]
+    public void ToString_WithDecimalPlacesFormat_UsesThatPrecision()
+    {
+        ValiDuration duration = ValiDuration.FromMinutes(90m); // 1.5 h
+        string result = ((IFormattable)duration).ToString("0", null);
+        result.Should().Be(duration.Format(0));
+    }
+
+    [Fact]
+    public void ToString_WithNullFormat_UsesTwoDecimalDefault()
+    {
+        ValiDuration duration = ValiDuration.FromMinutes(90m);
+        string result = ((IFormattable)duration).ToString(null, null);
+        result.Should().Be(duration.Format());
+    }
+
+    [Fact]
+    public void ToString_WithUnrecognisedFormat_UsesTwoDecimalDefault()
+    {
+        ValiDuration duration = ValiDuration.FromMinutes(90m);
+        string result = ((IFormattable)duration).ToString("G", null);
+        result.Should().Be(duration.Format());
+    }
 }
