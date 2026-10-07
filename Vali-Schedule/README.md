@@ -326,6 +326,58 @@ var allFridays = campaign.OccurrencesInRange(
 Console.WriteLine($"Total campaign sends: {allFridays.Count()}"); // 17
 ```
 
+## Cron expressions
+
+`CronSchedule` parses standard 5-field cron syntax (minute, hour, day-of-month, month,
+day-of-week) into an `IValiSchedule` — no external cron library, no new dependency.
+
+| Syntax | Meaning | Example |
+|---|---|---|
+| `*` | every value | `* * * * *` |
+| `N` | exact value | `0 9 * * *` |
+| `N,M,...` | list | `0,15,30,45 * * * *` |
+| `N-M` | inclusive range | `9-17 * * * *` |
+| `*/S` | step from the field minimum | `*/5 * * * *` |
+| `N-M/S` | step within a range | `9-17/2 * * * *` |
+| `N/S` | step from `N` through the field maximum | `10/15 * * * *` |
+| `JAN`–`DEC`, `SUN`–`SAT` | 3-letter name aliases, case-insensitive | `MON-FRI`, `JAN,JUL` |
+
+```csharp
+using Vali_Schedule.Cron;
+
+var businessOpen = CronSchedule.Parse("0 9 * * MON-FRI");     // every weekday at 9:00 AM
+var healthCheck  = CronSchedule.Parse("*/15 9-17 * * MON-FRI"); // every 15 min, business hours
+var quarterly    = CronSchedule.Parse("0 0 1 1,4,7,10 *");      // midnight, 1st of each quarter
+
+DateTime? next = businessOpen.NextOccurrence(DateTime.Today);
+IEnumerable<DateTime> nextTen = healthCheck.Occurrences(DateTime.Now, limit: 10);
+
+// Safe parsing at the edge (e.g. a cron string from user-supplied config):
+if (CronSchedule.TryParse(userSuppliedExpression, out var schedule, out var error))
+{
+    // use `schedule`
+}
+```
+
+Compared to `NCrontab`/`Cronos`: same 5-field syntax, zero added dependency (ships inside
+`Vali-Schedule`), and `CronSchedule` implements the same `IValiSchedule` query surface used by
+every other schedule type in the ecosystem — including `WithCustomPredicate` to layer a
+holiday-skip filter on top of a cron expression.
+
+**Caveats, documented rather than silently papered over:**
+- **DST / wall-clock**: `CronSchedule` evaluates plain `DateTime` wall-clock values with no
+  timezone awareness. A cron hour that doesn't exist (or is ambiguous) on a DST transition day is
+  not specially resolved — convert to UTC first if that matters for your use case.
+- **Feb 29**: `0 0 29 2 *` only matches in leap years; `NextOccurrence` correctly skips to the next
+  one. `30 2 30 2 *` never matches (Feb never has 30 days) and returns `null`/empty rather than
+  looping.
+- **`SkipWeekends`/`SkipHolidays`**: unlike `ValiSchedule`, these *drop* excluded occurrences
+  instead of shifting them to the next/previous workday. A cron schedule can fire more than once a
+  day, so "shift to the next workday" is not well-defined — it would relocate every occurrence of
+  the excluded day onto the next day's own occurrences at the same times.
+- **Not supported**: `Every`, `On`, `At`, `OnDayOfMonth` all throw `NotSupportedException` on
+  `CronSchedule` — express those concerns directly in the cron string instead.
+
 ## Dependency Injection
 
 `ValiSchedule` is a lightweight builder — instantiate it directly wherever a schedule is configured (e.g., a background service or job scheduler). No DI registration is required.
