@@ -240,4 +240,24 @@ public interface IValiHoliday
     /// Thrown when no provider is registered for <paramref name="countryCode"/>.
     /// </exception>
     IEnumerable<HolidayInfo> HolidaysThisMonth(int year, int month, string countryCode);
+
+    /// <summary>
+    /// Returns the <see cref="HolidayInfo"/> whose official "observed"/"substitute" date (per
+    /// <see cref="IHolidayProvider.GetObservedDate"/>) equals <paramref name="date"/> in the
+    /// specified country, or <see langword="null"/> if no such holiday exists.
+    /// </summary>
+    /// <param name="date">The date to check (time component is ignored).</param>
+    /// <param name="countryCode">ISO 3166-1 alpha-2 country code (case-insensitive).</param>
+    /// <returns>
+    /// The matching <see cref="HolidayInfo"/>, or <see langword="null"/> if <paramref name="date"/>
+    /// is not the observed date of any holiday — either because no holiday falls there, or
+    /// because the country/holiday declares no weekend-shift rule.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="countryCode"/> is null, empty, or whitespace.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no provider is registered for <paramref name="countryCode"/>.
+    /// </exception>
+    HolidayInfo? GetObservedHoliday(DateTime date, string countryCode);
 }

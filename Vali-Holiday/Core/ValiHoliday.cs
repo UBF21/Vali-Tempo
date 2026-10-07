@@ -138,7 +138,12 @@ public class ValiHoliday : IValiHoliday
     /// Thrown when no provider is registered for any of the specified country codes.
     /// </exception>
     public bool IsHoliday(DateTime date, params string[] countryCodes)
-        => countryCodes.Any(c => IsHoliday(date, c));
+    {
+        if (countryCodes is null)
+            throw new ArgumentNullException(nameof(countryCodes));
+
+        return countryCodes.Any(c => IsHoliday(date, c));
+    }
 
     /// <summary>
     /// Determines whether the given <paramref name="date"/> is a public holiday
@@ -157,7 +162,12 @@ public class ValiHoliday : IValiHoliday
     /// Thrown when no provider is registered for any of the specified country codes.
     /// </exception>
     public bool IsHolidayInAll(DateTime date, params string[] countryCodes)
-        => countryCodes.All(c => IsHoliday(date, c));
+    {
+        if (countryCodes is null)
+            throw new ArgumentNullException(nameof(countryCodes));
+
+        return countryCodes.All(c => IsHoliday(date, c));
+    }
 
     /// <summary>
     /// Returns all public holidays for the given <paramref name="year"/> in the
@@ -248,8 +258,7 @@ public class ValiHoliday : IValiHoliday
         for (int year = date.Year; year <= date.Year + 1; year++)
         {
             var holiday = provider.GetHolidays(year)
-                .Where(h => !(h.Month == 2 && h.Day == 29 && !DateTime.IsLeapYear(year)))
-                .Where(h => new DateTime(year, h.Month, h.Day) >= date.Date)
+                .Where(h => h.TryToDateTime(year, out var d) && d >= date.Date)
                 .OrderBy(h => h.Month).ThenBy(h => h.Day)
                 .FirstOrDefault();
             if (holiday != null) return (holiday, year);
@@ -308,8 +317,7 @@ public class ValiHoliday : IValiHoliday
         for (int year = date.Year; year >= date.Year - 1; year--)
         {
             var holiday = provider.GetHolidays(year)
-                .Where(h => !(h.Month == 2 && h.Day == 29 && !DateTime.IsLeapYear(year)))
-                .Where(h => new DateTime(year, h.Month, h.Day) < date.Date)
+                .Where(h => h.TryToDateTime(year, out var d) && d < date.Date)
                 .OrderByDescending(h => h.Month).ThenByDescending(h => h.Day)
                 .FirstOrDefault();
             if (holiday != null) return (holiday, year);
@@ -353,5 +361,33 @@ public class ValiHoliday : IValiHoliday
         if (month < 1 || month > 12)
             throw new ArgumentOutOfRangeException(nameof(month), month, "Month must be between 1 and 12.");
         return For(countryCode).GetHolidays(year).Where(h => h.Month == month);
+    }
+
+    /// <summary>
+    /// Returns the <see cref="HolidayInfo"/> whose official "observed"/"substitute" date (per
+    /// <see cref="IHolidayProvider.GetObservedDate"/>) equals <paramref name="date"/> in the
+    /// specified country, or <see langword="null"/> if no such holiday exists.
+    /// </summary>
+    /// <param name="date">The date to check (time component is ignored).</param>
+    /// <param name="countryCode">ISO 3166-1 alpha-2 country code (case-insensitive).</param>
+    /// <returns>
+    /// The matching <see cref="HolidayInfo"/>, or <see langword="null"/> if <paramref name="date"/>
+    /// is not the observed date of any holiday — either because no holiday falls there, or
+    /// because the country/holiday declares no weekend-shift rule.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="countryCode"/> is null, empty, or whitespace.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no provider is registered for <paramref name="countryCode"/>.
+    /// </exception>
+    public HolidayInfo? GetObservedHoliday(DateTime date, string countryCode)
+    {
+        if (string.IsNullOrWhiteSpace(countryCode))
+            throw new ArgumentException("Country code must not be null, empty, or whitespace.", nameof(countryCode));
+
+        var provider = For(countryCode);
+        return provider.GetHolidays(date.Year)
+            .FirstOrDefault(h => provider.GetObservedDate(h, date.Year) == date.Date);
     }
 }

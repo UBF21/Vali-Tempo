@@ -35,14 +35,16 @@ public class UnitedKingdomHolidayProvider : BaseHolidayProvider
             "New Year's Day",
             Names("Año Nuevo", "New Year's Day", "Ano Novo", "Jour de l'An", "Neujahrstag"),
             HolidayType.National,
-            description: "Bank holiday marking the first day of the calendar year."),
+            description: "Bank holiday marking the first day of the calendar year.",
+            observedRule: ObservedRule.NextAvailableWeekday),
 
         new HolidayInfo(
             "gb_christmas", 12, 25, "GB",
             "Christmas Day",
             Names("Navidad", "Christmas Day", "Natal", "Noël", "Weihnachten"),
             HolidayType.National,
-            description: "Bank holiday celebrating Christmas."),
+            description: "Bank holiday celebrating Christmas.",
+            observedRule: ObservedRule.NextAvailableWeekday),
 
         new HolidayInfo(
             "gb_boxing_day", 12, 26, "GB",
@@ -50,7 +52,8 @@ public class UnitedKingdomHolidayProvider : BaseHolidayProvider
             Names("Día de San Esteban / Boxing Day", "Boxing Day",
                   "Dia de Santo Estêvão / Boxing Day", "Lendemain de Noël", "Zweiter Weihnachtstag"),
             HolidayType.National,
-            description: "Bank holiday on the day after Christmas, historically the day when servants and tradespeople received gifts ('boxes') from their employers."),
+            description: "Bank holiday on the day after Christmas, historically the day when servants and tradespeople received gifts ('boxes') from their employers.",
+            observedRule: ObservedRule.NextAvailableWeekday),
 
         // ── Scotland (GB-SCT) – fixed regional bank holidays ──────────────────────
 
@@ -60,7 +63,8 @@ public class UnitedKingdomHolidayProvider : BaseHolidayProvider
             Names("2 de enero", "Second of January",
                   "2 de janeiro", "2 janvier", "2. Januar"),
             HolidayType.Regional, regionCode: "GB-SCT",
-            description: "A Scottish bank holiday traditionally allowing time for recovery after Hogmanay (New Year) celebrations."),
+            description: "A Scottish bank holiday traditionally allowing time for recovery after Hogmanay (New Year) celebrations.",
+            observedRule: ObservedRule.NextAvailableWeekday),
 
         new HolidayInfo(
             "gb_sct_st_andrews", 11, 30, "GB",
@@ -68,7 +72,8 @@ public class UnitedKingdomHolidayProvider : BaseHolidayProvider
             Names("Día de San Andrés", "St Andrew's Day",
                   "Dia de Santo André", "Jour de Saint-André", "Andreastag"),
             HolidayType.Regional, regionCode: "GB-SCT",
-            description: "Feast day of Saint Andrew, patron saint of Scotland. Designated a Scottish bank holiday by the St Andrew's Day Bank Holiday (Scotland) Act 2007."),
+            description: "Feast day of Saint Andrew, patron saint of Scotland. Designated a Scottish bank holiday by the St Andrew's Day Bank Holiday (Scotland) Act 2007.",
+            observedRule: ObservedRule.NextAvailableWeekday),
 
         // ── Northern Ireland (GB-NIR) – fixed regional bank holidays ──────────────
 
@@ -78,7 +83,8 @@ public class UnitedKingdomHolidayProvider : BaseHolidayProvider
             Names("Día de San Patricio", "St Patrick's Day",
                   "Dia de São Patrício", "Jour de la Saint-Patrick", "Patrickstag"),
             HolidayType.Regional, regionCode: "GB-NIR",
-            description: "Feast day of Saint Patrick, patron saint of Ireland. Bank holiday in Northern Ireland commemorating the arrival of Christianity in Ireland."),
+            description: "Feast day of Saint Patrick, patron saint of Ireland. Bank holiday in Northern Ireland commemorating the arrival of Christianity in Ireland.",
+            observedRule: ObservedRule.NextAvailableWeekday),
 
         new HolidayInfo(
             "gb_nir_battle_boyne", 7, 12, "GB",
@@ -86,7 +92,8 @@ public class UnitedKingdomHolidayProvider : BaseHolidayProvider
             Names("Batalla del Boyne / Día de Orangemen", "Battle of the Boyne / Orangemen's Day",
                   "Batalha do Boyne", "Bataille de la Boyne", "Schlacht am Boyne"),
             HolidayType.Regional, regionCode: "GB-NIR",
-            description: "Commemorates the Battle of the Boyne (July 1, 1690 O.S. / July 11, 1690 N.S.), in which William III of Orange defeated James II. Celebrated by the Orange Order with marches across Northern Ireland."),
+            description: "Commemorates the Battle of the Boyne (July 1, 1690 O.S. / July 11, 1690 N.S.), in which William III of Orange defeated James II. Celebrated by the Orange Order with marches across Northern Ireland.",
+            observedRule: ObservedRule.NextAvailableWeekday),
     };
 
     /// <inheritdoc/>

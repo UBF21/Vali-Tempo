@@ -1,7 +1,9 @@
 using FluentAssertions;
 using Vali_Holiday.Core;
 using Vali_Holiday.Models;
+using Vali_Holiday.Providers.Europe;
 using Vali_Holiday.Providers.LatinAmerica;
+using Vali_Holiday.Providers.NorthAmerica;
 using Vali_Holiday.Utils;
 using Xunit;
 
@@ -630,5 +632,152 @@ public class ValiHolidayTests
         var vali = HolidayProviderFactory.CreateLatinAmerica();
         Action act = () => vali.HolidaysThisMonth(2025, 13, "PE").ToList();
         act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    // ── Group A: null-guard on IsHoliday/IsHolidayInAll(params string[]) ────
+
+    [Fact]
+    public void IsHoliday_NullCountryCodesArray_ThrowsArgumentNullException()
+    {
+        var vali = HolidayProviderFactory.CreateLatinAmerica();
+        Action act = () => vali.IsHoliday(new DateTime(2025, 1, 1), (string[])null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void IsHolidayInAll_NullCountryCodesArray_ThrowsArgumentNullException()
+    {
+        var vali = HolidayProviderFactory.CreateLatinAmerica();
+        Action act = () => vali.IsHolidayInAll(new DateTime(2025, 1, 1), (string[])null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    // ── Group B: HolidayInfo.TryToDateTime / centralized Feb-29 guard ───────
+
+    [Fact]
+    public void HolidayInfo_TryToDateTime_Feb29NonLeapYear_ReturnsFalse()
+    {
+        var holiday = MakeFeb29Holiday();
+        holiday.TryToDateTime(2025, out var result).Should().BeFalse();
+        result.Should().Be(default(DateTime));
+    }
+
+    [Fact]
+    public void HolidayInfo_TryToDateTime_Feb29LeapYear_ReturnsTrueWithCorrectDate()
+    {
+        var holiday = MakeFeb29Holiday();
+        holiday.TryToDateTime(2024, out var result).Should().BeTrue();
+        result.Should().Be(new DateTime(2024, 2, 29));
+    }
+
+    [Fact]
+    public void HolidayInfo_ToDateTime_Feb29NonLeapYear_Throws()
+    {
+        var holiday = MakeFeb29Holiday();
+        Action act = () => holiday.ToDateTime(2025);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void BaseHolidayProvider_GetHolidaysInRange_Feb29NonLeapYear_DoesNotThrowAndExcludesHoliday()
+    {
+        var provider = new Feb29TestProvider();
+        Action act = () => provider.GetHolidaysInRange(
+            new DateTime(2025, 1, 1), new DateTime(2025, 12, 31)).ToList();
+        act.Should().NotThrow();
+        provider.GetHolidaysInRange(new DateTime(2025, 1, 1), new DateTime(2025, 12, 31))
+            .Should().NotContain(h => h.Id == "feb29_test");
+    }
+
+    [Fact]
+    public void BaseHolidayProvider_GetHolidaysInRange_Feb29LeapYear_IncludesHoliday()
+    {
+        var provider = new Feb29TestProvider();
+        provider.GetHolidaysInRange(new DateTime(2024, 1, 1), new DateTime(2024, 12, 31))
+            .Should().Contain(h => h.Id == "feb29_test");
+    }
+
+    private static HolidayInfo MakeFeb29Holiday() => new HolidayInfo(
+        "feb29_test", 2, 29, "XX", "Leap Day Test",
+        new Dictionary<string, string> { ["en"] = "Leap Day Test" },
+        HolidayType.Observance);
+
+    /// <summary>Minimal provider exposing a single Feb-29 fixed holiday, for edge-case tests only.</summary>
+    private sealed class Feb29TestProvider : BaseHolidayProvider
+    {
+        public override string CountryCode => "XX";
+        public override string CountryName => "Test";
+        public override string PrimaryLanguage => "en";
+
+        protected override IEnumerable<HolidayInfo> GetFixedHolidays()
+            => new[] { MakeFeb29Holiday() };
+    }
+
+    // ── Group C: GetObservedHoliday (USA / UK weekend-shift rule) ───────────
+
+    [Fact]
+    public void Usa_IndependenceDay2020_FallsOnSaturday_ObservedOnFriday()
+    {
+        // July 4, 2020 was a Saturday
+        var vali = HolidayProviderFactory.CreateAll();
+        var observed = vali.GetObservedHoliday(new DateTime(2020, 7, 3), "US");
+        observed.Should().NotBeNull();
+        observed!.Id.Should().Be("us_independence_day");
+    }
+
+    [Fact]
+    public void Usa_Christmas2022_FallsOnSunday_ObservedOnMonday()
+    {
+        // December 25, 2022 was a Sunday
+        var vali = HolidayProviderFactory.CreateAll();
+        var observed = vali.GetObservedHoliday(new DateTime(2022, 12, 26), "US");
+        observed.Should().NotBeNull();
+        observed!.Id.Should().Be("us_christmas");
+    }
+
+    [Fact]
+    public void Uk_NewYear2022_FallsOnSaturday_ObservedOnMonday()
+    {
+        // January 1, 2022 was a Saturday
+        var vali = HolidayProviderFactory.CreateAll();
+        var observed = vali.GetObservedHoliday(new DateTime(2022, 1, 3), "GB");
+        observed.Should().NotBeNull();
+        observed!.Id.Should().Be("gb_new_year");
+    }
+
+    [Fact]
+    public void Uk_ChristmasAndBoxingDay2021_BothOnWeekend_ObservedOnDistinctDays()
+    {
+        // December 25, 2021 (Christmas) was Saturday; December 26, 2021 (Boxing Day) was Sunday.
+        // Both substitute days must resolve to distinct weekdays (Mon 27 / Tue 28).
+        var vali = HolidayProviderFactory.CreateAll();
+        var christmasObserved = vali.GetObservedHoliday(new DateTime(2021, 12, 27), "GB");
+        var boxingDayObserved = vali.GetObservedHoliday(new DateTime(2021, 12, 28), "GB");
+
+        christmasObserved.Should().NotBeNull();
+        christmasObserved!.Id.Should().Be("gb_christmas");
+        boxingDayObserved.Should().NotBeNull();
+        boxingDayObserved!.Id.Should().Be("gb_boxing_day");
+    }
+
+    [Fact]
+    public void GetObservedHoliday_CountryWithNoRule_ReturnsNullForWeekendHoliday()
+    {
+        // Peru declares no ObservedRule for any holiday; a holiday falling on a weekend
+        // must not resolve to an observed date.
+        var vali = HolidayProviderFactory.CreateAll();
+        var observed = vali.GetObservedHoliday(new DateTime(2025, 7, 29), "PE");
+        observed.Should().BeNull();
+    }
+
+    // ── Group D: HolidayInfo record preserves ToString format ───────────────
+
+    [Fact]
+    public void HolidayInfo_ToString_MatchesLegacyFormat()
+    {
+        var provider = new PeruHolidayProvider();
+        var newYear = provider.GetHoliday(new DateTime(2025, 1, 1));
+        newYear.Should().NotBeNull();
+        newYear!.ToString().Should().Be($"[PE] 01/01 - {newYear.Name}");
     }
 }

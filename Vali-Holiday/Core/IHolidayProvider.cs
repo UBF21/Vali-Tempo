@@ -77,4 +77,18 @@ public interface IHolidayProvider
     /// <param name="languageCode">BCP 47 language tag (e.g., "es", "en", "pt", "fr", "de").</param>
     /// <returns>The holiday name in the requested language, or the primary-language name as fallback.</returns>
     string GetName(HolidayInfo holiday, string languageCode);
+
+    /// <summary>
+    /// Returns the official "observed"/"substitute" <see cref="DateTime"/> for
+    /// <paramref name="holiday"/> in the given <paramref name="year"/>, applying the weekend-shift
+    /// rule declared on <see cref="HolidayInfo.ObservedRule"/>, if any.
+    /// </summary>
+    /// <param name="holiday">The holiday to resolve an observed date for.</param>
+    /// <param name="year">The four-digit calendar year.</param>
+    /// <returns>
+    /// The observed <see cref="DateTime"/>, or <see langword="null"/> when the holiday declares
+    /// no shift rule, its literal date does not fall on a weekend, or its literal date cannot be
+    /// represented for <paramref name="year"/> (e.g. Feb 29 in a non-leap year).
+    /// </returns>
+    DateTime? GetObservedDate(HolidayInfo holiday, int year);
 }

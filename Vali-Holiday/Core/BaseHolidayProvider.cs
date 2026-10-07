@@ -13,6 +13,7 @@ public abstract class BaseHolidayProvider : IHolidayProvider
 {
     private readonly ConcurrentDictionary<int, HashSet<(int Month, int Day)>> _nationalHolidayCache = new();
     private readonly ConcurrentDictionary<int, IReadOnlyList<HolidayInfo>> _holidayListCache = new();
+    private readonly ConcurrentDictionary<int, IReadOnlyDictionary<string, DateTime>> _observedDateCache = new();
 
     /// <inheritdoc/>
     public abstract string CountryCode { get; }
@@ -108,7 +109,7 @@ public abstract class BaseHolidayProvider : IHolidayProvider
             .SelectMany(y => GetCachedHolidays(y).Select(h => (year: y, holiday: h)))
             .Where(t =>
             {
-                var d = new DateTime(t.year, t.holiday.Month, t.holiday.Day);
+                if (!t.holiday.TryToDateTime(t.year, out var d)) return false;
                 return d >= from.Date && d <= to.Date;
             })
             .Select(t => t.holiday);
@@ -117,6 +118,62 @@ public abstract class BaseHolidayProvider : IHolidayProvider
     /// <inheritdoc/>
     public string GetName(HolidayInfo holiday, string languageCode)
         => holiday.Names.TryGetValue(languageCode, out var name) ? name : holiday.Name;
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Returns <see langword="null"/> when <paramref name="holiday"/> declares
+    /// <see cref="ObservedRule.None"/>, when it falls on Feb 29 in a non-leap
+    /// <paramref name="year"/> (see <see cref="HolidayInfo.TryToDateTime"/>), or when its literal
+    /// calendar date for <paramref name="year"/> does not fall on a weekend. Observed dates for
+    /// all holidays declaring a rule in the same <paramref name="year"/> are computed together
+    /// (in calendar order) so that colliding substitute days — e.g. the UK's Christmas Day and
+    /// Boxing Day both falling on a weekend — resolve to distinct dates.
+    /// </remarks>
+    public DateTime? GetObservedDate(HolidayInfo holiday, int year)
+        => GetObservedDatesForYear(year).TryGetValue(holiday.Id, out var observed) ? observed : null;
+
+    private IReadOnlyDictionary<string, DateTime> GetObservedDatesForYear(int year)
+        => _observedDateCache.GetOrAdd(year, BuildObservedDates);
+
+    private IReadOnlyDictionary<string, DateTime> BuildObservedDates(int year)
+    {
+        var result = new Dictionary<string, DateTime>();
+
+        var actualDates = GetCachedHolidays(year)
+            .Select(h => h.TryToDateTime(year, out var d) ? d : (DateTime?)null)
+            .Where(d => d.HasValue)
+            .Select(d => d!.Value)
+            .ToHashSet();
+
+        var unavailable = new HashSet<DateTime>(actualDates);
+
+        var ruleHolidays = GetCachedHolidays(year)
+            .Where(h => h.ObservedRule != ObservedRule.None)
+            .Select(h => (holiday: h, date: h.TryToDateTime(year, out var d) ? d : (DateTime?)null))
+            .Where(t => t.date.HasValue)
+            .OrderBy(t => t.date!.Value);
+
+        foreach (var (holiday, date) in ruleHolidays)
+        {
+            var actual = date!.Value;
+            if (actual.DayOfWeek != DayOfWeek.Saturday && actual.DayOfWeek != DayOfWeek.Sunday)
+                continue;
+
+            var observed = holiday.ObservedRule switch
+            {
+                ObservedRule.SaturdayToFriday_SundayToMonday =>
+                    ObservedDateCalculator.ShiftSaturdayToFridaySundayToMonday(actual),
+                ObservedRule.NextAvailableWeekday =>
+                    ObservedDateCalculator.NextAvailableWeekday(actual, unavailable),
+                _ => actual
+            };
+
+            result[holiday.Id] = observed;
+            unavailable.Add(observed);
+        }
+
+        return result;
+    }
 
     /// <summary>
     /// Builds a multilingual name dictionary from individual language strings.

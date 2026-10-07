@@ -35,7 +35,8 @@ public class UsaHolidayProvider : BaseHolidayProvider
             "New Year's Day",
             Names("Año Nuevo", "New Year's Day", "Ano Novo", "Jour de l'An", "Neujahrstag"),
             HolidayType.National,
-            description: "Celebration of the start of the calendar year."),
+            description: "Celebration of the start of the calendar year.",
+            observedRule: ObservedRule.SaturdayToFriday_SundayToMonday),
 
         new HolidayInfo(
             "us_independence_day", 7, 4, "US",
@@ -43,7 +44,8 @@ public class UsaHolidayProvider : BaseHolidayProvider
             Names("Día de la Independencia", "Independence Day",
                   "Dia da Independência", "Fête de l'Indépendance", "Unabhängigkeitstag"),
             HolidayType.Civic,
-            description: "Commemorates the adoption of the Declaration of Independence on July 4, 1776, marking the separation of the thirteen colonies from Great Britain."),
+            description: "Commemorates the adoption of the Declaration of Independence on July 4, 1776, marking the separation of the thirteen colonies from Great Britain.",
+            observedRule: ObservedRule.SaturdayToFriday_SundayToMonday),
 
         new HolidayInfo(
             "us_veterans_day", 11, 11, "US",
@@ -51,14 +53,16 @@ public class UsaHolidayProvider : BaseHolidayProvider
             Names("Día de los Veteranos", "Veterans Day",
                   "Dia dos Veteranos", "Jour des Anciens Combattants", "Veteranentag"),
             HolidayType.Civic,
-            description: "Honors all military veterans of the United States Armed Forces. Coincides with Armistice Day (November 11, 1918), marking the end of World War I."),
+            description: "Honors all military veterans of the United States Armed Forces. Coincides with Armistice Day (November 11, 1918), marking the end of World War I.",
+            observedRule: ObservedRule.SaturdayToFriday_SundayToMonday),
 
         new HolidayInfo(
             "us_christmas", 12, 25, "US",
             "Christmas Day",
             Names("Navidad", "Christmas Day", "Natal", "Noël", "Weihnachten"),
             HolidayType.National,
-            description: "Federal holiday celebrating Christmas."),
+            description: "Federal holiday celebrating Christmas.",
+            observedRule: ObservedRule.SaturdayToFriday_SundayToMonday),
 
         // ── Observances ───────────────────────────────────────────────────────────
 
