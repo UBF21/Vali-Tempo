@@ -116,6 +116,21 @@ public interface IValiRange
     DateRange Union(DateRange a, DateRange b);
 
     /// <summary>
+    /// Returns the portion(s) of <paramref name="a"/> that do not overlap with <paramref name="b"/>
+    /// (set-theoretic difference A \ B).
+    /// </summary>
+    /// <param name="a">The range to subtract from.</param>
+    /// <param name="b">The range to remove.</param>
+    /// <returns>
+    /// A sequence of zero, one, or two non-overlapping <see cref="DateRange"/> values representing
+    /// the parts of <paramref name="a"/> left after removing every point also covered by <paramref name="b"/>:
+    /// zero when <paramref name="b"/> fully contains <paramref name="a"/>, one when the overlap touches
+    /// only one end of <paramref name="a"/> (or there is no overlap at all, returning <paramref name="a"/>
+    /// unchanged), or two when <paramref name="b"/> falls strictly inside <paramref name="a"/>.
+    /// </returns>
+    IEnumerable<DateRange> Subtract(DateRange a, DateRange b);
+
+    /// <summary>
     /// Expands <paramref name="range"/> by subtracting <paramref name="amount"/> from its <c>Start</c>
     /// and adding <paramref name="amount"/> to its <c>End</c>.
     /// </summary>

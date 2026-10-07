@@ -127,6 +127,129 @@ public class ValiRangeTests
         result.Should().BeNull();
     }
 
+    // ── Subtract ────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void Subtract_NoOverlap_ReturnsOriginalRangeUnchanged()
+    {
+        DateRange a = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 9));
+        DateRange b = _vali.Create(new DateTime(2025, 2, 1), new DateTime(2025, 2, 10));
+
+        var result = _vali.Subtract(a, b).ToList();
+
+        result.Should().ContainSingle();
+        result[0].Start.Should().Be(a.Start);
+        result[0].End.Should().Be(a.End);
+    }
+
+    [Fact]
+    public void Subtract_BContainsA_ReturnsEmpty()
+    {
+        DateRange a = _vali.Create(new DateTime(2025, 2, 1), new DateTime(2025, 2, 10));
+        DateRange b = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 3, 1));
+
+        var result = _vali.Subtract(a, b).ToList();
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Subtract_OverlapAtStart_ReturnsRightRemainder()
+    {
+        // b covers the start of a; the right remainder of a survives.
+        DateRange a = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 31));
+        DateRange b = _vali.Create(new DateTime(2024, 12, 15), new DateTime(2025, 1, 10));
+
+        var result = _vali.Subtract(a, b).ToList();
+
+        result.Should().ContainSingle();
+        result[0].Start.Should().Be(new DateTime(2025, 1, 10).AddTicks(1));
+        result[0].End.Should().Be(a.End);
+    }
+
+    [Fact]
+    public void Subtract_OverlapAtEnd_ReturnsLeftRemainder()
+    {
+        // b covers the end of a; the left remainder of a survives.
+        DateRange a = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 31));
+        DateRange b = _vali.Create(new DateTime(2025, 1, 20), new DateTime(2025, 2, 15));
+
+        var result = _vali.Subtract(a, b).ToList();
+
+        result.Should().ContainSingle();
+        result[0].Start.Should().Be(a.Start);
+        result[0].End.Should().Be(new DateTime(2025, 1, 20).AddTicks(-1));
+    }
+
+    [Fact]
+    public void Subtract_BInsideA_ReturnsTwoSubRanges()
+    {
+        DateRange a = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 31));
+        DateRange b = _vali.Create(new DateTime(2025, 1, 10), new DateTime(2025, 1, 20));
+
+        var result = _vali.Subtract(a, b).ToList();
+
+        result.Should().HaveCount(2);
+        result[0].Start.Should().Be(a.Start);
+        result[0].End.Should().Be(new DateTime(2025, 1, 10).AddTicks(-1));
+        result[1].Start.Should().Be(new DateTime(2025, 1, 20).AddTicks(1));
+        result[1].End.Should().Be(a.End);
+    }
+
+    [Fact]
+    public void Subtract_IdenticalRanges_ReturnsEmpty()
+    {
+        DateRange a = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 31));
+        DateRange b = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 31));
+
+        var result = _vali.Subtract(a, b).ToList();
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Subtract_SinglePointOverlapAtBoundary_TrimsThatInstant()
+    {
+        // Inclusive boundaries: a.End == b.Start is a one-instant overlap, not "no overlap".
+        DateRange a = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 10));
+        DateRange b = _vali.Create(new DateTime(2025, 1, 10), new DateTime(2025, 1, 15));
+
+        var result = _vali.Subtract(a, b).ToList();
+
+        result.Should().ContainSingle();
+        result[0].Start.Should().Be(a.Start);
+        result[0].End.Should().Be(new DateTime(2025, 1, 10).AddTicks(-1));
+    }
+
+    [Fact]
+    public void Subtract_AdjacentNoOverlap_ReturnsOriginalRangeUnchanged()
+    {
+        // Adjacent but disjoint: no shared instant, unlike the boundary-overlap case above.
+        DateRange a = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 9));
+        DateRange b = _vali.Create(new DateTime(2025, 1, 10), new DateTime(2025, 1, 15));
+
+        var result = _vali.Subtract(a, b).ToList();
+
+        result.Should().ContainSingle();
+        result[0].Start.Should().Be(a.Start);
+        result[0].End.Should().Be(a.End);
+    }
+
+    [Fact]
+    public void Subtract_IntersectionTouchesMinOrMaxValue_DoesNotThrow()
+    {
+        DateRange a = _vali.Create(DateTime.MinValue, new DateTime(2025, 1, 31));
+        DateRange b = _vali.Create(DateTime.MinValue, new DateTime(2025, 1, 10));
+
+        var act = () => _vali.Subtract(a, b).ToList();
+
+        act.Should().NotThrow();
+        var result = act();
+        result.Should().ContainSingle();
+        result[0].Start.Should().Be(new DateTime(2025, 1, 10).AddTicks(1));
+        result[0].End.Should().Be(a.End);
+    }
+
     // ── Union ───────────────────────────────────────────────────────────────
 
     [Fact]

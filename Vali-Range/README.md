@@ -135,6 +135,22 @@ var c = valiRange.Create(new DateTime(2025, 10, 1), new DateTime(2025, 12, 31));
 DateRange? noOverlap = valiRange.Intersection(a, c); // null
 ```
 
+#### Subtract
+
+Set-theoretic difference `A \ B` — the portion(s) of `a` left after removing everything
+also covered by `b`. Returns zero, one, or two ranges depending on how `b` overlaps `a`.
+
+```csharp
+var a = valiRange.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 31));
+var b = valiRange.Create(new DateTime(2025, 1, 10), new DateTime(2025, 1, 20));
+
+IEnumerable<DateRange> remainder = valiRange.Subtract(a, b);
+// [2025-01-01 → 2025-01-09, 2025-01-21 → 2025-01-31] — b sits strictly inside a
+
+// b fully contains a → empty sequence
+// b doesn't overlap a → [a] unchanged
+```
+
 #### Expand / Shrink / Shift
 
 ```csharp
