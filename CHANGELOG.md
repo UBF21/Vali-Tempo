@@ -7,8 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Vali-Bucket (new package)
+- `IValiBucket.Bucketize`/`Aggregate<T>`/`GetBucketFor` — fixed-size, anchor-aligned time-series bucketing for reporting/analytics, reusing `Vali-Range`'s `DateRange`
+
+### Added — Vali-BusinessHours (new package)
+- `IValiBusinessHours.Overlap`/`OverlapOnWorkday` — cross-timezone business-hours overlap, DST-correct and midnight-crossing aware, composing `Vali-Calendar` and `Vali-TimeZone` without coupling them to each other
+
 ### Added — Vali-Holiday
 - `IValiHoliday.IsHoliday(DateTime, params string[])` (ANY) and `IsHolidayInAll(DateTime, params string[])` (ALL) multi-country overloads
+- `HolidayInfo.TryToDateTime(int year, out DateTime result)` — safe `(Month, Day, year)` conversion that returns `false` instead of throwing for Feb 29 in a non-leap year
+- `ObservedRule` enum and `IHolidayProvider.GetObservedDate(HolidayInfo, int)` / `IValiHoliday.GetObservedHoliday(DateTime, string)` — official weekend-shift ("observed"/"substitute" day) resolution, implemented for USA (Saturday→previous Friday, Sunday→following Monday) and United Kingdom (weekend→next available weekday, with coordinated Christmas Day/Boxing Day collision handling). No other provider declares a rule in this release.
+
+### Changed — Vali-Holiday
+- `IsHoliday(DateTime, params string[])` and `IsHolidayInAll(DateTime, params string[])` now throw `ArgumentNullException` instead of `NullReferenceException` when called with a `null` array
+- `BaseHolidayProvider.GetHolidaysInRange` and `ValiHoliday.GetNextHolidayWithYear`/`GetPreviousHolidayWithYear` now share a single Feb-29/non-leap-year guard (via `HolidayInfo.TryToDateTime`) instead of three independently-written checks
+- `HolidayInfo` is now a `sealed record` (previously a `sealed class`) — adds structural equality; `ToString()` format is unchanged. Note: `Names` is still compared by reference, since records do not deep-compare collections
+- Moved `UsaHolidayProvider.cs`/`CanadaHolidayProvider.cs` to `Providers/NorthAmerica/` and `AustraliaHolidayProvider.cs` to `Providers/Oceania/`, matching their already-declared namespaces (no namespace or behavior change)
 
 ### Added — Vali-Range
 - `IValiRange.Subtract(DateRange a, DateRange b)` — set-theoretic difference A \ B, completing the Intersection/Union/Subtract trio
@@ -18,8 +32,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `HolidaySkipStrategy` enum
 - `IValiSchedule.OccurrencePeriods(DateTime from, DateTime to)` — pairs consecutive occurrences into `Vali_Range.Models.DateRange` periods
 
+### Added — Vali-Schedule (cron)
+- `Vali_Schedule.Cron.CronSchedule` — zero-dependency 5-field cron expression support (`Parse`/`TryParse`), implementing `IValiSchedule`
+- `Vali_Schedule.Cron.CronFormatException` — field/token-attributed parse errors
+
 ### Changed — Vali-Schedule
 - New cross-package dependencies: `Vali-Schedule` now references `Vali-Holiday` and `Vali-Range` (`PackageReference`, same pattern already used by `Vali-Calendar`). Only `SkipHolidays()` requires a concrete `IHolidayProvider`; `SkipWeekends()` has no such requirement.
+- Internal cleanup (no observable behavior change): extracted `OccurrenceSkipResolver` (SkipWeekends/SkipHolidays resolution) out of `ValiSchedule`; deduplicated the resolve→budget→dedup→emit sequence shared by `Occurrences`/`OccurrencesInRange` into a single `TryResolveEmission` helper; unified the "Weekly without days" validation between `Build()` and direct query calls into `EnsureWeeklyConfigured()`; removed the dead, `[Obsolete]`, unused `CountOccurrencesBetween`; named the `OccurrencesInRange` scan ceiling as `MaxRangeScanDays`
 
 ## [1.0.0] - 2025-07-01
 
