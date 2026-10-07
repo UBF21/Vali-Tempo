@@ -111,6 +111,24 @@ bool peruIndependence = holidays.IsHoliday(new DateTime(2025, 7, 28), "PE"); // 
 bool randomDay        = holidays.IsHoliday(new DateTime(2025, 3, 5),  "CL"); // false
 ```
 
+#### Multi-country: `IsHoliday` (ANY) / `IsHolidayInAll` (ALL)
+
+```csharp
+bool IsHoliday(DateTime date, params string[] countryCodes);       // true if a holiday in at least one
+bool IsHolidayInAll(DateTime date, params string[] countryCodes);  // true if a holiday in every one
+```
+
+```csharp
+// Is today a holiday in any of our LATAM offices?
+bool anyOffice = holidays.IsHoliday(DateTime.Today, "PE", "CL", "CO");
+
+// Is today a holiday everywhere we operate?
+bool allOffices = holidays.IsHolidayInAll(DateTime.Today, "PE", "CL", "CO");
+```
+
+An empty country list returns `false` for `IsHoliday` and `true` for `IsHolidayInAll`
+(vacuous truth of `Enumerable.All` over an empty sequence).
+
 ---
 
 ### `GetHolidays`

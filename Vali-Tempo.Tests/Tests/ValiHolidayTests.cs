@@ -186,7 +186,9 @@ public class ValiHolidayTests
     public void ValiHoliday_IsHoliday_NullCode_ThrowsArgumentNullException()
     {
         var vali = HolidayProviderFactory.CreateAll();
-        Action act = () => vali.IsHoliday(DateTime.Today, null!);
+        // Explicit (string) cast: a bare `null!` is ambiguous between this overload and the
+        // new IsHoliday(DateTime, params string[]) added for multi-country checks.
+        Action act = () => vali.IsHoliday(DateTime.Today, (string)null!);
         act.Should().Throw<ArgumentException>();
     }
 
@@ -245,6 +247,79 @@ public class ValiHolidayTests
     {
         var vali = HolidayProviderFactory.CreateAll();
         vali.IsHoliday(new DateTime(2025, 1, 1), countryCode).Should().BeTrue();
+    }
+
+    // ── Multi-country IsHoliday (ANY) / IsHolidayInAll (ALL) ─────────────────
+
+    [Fact]
+    public void IsHoliday_ParamsOverload_SingleCountry_MatchesSingleStringOverload()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        var date = new DateTime(2025, 1, 1);
+
+        vali.IsHoliday(date, "PE").Should().Be(vali.IsHoliday(date, ["PE"]));
+    }
+
+    [Fact]
+    public void IsHoliday_Any_TrueWhenAtLeastOneCountryMatches()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        // July 28 is Peru's Independence Day, but not a Chilean holiday.
+        var date = new DateTime(2025, 7, 28);
+
+        vali.IsHoliday(date, "PE", "CL").Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsHoliday_Any_FalseWhenNoCountryMatches()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        var date = new DateTime(2025, 3, 15); // not a holiday in PE or CL
+
+        vali.IsHoliday(date, "PE", "CL").Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsHoliday_Any_EmptyCountryList_ReturnsFalse()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+
+        vali.IsHoliday(new DateTime(2025, 1, 1)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsHolidayInAll_TrueWhenEveryCountryMatches()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        var date = new DateTime(2025, 1, 1); // New Year's Day — universal
+
+        vali.IsHolidayInAll(date, "PE", "CL").Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsHolidayInAll_FalseWhenAtLeastOneCountryDoesNotMatch()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        var date = new DateTime(2025, 7, 28); // Peru only, not Chile
+
+        vali.IsHolidayInAll(date, "PE", "CL").Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsHolidayInAll_EmptyCountryList_ReturnsTrue_VacuousTruth()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+
+        vali.IsHolidayInAll(new DateTime(2025, 1, 1)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsHoliday_ParamsOverload_UnregisteredCountry_ThrowsInvalidOperationException()
+    {
+        var vali = HolidayProviderFactory.CreateAll();
+        // March 15 is not a PE holiday, so Any() must evaluate "ZZ" too (no short-circuit).
+        Action act = () => vali.IsHoliday(new DateTime(2025, 3, 15), "PE", "ZZ");
+        act.Should().Throw<InvalidOperationException>();
     }
 
     // ── FIX 3: GetNextHolidayWithYear tests ─────────────────────────────────

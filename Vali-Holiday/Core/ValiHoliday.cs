@@ -122,6 +122,44 @@ public class ValiHoliday : IValiHoliday
     }
 
     /// <summary>
+    /// Determines whether the given <paramref name="date"/> is a public holiday
+    /// in at least one of the specified countries (logical OR / ANY semantics).
+    /// </summary>
+    /// <param name="date">The date to check (time component is ignored).</param>
+    /// <param name="countryCodes">
+    /// One or more ISO 3166-1 alpha-2 country codes (case-insensitive).
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the date is a holiday in at least one of the
+    /// specified countries; <see langword="false"/> if it is a holiday in none
+    /// of them, or if <paramref name="countryCodes"/> is empty.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no provider is registered for any of the specified country codes.
+    /// </exception>
+    public bool IsHoliday(DateTime date, params string[] countryCodes)
+        => countryCodes.Any(c => IsHoliday(date, c));
+
+    /// <summary>
+    /// Determines whether the given <paramref name="date"/> is a public holiday
+    /// in all of the specified countries (logical AND / ALL semantics).
+    /// </summary>
+    /// <param name="date">The date to check (time component is ignored).</param>
+    /// <param name="countryCodes">
+    /// One or more ISO 3166-1 alpha-2 country codes (case-insensitive).
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the date is a holiday in every specified
+    /// country, or if <paramref name="countryCodes"/> is empty (vacuous truth);
+    /// otherwise <see langword="false"/>.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when no provider is registered for any of the specified country codes.
+    /// </exception>
+    public bool IsHolidayInAll(DateTime date, params string[] countryCodes)
+        => countryCodes.All(c => IsHoliday(date, c));
+
+    /// <summary>
     /// Returns all public holidays for the given <paramref name="year"/> in the
     /// specified country, ordered by month and day.
     /// </summary>
