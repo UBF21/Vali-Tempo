@@ -27,6 +27,8 @@ dotnet add package Vali-Tempo
 | `Vali-Schedule` | `ValiSchedule` | Recurring event scheduling |
 | `Vali-Holiday` | `ValiHoliday` | Holiday providers for 35+ countries |
 | `Vali-TimeZone` | `ValiTimeZone` | Timezone conversion and discovery |
+| `Vali-BusinessHours` | `ValiBusinessHours` | Cross-timezone business-hours overlap |
+| `Vali-Bucket` | `ValiBucket` | Fixed-size time-series bucketing and aggregation |
 
 ## Dependency Injection
 
@@ -45,6 +47,8 @@ This registers all services with singleton lifetime:
 - `IValiSchedule` → `ValiSchedule`
 - `IValiHoliday` → `ValiHoliday`
 - `IValiTimeZone` → `ValiTimeZone`
+- `IValiBusinessHours` → `ValiBusinessHours`
+- `IValiBucket` → `ValiBucket`
 
 ## Usage Example
 
@@ -83,6 +87,8 @@ dotnet add package Vali-Age
 dotnet add package Vali-Schedule
 dotnet add package Vali-Holiday
 dotnet add package Vali-TimeZone
+dotnet add package Vali-BusinessHours
+dotnet add package Vali-Bucket
 ```
 
 ## Ecosystem Overview
@@ -99,6 +105,8 @@ Vali-Tempo Ecosystem
 ├── Vali-Schedule    — IValiSchedule, ScheduleConfig
 ├── Vali-Holiday     — IValiHoliday, IHolidayProvider (35+ countries)
 ├── Vali-TimeZone    — IValiTimeZone, ValiZoneInfo
+├── Vali-BusinessHours — IValiBusinessHours (composes Vali-Calendar + Vali-TimeZone)
+├── Vali-Bucket      — IValiBucket, TimeBucket
 └── Vali-Tempo       — Meta-package (this package)
 ```
 

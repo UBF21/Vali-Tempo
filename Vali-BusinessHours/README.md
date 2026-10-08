@@ -1,30 +1,22 @@
 # Vali-BusinessHours
-
-[![NuGet](https://img.shields.io/nuget/v/Vali-BusinessHours.svg)](https://www.nuget.org/packages/Vali-BusinessHours)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
-
-> Resolves the simultaneous business-hours overlap window between two IANA timezones —
-> the classic "what time works for both of us" cross-timezone scheduling problem.
+> Resolves the simultaneous business-hours overlap window between two IANA timezones — the classic "what time works for both of us" cross-timezone scheduling problem.
 
 ## Features
 
-- **Pairwise timezone overlap** — given a daily business-hours block (`TimeOnly` start/end)
-  per zone, resolves the UTC window where both are open at once.
-- **DST-correct** — the offset of each zone is resolved at the specific instant evaluated
-  (via `Vali-TimeZone`), never a cached base offset.
-- **Midnight-crossing aware** — a zone's business hours can map to the calendar day before
-  or after the reference date once projected to the other zone; the overlap search checks
-  all three candidate days.
-- **Workday-aware variant** — `OverlapOnWorkday` short-circuits to "no overlap" when the
-  reference date isn't a workday in either zone's own `Vali-Calendar`.
+- **Pairwise timezone overlap** — given a daily business-hours block (`TimeOnly` start/end) per zone, resolves the UTC window where both are open at once
+- **DST-correct** — the offset of each zone is resolved at the specific instant evaluated (via `Vali-TimeZone`), never a cached base offset
+- **Midnight-crossing aware** — a zone's business hours can map to the calendar day before or after the reference date once projected to the other zone; the overlap search checks all three candidate days
+- **Workday-aware variant** — `OverlapOnWorkday` short-circuits to "no overlap" when the reference date isn't a workday in either zone's own `Vali-Calendar`
 - Composes `Vali-Calendar` and `Vali-TimeZone` without coupling either package to the other
-  (see the ADR in the repo for why this is a separate package).
+- Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
 
 ## Installation
 
 ```bash
 dotnet add package Vali-BusinessHours
 ```
+
+> Compatible with .NET 6, 7, 8, and 9. For new projects, .NET 8 (LTS) or .NET 9 is recommended.
 
 ## Quick Start
 
@@ -60,14 +52,14 @@ BusinessHoursOverlapResult Overlap(BusinessHoursWindow a, BusinessHoursWindow b,
 
 ### `OverlapOnWorkday((BusinessHoursWindow, IValiCalendar) a, (BusinessHoursWindow, IValiCalendar) b, DateTime referenceDate)`
 
-Same as `Overlap`, but requires `referenceDate` to be a workday in both calendars first —
-useful when each side has its own holiday calendar.
+Same as `Overlap`, but requires `referenceDate` to be a workday in both calendars first — useful when each side has its own holiday calendar.
 
 ```csharp
 using Vali_Calendar.Core;
+using Vali_Holiday.Core;
 
-IValiCalendar peruCalendar = new ValiCalendar(holidayProvider: HolidayProviderFactory.Create("PE"));
-IValiCalendar spainCalendar = new ValiCalendar(holidayProvider: HolidayProviderFactory.Create("ES"));
+IValiCalendar peruCalendar = new ValiCalendar(holidayProvider: HolidayProviderFactory.CreateAll().For("PE"));
+IValiCalendar spainCalendar = new ValiCalendar(holidayProvider: HolidayProviderFactory.CreateAll().For("ES"));
 
 var result = businessHours.OverlapOnWorkday(
     (lima, peruCalendar),
@@ -95,17 +87,27 @@ All members are `null` when `HasOverlap` is `false`.
 - No meeting-scheduling features (no calendars, invitees, or slot negotiation) — this is a
   calculation primitive, not a scheduling product.
 
-See `.claude/memory/plans/business-hours-overlap/` in the repo for the full ADR behind these
-decisions.
-
 ## Dependency Injection
 
 ```csharp
 // Program.cs
+using Vali_BusinessHours.Extensions;
+using Vali_TimeZone.Extensions;
+
 builder.Services.AddValiTimeZone();      // IValiBusinessHours resolves IValiTimeZone from the container
 builder.Services.AddValiBusinessHours(); // registers IValiBusinessHours as a singleton
 ```
 
 ## License
 
-MIT © 2025 Felipe Rafael Montenegro Morriberon
+Licensed under the [MIT License](../LICENSE).
+Copyright © 2025 Felipe Rafael Montenegro Morriberon. All rights reserved.
+
+## Donations
+
+If this package is useful to you, consider supporting its development:
+
+- **Latin America** — [MercadoPago](https://link.mercadopago.com.pe/felipermm)
+- **International** — [PayPal](https://paypal.me/felipeRMM?country.x=PE&locale.x=es_XC)
+
+---

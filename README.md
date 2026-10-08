@@ -19,6 +19,8 @@
 | [Vali-Schedule](./Vali-Schedule) | Recurring schedule definition and occurrence generation | [Vali-Schedule/](./Vali-Schedule) |
 | [Vali-Holiday](./Vali-Holiday) | Holiday provider implementations (35+ countries) | [Vali-Holiday/](./Vali-Holiday) |
 | [Vali-TimeZone](./Vali-TimeZone) | Timezone conversion and discovery | [Vali-TimeZone/](./Vali-TimeZone) |
+| [Vali-BusinessHours](./Vali-BusinessHours) | Cross-timezone business-hours overlap (DST-correct, midnight-crossing aware) | [Vali-BusinessHours/](./Vali-BusinessHours) |
+| [Vali-Bucket](./Vali-Bucket) | Fixed-size, anchor-aligned time-series bucketing and aggregation | [Vali-Bucket/](./Vali-Bucket) |
 | **Vali-Tempo** | Meta-package — installs the entire Vali-Tempo ecosystem | [Vali-Tempo/](./Vali-Tempo) |
 
 ## Installation
@@ -37,6 +39,8 @@ dotnet add package Vali-Age
 dotnet add package Vali-Schedule
 dotnet add package Vali-Holiday
 dotnet add package Vali-TimeZone
+dotnet add package Vali-BusinessHours
+dotnet add package Vali-Bucket
 ```
 
 ## Dependency Injection
@@ -58,6 +62,8 @@ This registers all services with singleton lifetime:
 - `IValiSchedule` → `ValiSchedule`
 - `IValiHoliday` → `ValiHoliday`
 - `IValiTimeZone` → `ValiTimeZone`
+- `IValiBusinessHours` → `ValiBusinessHours`
+- `IValiBucket` → `ValiBucket`
 
 ## Quick Example — Using Multiple Modules Together
 
@@ -122,7 +128,9 @@ Vali-Tempo (meta-package)
 ├── Vali-Age         — IValiAge, AgeResult
 ├── Vali-Schedule    — IValiSchedule, ScheduleConfig
 ├── Vali-Holiday     — IValiHoliday, IHolidayProvider (35+ countries)
-└── Vali-TimeZone    — IValiTimeZone, ValiZoneInfo
+├── Vali-TimeZone    — IValiTimeZone, ValiZoneInfo
+├── Vali-BusinessHours — IValiBusinessHours (composes Vali-Calendar + Vali-TimeZone)
+└── Vali-Bucket      — IValiBucket, TimeBucket
 ```
 
 - **Vali-Time** is the foundation: `TimeUnit` enum, `ValiTime` (unit conversions), `ValiDate` (date arithmetic).
@@ -150,6 +158,8 @@ available target framework without requiring a separate build.
 | Vali-Schedule | ✅ | ✅ | ✅ | ✅ |
 | Vali-Holiday | ✅ | ✅ | ✅ | ✅ |
 | Vali-TimeZone | ✅ | ✅ | ✅ | ✅ |
+| Vali-BusinessHours | ✅ | ✅ | ✅ | ✅ |
+| Vali-Bucket | ✅ | ✅ | ✅ | ✅ |
 | Vali-Tempo | ✅ | ✅ | ✅ | ✅ |
 
 > **Note:** .NET 6 and .NET 7 reached end-of-life in November 2024 and May 2024 respectively.
@@ -177,6 +187,8 @@ available target framework without requiring a separate build.
 - [Vali-Schedule README](./Vali-Schedule/README.md)
 - [Vali-Holiday README](./Vali-Holiday/README.md)
 - [Vali-TimeZone README](./Vali-TimeZone/README.md)
+- [Vali-BusinessHours README](./Vali-BusinessHours/README.md)
+- [Vali-Bucket README](./Vali-Bucket/README.md)
 - [Vali-Tempo (meta-package) README](./Vali-Tempo/README.md)
 
 ## Estándares de Desarrollo

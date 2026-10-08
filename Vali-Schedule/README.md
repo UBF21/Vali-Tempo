@@ -123,13 +123,13 @@ var schedule = new ValiSchedule()
 Excludes dates that are public holidays according to a `Vali-Holiday` provider. Requires
 adding `Vali-Holiday` as a dependency (installing `Vali-Schedule` alone is enough for
 `SkipWeekends()`, but `SkipHolidays()` needs a concrete `IHolidayProvider`, e.g.
-`HolidayProviderFactory.Create("PE")`).
+`HolidayProviderFactory.CreateAll().For("PE")`).
 
 ```csharp
 using Vali_Holiday.Core;
 using Vali_Schedule.Enums;
 
-IHolidayProvider peru = HolidayProviderFactory.Create("PE");
+IHolidayProvider peru = HolidayProviderFactory.CreateAll().For("PE");
 
 var schedule = new ValiSchedule()
     .Every(1, TimeUnit.Days)

@@ -37,6 +37,8 @@ Vali-Tempo/
 ├── Vali-Schedule/       # Recurring schedule fluent builder
 ├── Vali-Holiday/        # Holiday providers for 35+ countries
 ├── Vali-TimeZone/       # Timezone conversion and discovery
+├── Vali-BusinessHours/  # Cross-timezone business-hours overlap (composes Vali-Calendar + Vali-TimeZone)
+├── Vali-Bucket/         # Fixed-size, anchor-aligned time-series bucketing and aggregation
 ├── Vali-Tempo/          # Meta-package (references all of the above)
 ├── Vali-Tempo.Tests/    # Unit and integration tests
 └── Vali-Tempo.Benchmarks/ # BenchmarkDotNet performance benchmarks
@@ -135,14 +137,23 @@ All tests live in `Vali-Tempo.Tests/Tests/`. Each package has its own test class
 | `ValiTimeTests.cs` | Vali-Time |
 | `ValiDateTests.cs` | Vali-Time (ValiDate) |
 | `ValiRangeTests.cs` | Vali-Range |
+| `IValiRangeTests.cs` | Vali-Range (interface contract) |
 | `ValiCalendarTests.cs` | Vali-Calendar |
 | `ValiDurationTests.cs` | Vali-Duration |
 | `ValiCountdownTests.cs` | Vali-CountDown |
 | `ValiAgeTests.cs` | Vali-Age |
+| `HumanizeTests.cs` | Vali-Age (Humanize relative-time) |
 | `ValiScheduleTests.cs` | Vali-Schedule |
+| `IValiScheduleTests.cs` | Vali-Schedule (interface contract) |
+| `HolidaySkipStrategyTests.cs` | Vali-Schedule (HolidaySkipStrategy) |
+| `CronScheduleTests.cs` | Vali-Schedule (CronSchedule) |
 | `ValiHolidayTests.cs` | Vali-Holiday |
+| `IValiHolidayTests.cs` | Vali-Holiday (interface contract) |
 | `EasterCalculatorTests.cs` | Vali-Holiday (Easter) |
+| `HolidayConcurrencyStressTests.cs` | Vali-Holiday (Caso C concurrency stress) |
 | `ValiTimeZoneTests.cs` | Vali-TimeZone |
+| `ValiBusinessHoursTests.cs` | Vali-BusinessHours |
+| `ValiBucketTests.cs` | Vali-Bucket |
 | `IntegrationTests.cs` | Cross-package integration |
 
 Guidelines:
