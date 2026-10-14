@@ -37,7 +37,7 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-TimeZone is a .NET library for timezone-aware date and time operations. Provides conversion between timezones, UTC offset calculations, DST detection, local/UTC interoperability, and a curated list of IANA-compatible timezone identifiers for 30+ countries.</Description>
-        <PackageReleaseNotes>Vali-TimeZone v1.1.0 — ValiZoneInfo is now a record (structural equality), its custom ToString() preserved unchanged. Updated Vali-Time dependency to 1.1.0. No breaking changes.
+        <PackageReleaseNotes>Vali-TimeZone v1.1.0 — ValiZoneInfo is now a record (structural equality), its custom ToString() preserved unchanged. Add net10.0 target. No breaking changes.
 
             Vali-TimeZone v1.0.0 — initial release: ValiTimeZone class with Convert, ToUtc, FromUtc, GetOffset, IsDst, FindZone, AllZones, ZonesForCountry, IsValidZone, Now, Today, IsSameInstant, FormatWithZone, and DateTimeOffset interoperability.</PackageReleaseNotes>
     </PropertyGroup>
@@ -48,7 +48,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Vali-Time" Version="1.1.0" />
+        <PackageReference Include="Vali-Time" Version="1.0.1" />
     </ItemGroup>
 
     <ItemGroup>

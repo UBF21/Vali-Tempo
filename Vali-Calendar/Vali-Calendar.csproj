@@ -37,7 +37,7 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-Calendar is a .NET library for calendar-based operations. Provides workday calculations, ISO week numbers, CalendarWeek struct, month/year utilities, and business-day arithmetic without requiring external holiday providers.</Description>
-        <PackageReleaseNotes>Vali-Calendar v1.0.1 — updated Vali-Time dependency to 1.1.0 and Vali-Holiday dependency to 1.1.0. No public API change.
+        <PackageReleaseNotes>Vali-Calendar v1.0.1 — add net10.0 target. No public API change.
 
             Vali-Calendar v1.0.0 — initial release: ValiCalendar with WorkdaysBetween, AddWorkdays, WorkdaysInMonth, WorkdaysInYear, NextWorkday, PreviousWorkday, WeekOf, WeeksInMonth, CalendarWeek struct, and month/year helpers.</PackageReleaseNotes>
     </PropertyGroup>
@@ -48,8 +48,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Vali-Time" Version="1.1.0" />
-        <PackageReference Include="Vali-Holiday" Version="1.1.0" />
+        <PackageReference Include="Vali-Time" Version="1.0.1" />
+        <PackageReference Include="Vali-Holiday" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>

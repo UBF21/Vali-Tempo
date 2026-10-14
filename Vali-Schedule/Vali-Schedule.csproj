@@ -37,7 +37,7 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-Schedule is a .NET library for defining and querying recurring time schedules. Supports daily, weekly, monthly, yearly, and custom recurrence patterns with fluent builder API, next/previous occurrence calculation, and occurrence enumeration.</Description>
-        <PackageReleaseNotes>Vali-Schedule v1.1.0 — add CronSchedule (5-field cron expression support), SkipWeekends/SkipHolidays with HolidaySkipStrategy, and OccurrencePeriods. Updated Vali-Time, Vali-Holiday and Vali-Range dependencies to their latest versions. No breaking changes.
+        <PackageReleaseNotes>Vali-Schedule v1.1.0 — add CronSchedule (5-field cron expression support), SkipWeekends/SkipHolidays with HolidaySkipStrategy, and OccurrencePeriods. Add net10.0 target. No breaking changes.
 
             Vali-Schedule v1.0.0 — initial release: ValiSchedule fluent builder with Every, On, At, StartingFrom, EndsAfter, EndsOn, WithCustomPredicate; NextOccurrence, PreviousOccurrence, OccursOn, Occurrences, OccurrencesInRange.</PackageReleaseNotes>
     </PropertyGroup>
@@ -48,9 +48,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Vali-Time" Version="1.1.0" />
-        <PackageReference Include="Vali-Holiday" Version="1.1.0" />
-        <PackageReference Include="Vali-Range" Version="1.1.0" />
+        <PackageReference Include="Vali-Time" Version="1.0.1" />
+        <PackageReference Include="Vali-Holiday" Version="1.0.0" />
+        <PackageReference Include="Vali-Range" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>

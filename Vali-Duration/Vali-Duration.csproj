@@ -48,7 +48,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Vali-Time" Version="1.1.0" />
+        <!-- ponytail: ProjectReference instead of PackageReference — the published Vali-Time
+             1.0.1 NuGet package predates Vali_Time.Utils.DurationStringParser, used by
+             ValiDuration's new IParsable/IFormattable implementation. Revert to
+             PackageReference Version="1.1.0" once Vali-Time is republished with that type included. -->
+        <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
     </ItemGroup>
 
     <ItemGroup>
