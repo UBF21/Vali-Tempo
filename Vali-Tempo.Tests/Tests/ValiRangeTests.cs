@@ -555,4 +555,251 @@ public class ValiRangeTests
         Action act = () => _vali.NextUnits(-5, TimeUnit.Hours);
         act.Should().Throw<ArgumentException>();
     }
+
+    // ── ThisQuarter ──────────────────────────────────────────────────────────
+
+    [Fact]
+    public void ThisQuarter_FixedDateInQ3_ReturnsJulyToSeptember()
+    {
+        var vali = new ValiRange(new FixedClock(new DateTime(2025, 8, 15)));
+        DateRange range = vali.ThisQuarter();
+        range.Start.Should().Be(new DateTime(2025, 7, 1));
+        range.End.Should().Be(new DateTime(2025, 9, 30));
+    }
+
+    // ── ThisYear ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void ThisYear_FixedDate_ReturnsJanToDecOfSameYear()
+    {
+        var vali = new ValiRange(new FixedClock(new DateTime(2025, 5, 10)));
+        DateRange range = vali.ThisYear();
+        range.Start.Should().Be(new DateTime(2025, 1, 1));
+        range.End.Should().Be(new DateTime(2025, 12, 31));
+    }
+
+    // ── IsContainedBy ────────────────────────────────────────────────────────
+
+    [Fact]
+    public void IsContainedBy_InnerWithinOuter_ReturnsTrue()
+    {
+        DateRange outer = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 12, 31));
+        DateRange inner = _vali.Create(new DateTime(2025, 3, 1), new DateTime(2025, 6, 30));
+        _vali.IsContainedBy(inner, outer).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsContainedBy_InnerExtendsBeyondOuter_ReturnsFalse()
+    {
+        DateRange outer = _vali.Create(new DateTime(2025, 3, 1), new DateTime(2025, 6, 30));
+        DateRange inner = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 12, 31));
+        _vali.IsContainedBy(inner, outer).Should().BeFalse();
+    }
+
+    // ── Shrink ───────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void Shrink_AmountLargerThanRange_ThrowsArgumentException()
+    {
+        DateRange range = _vali.Create(new DateTime(2025, 3, 1), new DateTime(2025, 3, 5));
+        Action act = () => _vali.Shrink(range, 10m, TimeUnit.Days);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    // ── ToTimeSpan unit coverage (via Shift) ────────────────────────────────
+
+    [Fact]
+    public void Shift_Milliseconds_MovesRangeForward()
+    {
+        DateRange range = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 2));
+        DateRange shifted = _vali.Shift(range, 500m, TimeUnit.Milliseconds);
+        shifted.Start.Should().Be(new DateTime(2025, 1, 1).AddMilliseconds(500));
+    }
+
+    [Fact]
+    public void Shift_Seconds_MovesRangeForward()
+    {
+        DateRange range = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 2));
+        DateRange shifted = _vali.Shift(range, 30m, TimeUnit.Seconds);
+        shifted.Start.Should().Be(new DateTime(2025, 1, 1).AddSeconds(30));
+    }
+
+    [Fact]
+    public void Shift_Minutes_MovesRangeForward()
+    {
+        DateRange range = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 2));
+        DateRange shifted = _vali.Shift(range, 15m, TimeUnit.Minutes);
+        shifted.Start.Should().Be(new DateTime(2025, 1, 1).AddMinutes(15));
+    }
+
+    [Fact]
+    public void Shift_Hours_MovesRangeForward()
+    {
+        DateRange range = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 2));
+        DateRange shifted = _vali.Shift(range, 6m, TimeUnit.Hours);
+        shifted.Start.Should().Be(new DateTime(2025, 1, 1).AddHours(6));
+    }
+
+    [Fact]
+    public void Shift_Weeks_MovesRangeForward()
+    {
+        DateRange range = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 2));
+        DateRange shifted = _vali.Shift(range, 2m, TimeUnit.Weeks);
+        shifted.Start.Should().Be(new DateTime(2025, 1, 15));
+    }
+
+    [Fact]
+    public void Shift_UnrecognisedUnit_ThrowsArgumentOutOfRangeException()
+    {
+        DateRange range = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 2));
+        Action act = () => _vali.Shift(range, 1m, (TimeUnit)9999);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    // ── SubtractUnit/AddUnit Months/Years coverage ──────────────────────────
+
+    [Fact]
+    public void LastUnits_Months_SubtractsCalendarMonths()
+    {
+        var vali = new ValiRange(new FixedClock(new DateTime(2025, 6, 15)));
+        DateRange range = vali.LastUnits(3, TimeUnit.Months);
+        range.Start.Should().Be(new DateTime(2025, 3, 15));
+    }
+
+    [Fact]
+    public void LastUnits_Years_SubtractsCalendarYears()
+    {
+        var vali = new ValiRange(new FixedClock(new DateTime(2025, 6, 15)));
+        DateRange range = vali.LastUnits(2, TimeUnit.Years);
+        range.Start.Should().Be(new DateTime(2023, 6, 15));
+    }
+
+    [Fact]
+    public void NextUnits_Months_AddsCalendarMonths()
+    {
+        var vali = new ValiRange(new FixedClock(new DateTime(2025, 6, 15)));
+        DateRange range = vali.NextUnits(3, TimeUnit.Months);
+        range.End.Should().Be(new DateTime(2025, 9, 15));
+    }
+
+    [Fact]
+    public void NextUnits_Years_AddsCalendarYears()
+    {
+        var vali = new ValiRange(new FixedClock(new DateTime(2025, 6, 15)));
+        DateRange range = vali.NextUnits(2, TimeUnit.Years);
+        range.End.Should().Be(new DateTime(2027, 6, 15));
+    }
+
+    // ── EachWeek ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void EachWeek_SpanningMonthBoundary_ReturnsExpectedWeekStarts()
+    {
+        // 2025-01-01 is a Wednesday; week (Monday-start) begins 2024-12-30
+        DateRange range = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 20));
+        var weeks = _vali.EachWeek(range).ToList();
+        weeks.Should().NotBeEmpty();
+        weeks[0].Should().Be(new DateTime(2024, 12, 30));
+    }
+
+    [Fact]
+    public void EachWeek_LeapFebruaryRange_ReturnsExpectedCount()
+    {
+        DateRange range = _vali.Create(new DateTime(2024, 2, 1), new DateTime(2024, 2, 29));
+        var weeks = _vali.EachWeek(range).ToList();
+        weeks.Should().HaveCountGreaterThanOrEqualTo(4);
+    }
+
+    // ── EachMonth ────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void EachMonth_SpanningYearBoundary_ReturnsExpectedMonths()
+    {
+        DateRange range = _vali.Create(new DateTime(2024, 11, 1), new DateTime(2025, 2, 1));
+        var months = _vali.EachMonth(range).ToList();
+        months.Should().HaveCount(4);
+        months[0].Should().Be(new DateTime(2024, 11, 1));
+        months[^1].Should().Be(new DateTime(2025, 2, 1));
+    }
+
+    [Fact]
+    public void EachMonth_LeapFebruaryRange_ReturnsSingleMonth()
+    {
+        DateRange range = _vali.Create(new DateTime(2024, 2, 1), new DateTime(2024, 2, 29));
+        var months = _vali.EachMonth(range).ToList();
+        months.Should().ContainSingle();
+        months[0].Should().Be(new DateTime(2024, 2, 1));
+    }
+
+    // ── SplitByDay ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public void SplitByDay_SpanningMonthBoundary_ReturnsOneRangePerDay()
+    {
+        DateRange range = _vali.Create(new DateTime(2025, 1, 30), new DateTime(2025, 2, 2));
+        var days = _vali.SplitByDay(range).ToList();
+        days.Should().HaveCount(4);
+        days[0].Start.Should().Be(new DateTime(2025, 1, 30));
+        days[0].End.Should().Be(new DateTime(2025, 1, 30));
+        days[^1].Start.Should().Be(new DateTime(2025, 2, 2));
+    }
+
+    [Fact]
+    public void SplitByDay_LeapFebruaryRange_ReturnsTwentyNineDays()
+    {
+        DateRange range = _vali.Create(new DateTime(2024, 2, 1), new DateTime(2024, 2, 29));
+        var days = _vali.SplitByDay(range).ToList();
+        days.Should().HaveCount(29);
+    }
+
+    // ── SplitByWeek ──────────────────────────────────────────────────────────
+
+    [Fact]
+    public void SplitByWeek_SpanningMonthBoundary_ClipsFirstAndLastChunks()
+    {
+        // 2025-01-01 is Wednesday; week start 2024-12-30, range ends 2025-01-20
+        DateRange range = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 20));
+        var weeks = _vali.SplitByWeek(range).ToList();
+        weeks.Should().NotBeEmpty();
+        weeks[0].Start.Should().Be(new DateTime(2025, 1, 1)); // clipped to range start
+        weeks[^1].End.Should().Be(new DateTime(2025, 1, 20)); // clipped to range end
+    }
+
+    [Fact]
+    public void SplitByWeek_LeapFebruaryRange_ReturnsWeeklyChunks()
+    {
+        DateRange range = _vali.Create(new DateTime(2024, 2, 1), new DateTime(2024, 2, 29));
+        var weeks = _vali.SplitByWeek(range).ToList();
+        weeks.Should().HaveCountGreaterThanOrEqualTo(4);
+        weeks[0].Start.Should().Be(new DateTime(2024, 2, 1));
+        weeks[^1].End.Should().Be(new DateTime(2024, 2, 29));
+    }
+
+    // ── SplitByQuarter (normal completion, no overflow) ─────────────────────
+
+    [Fact]
+    public void SplitByQuarter_TwoQuarterRange_ReturnsTwoSegments()
+    {
+        DateRange range = _vali.Create(new DateTime(2025, 2, 1), new DateTime(2025, 5, 1));
+        var quarters = _vali.SplitByQuarter(range).ToList();
+        quarters.Should().HaveCount(2);
+    }
+
+    // ── Merge (non-adjacent branch) ──────────────────────────────────────────
+
+    [Fact]
+    public void Merge_ThreeRangesWithOneGapLargerThanOneDay_ReturnsTwoMergedRanges()
+    {
+        DateRange a = _vali.Create(new DateTime(2025, 1, 1), new DateTime(2025, 1, 5));
+        DateRange b = _vali.Create(new DateTime(2025, 1, 4), new DateTime(2025, 1, 8)); // overlaps a
+        DateRange c = _vali.Create(new DateTime(2025, 2, 1), new DateTime(2025, 2, 10)); // gap > 1 day from b
+
+        var merged = _vali.Merge(new[] { a, b, c }).ToList();
+
+        merged.Should().HaveCount(2);
+        merged[0].Start.Should().Be(new DateTime(2025, 1, 1));
+        merged[0].End.Should().Be(new DateTime(2025, 1, 8));
+        merged[1].Start.Should().Be(new DateTime(2025, 2, 1));
+        merged[1].End.Should().Be(new DateTime(2025, 2, 10));
+    }
 }

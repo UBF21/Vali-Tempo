@@ -140,4 +140,49 @@ public class ValiBucketTests
 
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
+
+    [Theory]
+    [InlineData(TimeUnit.Milliseconds, 100)]
+    [InlineData(TimeUnit.Seconds, 30)]
+    [InlineData(TimeUnit.Days, 1)]
+    [InlineData(TimeUnit.Weeks, 1)]
+    public void GetBucketFor_SupportsAllFixedLengthUnits(TimeUnit unit, decimal amount)
+    {
+        var anchor = new DateTime(2025, 1, 1, 0, 0, 0);
+        var timestamp = anchor.AddTicks(1);
+
+        var result = _bucket.GetBucketFor(timestamp, new BucketSize(amount, unit), anchor);
+
+        result.Range.Start.Should().Be(anchor);
+        result.Range.Contains(timestamp).Should().BeTrue();
+    }
+
+    [Fact]
+    public void BucketSizeTooLargeToRepresent_ThrowsArgumentOutOfRangeException()
+    {
+        // 10 billion weeks worth of ticks overflows long but still fits in decimal.
+        var act = () => _bucket.GetBucketFor(DateTime.UtcNow, new BucketSize(10_000_000_000m, TimeUnit.Weeks));
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void Aggregate_UnrecognisedAggregationValue_ThrowsArgumentOutOfRangeException()
+    {
+        var points = new[] { (new DateTime(2025, 1, 1, 9, 2, 0), 10d) };
+
+        var act = () => _bucket.Aggregate(points, new BucketSize(15, TimeUnit.Minutes), (BucketAggregation)999, DateTime.MinValue);
+
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void Aggregate_ExposesBucketRange()
+    {
+        var points = new[] { (new DateTime(2025, 1, 1, 9, 2, 0), 10d) };
+
+        var buckets = _bucket.Aggregate(points, new BucketSize(15, TimeUnit.Minutes), BucketAggregation.Sum, DateTime.MinValue);
+
+        buckets[0].Range.Start.Should().Be(new DateTime(2025, 1, 1, 9, 0, 0));
+    }
 }

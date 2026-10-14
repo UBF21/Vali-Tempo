@@ -616,4 +616,244 @@ public class ValiTimeTests
         decimal result = _vali.ParseTime("2h 30min");
         result.Should().Be(9000m);
     }
+
+    // ── Convert: Months/Years + invalid toUnit ───────────────────────────────
+
+    [Fact]
+    public void Convert_DaysToMonths_ReturnsApproximate()
+    {
+        decimal result = _vali.Convert(30.4375m, TimeUnit.Days, TimeUnit.Months);
+        result.Should().Be(1m);
+    }
+
+    [Fact]
+    public void Convert_DaysToYears_ReturnsApproximate()
+    {
+        decimal result = _vali.Convert(365.25m, TimeUnit.Days, TimeUnit.Years);
+        result.Should().Be(1m);
+    }
+
+    [Fact]
+    public void Convert_MonthsToYears_ReturnsExpected()
+    {
+        decimal result = _vali.Convert(12, TimeUnit.Months, TimeUnit.Years);
+        result.Should().Be(1m);
+    }
+
+    [Fact]
+    public void Convert_InvalidToUnit_ThrowsNotSupportedException()
+    {
+        Action act = () => _vali.Convert(1, TimeUnit.Seconds, (TimeUnit)999);
+        act.Should().Throw<NotSupportedException>();
+    }
+
+    [Fact]
+    public void Convert_InvalidFromUnit_ThrowsNotSupportedException()
+    {
+        Action act = () => _vali.Convert(1, (TimeUnit)999, TimeUnit.Seconds);
+        act.Should().Throw<NotSupportedException>();
+    }
+
+    [Fact]
+    public void Convert_NegativeDecimalPlaces_ThrowsArgumentException()
+    {
+        Action act = () => _vali.Convert(1, TimeUnit.Hours, TimeUnit.Minutes, -1);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    // ── FormatTime: Months/Years + invalid unit ──────────────────────────────
+
+    [Fact]
+    public void FormatTime_Months_ContainsMo()
+    {
+        _vali.FormatTime(1, TimeUnit.Months).Should().EndWith("mo");
+    }
+
+    [Fact]
+    public void FormatTime_Years_ContainsYr()
+    {
+        _vali.FormatTime(1, TimeUnit.Years).Should().EndWith("yr");
+    }
+
+    [Fact]
+    public void FormatTime_InvalidUnit_ThrowsNotSupportedException()
+    {
+        Action act = () => _vali.FormatTime(1, (TimeUnit)999);
+        act.Should().Throw<NotSupportedException>();
+    }
+
+    // ── SumTimes / SubtractTimes: guard clauses ──────────────────────────────
+
+    [Fact]
+    public void SumTimes_NegativeDecimalPlaces_ThrowsArgumentException()
+    {
+        var times = new List<(decimal time, TimeUnit unit)> { (1, TimeUnit.Hours) };
+        Action act = () => _vali.SumTimes(TimeUnit.Hours, times, decimalPlaces: -1);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void SumTimes_NullList_ThrowsArgumentException()
+    {
+        Action act = () => _vali.SumTimes(TimeUnit.Hours, null!);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void SumTimes_NegativeResult_ThrowsArgumentException()
+    {
+        var times = new List<(decimal time, TimeUnit unit)> { (-1, TimeUnit.Hours) };
+        Action act = () => _vali.SumTimes(TimeUnit.Hours, times);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void SubtractTimes_NegativeDecimalPlaces_ThrowsArgumentException()
+    {
+        var times = new List<(decimal time, TimeUnit unit)> { (2, TimeUnit.Hours), (1, TimeUnit.Hours) };
+        Action act = () => _vali.SubtractTimes(TimeUnit.Hours, times, decimalPlaces: -1);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void SubtractTimes_NullList_ThrowsArgumentException()
+    {
+        Action act = () => _vali.SubtractTimes(TimeUnit.Hours, null!);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void SubtractTimes_NegativeMinuend_AllowedWithFlag_ReturnsNegativeResult()
+    {
+        var times = new List<(decimal time, TimeUnit unit)> { (-1, TimeUnit.Hours), (1, TimeUnit.Hours) };
+        decimal result = _vali.SubtractTimes(TimeUnit.Hours, times, allowNegative: true);
+        result.Should().Be(-2m);
+    }
+
+    // ── FromTimeSpan: remaining units + negative guard ───────────────────────
+
+    [Fact]
+    public void FromTimeSpan_Days_ReturnsExpected()
+    {
+        _vali.FromTimeSpan(TimeSpan.FromDays(7), TimeUnit.Days).Should().Be(7m);
+    }
+
+    [Fact]
+    public void FromTimeSpan_Weeks_ReturnsExpected()
+    {
+        _vali.FromTimeSpan(TimeSpan.FromDays(14), TimeUnit.Weeks).Should().Be(2m);
+    }
+
+    [Fact]
+    public void FromTimeSpan_Months_ReturnsApproximate()
+    {
+        decimal result = _vali.FromTimeSpan(TimeSpan.FromDays(30.4375), TimeUnit.Months);
+        result.Should().BeApproximately(1m, 0.0001m);
+    }
+
+    [Fact]
+    public void FromTimeSpan_Years_ReturnsApproximate()
+    {
+        decimal result = _vali.FromTimeSpan(TimeSpan.FromDays(365.25), TimeUnit.Years);
+        result.Should().BeApproximately(1m, 0.0001m);
+    }
+
+    [Fact]
+    public void FromTimeSpan_NegativeTimeSpan_ThrowsArgumentException()
+    {
+        Action act = () => _vali.FromTimeSpan(TimeSpan.FromSeconds(-1), TimeUnit.Seconds);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void FromTimeSpan_InvalidUnit_ThrowsNotSupportedException()
+    {
+        Action act = () => _vali.FromTimeSpan(TimeSpan.FromSeconds(1), (TimeUnit)999);
+        act.Should().Throw<NotSupportedException>();
+    }
+
+    // ── MultiConvert: guard clause ────────────────────────────────────────────
+
+    [Fact]
+    public void MultiConvert_EmptyUnits_ThrowsArgumentException()
+    {
+        Action act = () => _vali.MultiConvert(1, TimeUnit.Hours);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void MultiConvert_NullUnits_ThrowsArgumentException()
+    {
+        Action act = () => _vali.MultiConvert(1, TimeUnit.Hours, null!);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    // ── Clamp / Compare: negative-value handling via ConvertAny ──────────────
+
+    [Fact]
+    public void Clamp_NegativeMin_ThrowsArgumentException()
+    {
+        Action act = () => _vali.Clamp(5, TimeUnit.Hours, -1, 10);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void Clamp_NegativeMax_ThrowsArgumentException()
+    {
+        Action act = () => _vali.Clamp(5, TimeUnit.Hours, 0, -1);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void Clamp_MinGreaterThanMax_ThrowsArgumentException()
+    {
+        Action act = () => _vali.Clamp(5, TimeUnit.Hours, 10, 1);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void Compare_LargerTime_ReturnsPositive()
+    {
+        _vali.Compare(2, TimeUnit.Hours, 60, TimeUnit.Minutes).Should().BePositive();
+    }
+
+    [Fact]
+    public void Compare_NegativeTimes_ComparesByMagnitudeAndSign()
+    {
+        _vali.Compare(-2, TimeUnit.Hours, -1, TimeUnit.Hours).Should().BeNegative();
+    }
+
+    [Fact]
+    public void FormatTime_Minutes_UsesMinutesPrefix()
+    {
+        _vali.FormatTime(5m, TimeUnit.Minutes).Should().Be("5.00 min");
+    }
+
+    [Fact]
+    public void FromTimeSpan_Milliseconds_ReturnsExpected()
+    {
+        _vali.FromTimeSpan(TimeSpan.FromMilliseconds(1500), TimeUnit.Milliseconds).Should().Be(1500m);
+    }
+
+    [Fact]
+    public void FromTimeSpan_Seconds_ReturnsExpected()
+    {
+        _vali.FromTimeSpan(TimeSpan.FromSeconds(90), TimeUnit.Seconds).Should().Be(90m);
+    }
+
+    [Fact]
+    public void SumTimes_NegativeIndividualInputsAcrossAllUnits_SumStillPositive()
+    {
+        var times = new List<(decimal time, TimeUnit unit)>
+        {
+            (-1, TimeUnit.Milliseconds),
+            (-1, TimeUnit.Days),
+            (-1, TimeUnit.Weeks),
+            (-1, TimeUnit.Months),
+            (-1, TimeUnit.Years),
+            (1000000, TimeUnit.Years),
+        };
+        decimal result = _vali.SumTimes(TimeUnit.Years, times);
+        result.Should().NotBe(0m);
+    }
 }

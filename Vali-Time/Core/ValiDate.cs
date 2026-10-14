@@ -638,9 +638,12 @@ public class ValiDate : IValiDate
     private DateTime WeekEndOf(DateTime date, WeekStart weekStart, TimeSpan endTime)
     {
         var weekStart_ = date.StartOfWeek(weekStart);
-        int daysUntilEnd = 6;
-        var candidate = weekStart_.AddDays(daysUntilEnd);
-        return candidate > DateTime.MaxValue.Date ? DateTime.MaxValue : candidate + endTime;
+        // DateTime subtraction never throws (unlike AddDays, which would overflow before this
+        // guard could run if weekStart_ is already within 6 days of MaxValue).
+        if ((DateTime.MaxValue.Date - weekStart_.Date).Days < 6)
+            return DateTime.MaxValue;
+        var candidate = weekStart_.AddDays(6);
+        return candidate + endTime > DateTime.MaxValue ? DateTime.MaxValue : candidate + endTime;
     }
 
     /// <summary>

@@ -158,6 +158,130 @@ public class ValiDurationTests
         duration.TotalDays.Should().Be(14m);
     }
 
+    // ── Factory: FromMonths / FromYears ──────────────────────────────────────
+
+    [Fact]
+    public void FromMonths_1_TotalDays_IsApprox30_4375()
+    {
+        ValiDuration duration = ValiDuration.FromMonths(1m);
+        duration.TotalDays.Should().Be(30.4375m);
+    }
+
+    [Fact]
+    public void FromYears_1_TotalDays_IsApprox365_25()
+    {
+        ValiDuration duration = ValiDuration.FromYears(1m);
+        duration.TotalDays.Should().Be(365.25m);
+    }
+
+    // ── As(TimeUnit): Months / Years / unsupported ───────────────────────────
+
+    [Fact]
+    public void As_TimeUnit_Months_IsCorrect()
+    {
+        ValiDuration duration = ValiDuration.FromMonths(2m);
+        duration.As(TimeUnit.Months).Should().Be(2m);
+    }
+
+    [Fact]
+    public void As_TimeUnit_Years_IsCorrect()
+    {
+        ValiDuration duration = ValiDuration.FromYears(2m);
+        duration.As(TimeUnit.Years).Should().Be(2m);
+    }
+
+    [Fact]
+    public void As_UnsupportedTimeUnit_ThrowsNotSupportedException()
+    {
+        ValiDuration duration = ValiDuration.FromSeconds(1m);
+        Action act = () => duration.As((TimeUnit)999);
+        act.Should().Throw<NotSupportedException>();
+    }
+
+    // ── TotalMilliseconds ─────────────────────────────────────────────────────
+
+    [Fact]
+    public void TotalMilliseconds_OneSecond_Is1000()
+    {
+        ValiDuration duration = ValiDuration.FromSeconds(1m);
+        duration.TotalMilliseconds.Should().Be(1000m);
+    }
+
+    // ── Format: negative decimalPlaces ───────────────────────────────────────
+
+    [Fact]
+    public void Format_NegativeDecimalPlaces_ThrowsArgumentOutOfRangeException()
+    {
+        ValiDuration duration = ValiDuration.FromHours(1m);
+        Action act = () => duration.Format(-1);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    // ── Comparison operators: >=, <=, != ─────────────────────────────────────
+
+    [Fact]
+    public void GreaterThanOrEqual_EqualAndLarger_ReturnsTrue()
+    {
+        ValiDuration one    = ValiDuration.FromHours(1m);
+        ValiDuration oneAgain = ValiDuration.FromHours(1m);
+        ValiDuration two    = ValiDuration.FromHours(2m);
+        (one >= oneAgain).Should().BeTrue();
+        (two >= one).Should().BeTrue();
+        (one >= two).Should().BeFalse();
+    }
+
+    [Fact]
+    public void LessThanOrEqual_EqualAndSmaller_ReturnsTrue()
+    {
+        ValiDuration one      = ValiDuration.FromHours(1m);
+        ValiDuration oneAgain = ValiDuration.FromHours(1m);
+        ValiDuration two      = ValiDuration.FromHours(2m);
+        (one <= oneAgain).Should().BeTrue();
+        (one <= two).Should().BeTrue();
+        (two <= one).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Inequality_DifferentDurations_ReturnsTrue()
+    {
+        ValiDuration one      = ValiDuration.FromHours(1m);
+        ValiDuration oneAgain = ValiDuration.FromHours(1m);
+        ValiDuration two      = ValiDuration.FromHours(2m);
+        (one != two).Should().BeTrue();
+        (one != oneAgain).Should().BeFalse();
+    }
+
+    // ── GetHashCode ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public void GetHashCode_EqualDurations_HaveSameHashCode()
+    {
+        ValiDuration a = ValiDuration.FromMinutes(90m);
+        ValiDuration b = ValiDuration.FromHours(1.5m);
+        a.GetHashCode().Should().Be(b.GetHashCode());
+    }
+
+    // ── CompareTo ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void CompareTo_Shorter_ReturnsNegative()
+    {
+        ValiDuration one = ValiDuration.FromHours(1m);
+        ValiDuration two = ValiDuration.FromHours(2m);
+        one.CompareTo(two).Should().BeLessThan(0);
+        two.CompareTo(one).Should().BeGreaterThan(0);
+        one.CompareTo(ValiDuration.FromHours(1m)).Should().Be(0);
+    }
+
+    // ── ToString() override ──────────────────────────────────────────────────
+
+    [Fact]
+    public void ToString_Override_UsesFormatDefault()
+    {
+        ValiDuration duration = ValiDuration.FromMinutes(90m);
+        duration.ToString().Should().Be(duration.Format());
+    }
+
     // ── IParsable<ValiDuration>.Parse: valid formats ─────────────────────────
 
     [Theory]

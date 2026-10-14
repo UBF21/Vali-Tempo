@@ -185,10 +185,11 @@ jobs:
           retention-days: 14
 
   coverage:
-    # NOTE: 60% is the real current baseline (lowest library, Vali-Time, sits at ~63.8%), not an
-    # aspirational number -- a 90% gate here would be red on every PR from day one. Raise this
-    # incrementally as coverage improves per library; don't lower it once raised.
-    name: Coverage gate (>= 60% per library)
+    # NOTE: every library was raised to >=95% line coverage before this gate was turned on (lowest
+    # is Vali-Time at ~97.0%, with its handful of `const` field declarations -- permanently
+    # unhittable by any test -- excluded from the ceiling calculation, not from the count). Don't
+    # lower this once raised; if a library's % slips below this, add tests, not a lower threshold.
+    name: Coverage gate (>= 95% per library)
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -199,7 +200,7 @@ jobs:
 
       - name: Merge reports and enforce the gate
         env:
-          THRESHOLD: '60'
+          THRESHOLD: '95'
         run: |
           python3 - <<'PY'
           import glob

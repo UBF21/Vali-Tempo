@@ -630,4 +630,203 @@ public class ValiScheduleTests
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("Weekly recurrence requires at least one day of week. Call .On(DayOfWeek) to configure.");
     }
+
+    // ── Builder argument validation ───────────────────────────────────────────
+
+    [Fact]
+    public void Every_ZeroInterval_ThrowsArgumentOutOfRangeException()
+    {
+        var schedule = new ValiSchedule();
+        var act = () => schedule.Every(0, TimeUnit.Days);
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("interval");
+    }
+
+    [Fact]
+    public void Every_UnsupportedTimeUnit_ThrowsArgumentOutOfRangeException()
+    {
+        var schedule = new ValiSchedule();
+        var act = () => schedule.Every(1, TimeUnit.Hours);
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("unit");
+    }
+
+    [Fact]
+    public void EndsAfter_ZeroOccurrences_ThrowsArgumentOutOfRangeException()
+    {
+        var schedule = new ValiSchedule();
+        var act = () => schedule.EndsAfter(0);
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("occurrences");
+    }
+
+    [Fact]
+    public void OnDayOfMonth_OutOfRange_ThrowsArgumentOutOfRangeException()
+    {
+        var schedule = new ValiSchedule();
+        var act = () => schedule.OnDayOfMonth(32);
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("day");
+    }
+
+    [Fact]
+    public void Build_ValidConfiguration_ReturnsSameInstanceWithoutThrowing()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1));
+
+        var built = schedule.Build();
+
+        built.Should().BeSameAs(schedule);
+    }
+
+    // ── Explicit IValiSchedule interface forwarding ───────────────────────────
+
+    [Fact]
+    public void IValiSchedule_ExplicitInterfaceMembers_DelegateToTypedImplementation()
+    {
+        IValiSchedule schedule = new ValiSchedule();
+
+        schedule = schedule
+            .Every(1, TimeUnit.Weeks)
+            .On(DayOfWeek.Monday)
+            .At(new TimeOnly(9, 0))
+            .StartingFrom(new DateTime(2025, 1, 6)) // a Monday
+            .EndsAfter(5)
+            .EndsOn(new DateTime(2025, 12, 31))
+            .WithCustomPredicate(d => true)
+            .SkipWeekends()
+            .SkipHolidays(new FixedDateHolidayProvider())
+            .Build();
+
+        schedule.Should().NotBeNull();
+        schedule.OccursOn(new DateTime(2025, 1, 6)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IValiSchedule_ExplicitOnDayOfMonth_DelegatesToTypedImplementation()
+    {
+        IValiSchedule schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Months)
+            .StartingFrom(new DateTime(2025, 1, 15));
+
+        schedule = schedule.OnDayOfMonth(15);
+
+        schedule.OccursOn(new DateTime(2025, 2, 15)).Should().BeTrue();
+    }
+
+    // ── NextOccurrence: full-window exhaustion returns null ──────────────────
+
+    [Fact]
+    public void NextOccurrence_PredicateNeverMatches_ExhaustsWindow_ReturnsNull()
+    {
+        var schedule = new ValiSchedule()
+            .WithCustomPredicate(_ => false)
+            .StartingFrom(new DateTime(2025, 1, 1));
+
+        var result = schedule.NextOccurrence(new DateTime(2025, 1, 1));
+
+        result.Should().BeNull();
+    }
+
+    // ── PreviousOccurrence: AfterOccurrences budget already exhausted before reference ──
+
+    [Fact]
+    public void PreviousOccurrence_BudgetExhaustedBeforeReference_ReturnsLastValidDayBeforeReference()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .EndsAfter(1);
+
+        var result = schedule.PreviousOccurrence(new DateTime(2025, 1, 5));
+
+        result.Should().Be(new DateTime(2025, 1, 4));
+    }
+
+    [Fact]
+    public void PreviousOccurrence_BudgetExhaustedAndBackwardScanCrossesStartDate_ReturnsNull()
+    {
+        // Jan 1 is a configured holiday with Skip strategy — the only candidate the backward
+        // scan can reach is dropped, and the next step backward crosses StartingFrom, so the
+        // search returns null instead of a synthetic replacement.
+        var holidayProvider = new FixedDateHolidayProvider(new DateTime(2025, 1, 1));
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .SkipHolidays(holidayProvider, HolidaySkipStrategy.Skip)
+            .EndsAfter(1);
+
+        var result = schedule.PreviousOccurrence(new DateTime(2025, 1, 2));
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void PreviousOccurrence_NoMatchWithinScanWindow_ReturnsNull()
+    {
+        // Predicate never matches; StartingFrom is far enough back that the backward scan
+        // exhausts its MaxScanDays budget before ever crossing the start date.
+        var schedule = new ValiSchedule()
+            .WithCustomPredicate(_ => false)
+            .StartingFrom(new DateTime(2000, 1, 1));
+
+        var result = schedule.PreviousOccurrence(new DateTime(2025, 1, 1));
+
+        result.Should().BeNull();
+    }
+
+    // ── OccurrencesInRange: argument validation and AfterOccurrences pre-scan offset ──
+
+    [Fact]
+    public void OccurrencesInRange_FromAfterTo_ThrowsArgumentException()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1));
+
+        var act = () => schedule.OccurrencesInRange(new DateTime(2025, 1, 10), new DateTime(2025, 1, 1)).ToList();
+
+        act.Should().Throw<ArgumentException>().WithParameterName("from");
+    }
+
+    [Fact]
+    public void OccurrencesInRange_AfterOccurrences_WithRangeStartAfterStartDate_AppliesPreScanOffset()
+    {
+        // Budget of 5; range starts on Jan 3, so Jan 1/Jan 2 are pre-counted (2 already consumed).
+        // Remaining budget = 3, so Jan 3, Jan 4, Jan 5 are returned; Jan 6 would exceed the budget.
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Days)
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .EndsAfter(5);
+
+        var results = schedule.OccurrencesInRange(new DateTime(2025, 1, 3), new DateTime(2025, 1, 10)).ToList();
+
+        results.Should().BeEquivalentTo(
+        [
+            new DateTime(2025, 1, 3),
+            new DateTime(2025, 1, 4),
+            new DateTime(2025, 1, 5)
+        ], options => options.WithStrictOrdering());
+    }
+
+    // ── Yearly recurrence: Feb 29 start, non-leap-year fallback to Feb 28 ─────
+
+    [Fact]
+    public void YearlyRecurrence_Feb29Start_NonLeapYear_FallsBackToFeb28()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Years)
+            .StartingFrom(new DateTime(2024, 2, 29)); // 2024 is a leap year
+
+        schedule.OccursOn(new DateTime(2025, 2, 28)).Should().BeTrue();  // 2025 is not a leap year
+        schedule.OccursOn(new DateTime(2025, 2, 27)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void YearlyRecurrence_Feb29Start_LeapYear_MatchesRealAnniversary()
+    {
+        var schedule = new ValiSchedule()
+            .Every(1, TimeUnit.Years)
+            .StartingFrom(new DateTime(2024, 2, 29));
+
+        schedule.OccursOn(new DateTime(2028, 2, 29)).Should().BeTrue(); // 2028 is a leap year
+    }
 }
