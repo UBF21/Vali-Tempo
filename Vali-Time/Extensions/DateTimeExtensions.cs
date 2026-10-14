@@ -169,7 +169,7 @@ public static class DateTimeExtensions
     /// </summary>
     /// <remarks>
     /// When <paramref name="weekStart"/> is <see cref="WeekStart.Monday"/>,
-    /// <see cref="ISOWeek.GetWeekOfYear"/> is used, which follows ISO 8601.
+    /// <see cref="ISOWeek.GetWeekOfYear(DateTime)"/> is used, which follows ISO 8601.
     /// When <paramref name="weekStart"/> is <see cref="WeekStart.Sunday"/>, the
     /// Gregorian calendar with <see cref="CalendarWeekRule.FirstDay"/> is used instead.
     /// </remarks>

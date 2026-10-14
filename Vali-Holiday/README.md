@@ -15,7 +15,7 @@
 - **Movable holidays** — Easter-based dates (Good Friday, Corpus Christi, etc.) computed per year
 - **IHolidayProvider** — implement your own provider for unsupported countries or regional calendars
 - Registered as a **singleton** via `AddValiHoliday()`
-- Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
+- Compiled targets: `net8.0` · `net9.0` · `net10.0` — compatible with **.NET 6+** via NuGet backward compatibility
 
 ## Installation
 

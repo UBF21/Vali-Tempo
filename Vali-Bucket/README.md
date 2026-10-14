@@ -8,7 +8,7 @@
 - **`GetBucketFor`** — O(1) lookup of the bucket a single timestamp belongs to, without bucketizing a whole collection — useful in a streaming hot path
 - **Alignment anchor** — buckets from separate calls with the same size and anchor are always comparable, because bucket boundaries are computed from the anchor, not from the data
 - Reuses `Vali-Range`'s `DateRange` for each bucket's time span
-- Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
+- Compiled targets: `net8.0` · `net9.0` · `net10.0` — compatible with **.NET 6+** via NuGet backward compatibility
 
 ## Installation
 

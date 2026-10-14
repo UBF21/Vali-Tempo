@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <RootNamespace>Vali_Age</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -11,7 +11,7 @@
         <PackageId>Vali-Age</PackageId>
         <Title>Vali-Age</Title>
         <Product>Vali-Age</Product>
-        <Version>1.0.0</Version>
+        <Version>1.1.0</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
         <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
 
@@ -37,7 +37,9 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-Age is a .NET library for age and relative time calculations. Provides exact age breakdowns (years, months, days), birthday detection, next birthday calculation, relative time formatting ("3 days ago", "in 2 weeks"), and age validation against thresholds.</Description>
-        <PackageReleaseNotes>Vali-Age v1.0.0 — initial release: ValiAge with Years, Exact, Format, Relative, IsAtLeast, IsBirthday, NextBirthday, DaysUntilBirthday, and AgeResult struct.</PackageReleaseNotes>
+        <PackageReleaseNotes>Vali-Age v1.1.0 — add Humanize relative-time formatting (es/en) via HumanizeEngine. Updated Vali-Time dependency to 1.1.0. No breaking changes.
+
+            Vali-Age v1.0.0 — initial release: ValiAge with Years, Exact, Format, Relative, IsAtLeast, IsBirthday, NextBirthday, DaysUntilBirthday, and AgeResult struct.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -49,7 +51,7 @@
         <!-- ponytail: ProjectReference instead of the published PackageReference so the new
              HumanizeCulture enum (added to Vali-Time source in this change) is visible at build
              time; the NuGet package "Vali-Time 1.0.1" on nuget.org predates it. Revert to
-             PackageReference once Vali-Time is republished with HumanizeCulture included. -->
+             PackageReference Version="1.1.0" once Vali-Time is republished with HumanizeCulture included. -->
         <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
     </ItemGroup>
 

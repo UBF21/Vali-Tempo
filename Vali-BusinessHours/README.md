@@ -8,7 +8,7 @@
 - **Midnight-crossing aware** — a zone's business hours can map to the calendar day before or after the reference date once projected to the other zone; the overlap search checks all three candidate days
 - **Workday-aware variant** — `OverlapOnWorkday` short-circuits to "no overlap" when the reference date isn't a workday in either zone's own `Vali-Calendar`
 - Composes `Vali-Calendar` and `Vali-TimeZone` without coupling either package to the other
-- Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
+- Compiled targets: `net8.0` · `net9.0` · `net10.0` — compatible with **.NET 6+** via NuGet backward compatibility
 
 ## Installation
 

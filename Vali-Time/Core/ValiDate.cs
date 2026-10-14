@@ -300,7 +300,7 @@ public class ValiDate : IValiDate
     /// </summary>
     /// <remarks>
     /// When <paramref name="weekStart"/> (or <see cref="_defaultWeekStart"/>) is
-    /// <see cref="WeekStart.Monday"/>, <see cref="ISOWeek.GetWeekOfYear"/> is used, which
+    /// <see cref="WeekStart.Monday"/>, <see cref="ISOWeek.GetWeekOfYear(DateTime)"/> is used, which
     /// follows ISO 8601. When the week starts on <see cref="WeekStart.Sunday"/>, the
     /// Gregorian calendar with <see cref="CalendarWeekRule.FirstDay"/> and
     /// <see cref="DayOfWeek.Sunday"/> is used instead.
