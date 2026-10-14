@@ -33,8 +33,6 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-Bucket groups timestamps into fixed-size time buckets for reporting and analytics — bucketize raw timestamps, aggregate numeric values per bucket (Sum/Average/Count/Min/Max), or look up the bucket a single timestamp falls into.</Description>
         <PackageReleaseNotes>Vali-Bucket v1.0.0 — initial release: Bucketize, Aggregate&lt;T&gt;, GetBucketFor.</PackageReleaseNotes>

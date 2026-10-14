@@ -33,8 +33,6 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-Age is a .NET library for age and relative time calculations. Provides exact age breakdowns (years, months, days), birthday detection, next birthday calculation, relative time formatting ("3 days ago", "in 2 weeks"), and age validation against thresholds.</Description>
         <PackageReleaseNotes>Vali-Age v1.1.0 — add Humanize relative-time formatting (es/en) via HumanizeEngine. Updated Vali-Time dependency to 1.1.0. No breaking changes.

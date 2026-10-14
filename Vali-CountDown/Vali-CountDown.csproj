@@ -33,8 +33,6 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-CountDown is a .NET library for deadline and countdown tracking. Provides expiry detection, time-until/elapsed calculations, progress percentage, time breakdowns, and human-readable countdown formatting.</Description>
         <PackageReleaseNotes>Vali-CountDown v1.0.1 — add net10.0 target. No public API change.

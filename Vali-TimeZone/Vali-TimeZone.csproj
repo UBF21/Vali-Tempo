@@ -33,8 +33,6 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-TimeZone is a .NET library for timezone-aware date and time operations. Provides conversion between timezones, UTC offset calculations, DST detection, local/UTC interoperability, and a curated list of IANA-compatible timezone identifiers for 30+ countries.</Description>
         <PackageReleaseNotes>Vali-TimeZone v1.1.0 — ValiZoneInfo is now a record (structural equality), its custom ToString() preserved unchanged. Add net10.0 target. No breaking changes.

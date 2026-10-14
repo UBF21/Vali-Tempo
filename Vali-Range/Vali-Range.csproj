@@ -33,8 +33,6 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-Range is a lightweight .NET library for working with date ranges. It provides a precise and flexible API for creating, querying, and iterating date ranges, including overlap detection, intersections, unions, and calendar-based splits.</Description>
         <PackageReleaseNotes>Vali-Range v1.1.0 — add Subtract for set-theoretic range difference. Add net10.0 target. No breaking changes.
