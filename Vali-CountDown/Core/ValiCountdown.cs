@@ -24,13 +24,6 @@ public class ValiCountdown : IValiCountdown
         _clock = clock ?? SystemClock.Instance;
     }
 
-    private const decimal TicksPerMillisecond = 10_000m;
-    private const decimal TicksPerSecond      = TicksPerMillisecond * 1_000m;
-    private const decimal TicksPerMinute      = TicksPerSecond * 60m;
-    private const decimal TicksPerHour        = TicksPerMinute * 60m;
-    private const decimal TicksPerDay         = TicksPerHour * 24m;
-    private const decimal TicksPerWeek        = TicksPerDay * 7m;
-
     // === EXPIRY ===
 
     /// <summary>
@@ -224,14 +217,14 @@ public class ValiCountdown : IValiCountdown
 
     private static decimal ConvertTicks(decimal ticks, TimeUnit unit) => unit switch
     {
-        TimeUnit.Milliseconds => ticks / TicksPerMillisecond,
-        TimeUnit.Seconds      => ticks / TicksPerSecond,
-        TimeUnit.Minutes      => ticks / TicksPerMinute,
-        TimeUnit.Hours        => ticks / TicksPerHour,
-        TimeUnit.Days         => ticks / TicksPerDay,
-        TimeUnit.Weeks        => ticks / TicksPerWeek,
-        TimeUnit.Months       => ticks / TicksPerDay / Constants.DaysInMonthAvg,
-        TimeUnit.Years        => ticks / TicksPerDay / Constants.DaysInYearAvg,
+        TimeUnit.Milliseconds => ticks / TimeSpan.TicksPerMillisecond,
+        TimeUnit.Seconds      => ticks / TimeSpan.TicksPerSecond,
+        TimeUnit.Minutes      => ticks / TimeSpan.TicksPerMinute,
+        TimeUnit.Hours        => ticks / TimeSpan.TicksPerHour,
+        TimeUnit.Days         => ticks / TimeSpan.TicksPerDay,
+        TimeUnit.Weeks        => ticks / (TimeSpan.TicksPerDay * 7m),
+        TimeUnit.Months       => ticks / TimeSpan.TicksPerDay / Constants.DaysInMonthAvg,
+        TimeUnit.Years        => ticks / TimeSpan.TicksPerDay / Constants.DaysInYearAvg,
         _                     => throw new ArgumentOutOfRangeException(nameof(unit), unit, null)
     };
 }

@@ -380,7 +380,10 @@ public sealed partial class CronSchedule : IValiSchedule
 
         if (previous.HasValue)
         {
-            var next = NextOccurrence(previous.Value.AddTicks(1));
+            // ForwardMatches/TimesAscending resolve at minute granularity (see CronScheduleScan.cs),
+            // so AddTicks(1) never escapes the current slot -- NextOccurrence would just re-yield
+            // `previous` itself. AddMinutes(1) is the real step size this engine can resolve.
+            var next = NextOccurrence(previous.Value.AddMinutes(1));
             if (next.HasValue)
                 yield return new DateRange(previous.Value, next.Value.AddTicks(-1));
         }
