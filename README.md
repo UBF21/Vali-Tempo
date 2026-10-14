@@ -1,5 +1,7 @@
 # Vali-Tempo
 
+**English** | [Español](README.es.md)
+
 [![NuGet](https://img.shields.io/nuget/v/Vali-Tempo.svg)](https://www.nuget.org/packages/Vali-Tempo)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-6%20%7C%207%20%7C%208%20%7C%209%20%7C%2010-purple.svg)](https://dotnet.microsoft.com)
