@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## Vali-Tempo — 1.1.1
+
+### Changed
+- Replaced the temporary `Vali-BusinessHours`/`Vali-Bucket` `ProjectReference` with a pinned `PackageReference` now that both are published. Bumped every other module dependency to its latest published version. No code change.
+
+---
+
 ## Vali-Time — 1.1.0
 
 ### Added
