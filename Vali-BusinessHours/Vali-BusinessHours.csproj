@@ -33,8 +33,6 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-BusinessHours resolves the simultaneous business-hours overlap window between two IANA timezones for a given reference date, with DST-correct offsets and midnight-crossing handling. Composes Vali-Calendar and Vali-TimeZone without coupling either of them to the other.</Description>
         <PackageReleaseNotes>Vali-BusinessHours v1.0.0 — initial release: pairwise cross-timezone business-hours overlap (Overlap), workday-aware overlap (OverlapOnWorkday).</PackageReleaseNotes>

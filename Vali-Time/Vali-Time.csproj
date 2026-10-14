@@ -33,8 +33,6 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>
             Vali-Time is a lightweight .NET library for converting and managing time units, including milliseconds, seconds, minutes, hours, days, weeks, months, and years. It offers a precise and flexible API for time conversions, summations, breakdowns, and human-readable formatting. ValiDate extends the library with date arithmetic, period boundaries, validations, and a comprehensive Quarter API. With support for full precision calculations, optional rounding, cultural formatting, and seamless dependency injection integration, Vali-Time is ideal for any .NET application requiring accurate time and date handling.

@@ -33,8 +33,6 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-Duration is a lightweight .NET library providing a high-precision decimal-based duration value type. Supports arithmetic operators (+, -, *, /), comparison operators, implicit conversions to/from TimeSpan, unit-based factories and conversions, and human-readable formatting.</Description>
         <PackageReleaseNotes>Vali-Duration v1.1.0 — add IParsable&lt;ValiDuration&gt;/IFormattable via the shared DurationStringParser. Updated Vali-Time dependency to 1.1.0. No breaking changes.

@@ -32,8 +32,6 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EmbedUntrackedSources>true</EmbedUntrackedSources>
         <DebugType>embedded</DebugType>
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-Tempo is the all-in-one meta-package for the Vali-Tempo ecosystem. Installing it gives you every module — Vali-Time, Vali-Range, Vali-Calendar, Vali-CountDown, Vali-Age, Vali-Holiday, Vali-TimeZone, Vali-Schedule, Vali-Duration, Vali-BusinessHours, and Vali-Bucket — with a single NuGet reference and a single DI registration call.</Description>
         <PackageReleaseNotes>Vali-Tempo v1.1.0 — add Vali-BusinessHours and Vali-Bucket to the meta-package registration (temporarily via ProjectReference until both are published; see ponytail comment below). No breaking changes.
