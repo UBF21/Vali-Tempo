@@ -12,7 +12,7 @@
 dotnet add package Vali-Tempo
 ```
 
-> Compiled targets: `net8.0` · `net9.0`. Compatible with **.NET 6 and .NET 7** via NuGet backward compatibility — no separate build needed.
+> Compiled targets: `net8.0` · `net9.0` · `net10.0`. Compatible with **.NET 6 and .NET 7** via NuGet backward compatibility — no separate build needed.
 
 ## What's Included
 

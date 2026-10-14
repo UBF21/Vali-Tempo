@@ -12,7 +12,7 @@
 - **Format** — human-readable string such as `"5d 3h 20m"` or `"Expired"`
 - **IsWithin** — returns `true` if the deadline is within a given threshold (e.g., within 1 hour)
 - **IsStarted** — returns `true` if a given point in time is in the past or present (elapsed time > 0)
-- Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
+- Compiled targets: `net8.0` · `net9.0` · `net10.0` — compatible with **.NET 6+** via NuGet backward compatibility
 - Registered as a **singleton** via `AddValiCountdown()`
 
 ## Installation

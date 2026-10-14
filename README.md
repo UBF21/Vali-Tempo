@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/Vali-Tempo.svg)](https://www.nuget.org/packages/Vali-Tempo)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-6%20%7C%207%20%7C%208%20%7C%209-purple.svg)](https://dotnet.microsoft.com)
+[![.NET](https://img.shields.io/badge/.NET-6%20%7C%207%20%7C%208%20%7C%209%20%7C%2010-purple.svg)](https://dotnet.microsoft.com)
 
 > A modular .NET ecosystem of utilities for time, dates, timezones, calendars, and more — built for precision and composability.
 
@@ -142,30 +142,30 @@ Vali-Tempo (meta-package)
 
 ## Compatibility
 
-All packages in the Vali-Tempo ecosystem are compiled against **net8.0** and **net9.0**.
+All packages in the Vali-Tempo ecosystem are compiled against **net8.0**, **net9.0** and **net10.0**.
 Thanks to NuGet's built-in backward compatibility resolution, they are also fully usable
 from **any project targeting .NET 6 or .NET 7** — NuGet automatically selects the closest
 available target framework without requiring a separate build.
 
-| Package | .NET 6 | .NET 7 | .NET 8 | .NET 9 |
-|---------|:------:|:------:|:------:|:------:|
-| Vali-Time | ✅ | ✅ | ✅ | ✅ |
-| Vali-Range | ✅ | ✅ | ✅ | ✅ |
-| Vali-Calendar | ✅ | ✅ | ✅ | ✅ |
-| Vali-Duration | ✅ | ✅ | ✅ | ✅ |
-| Vali-CountDown | ✅ | ✅ | ✅ | ✅ |
-| Vali-Age | ✅ | ✅ | ✅ | ✅ |
-| Vali-Schedule | ✅ | ✅ | ✅ | ✅ |
-| Vali-Holiday | ✅ | ✅ | ✅ | ✅ |
-| Vali-TimeZone | ✅ | ✅ | ✅ | ✅ |
-| Vali-BusinessHours | ✅ | ✅ | ✅ | ✅ |
-| Vali-Bucket | ✅ | ✅ | ✅ | ✅ |
-| Vali-Tempo | ✅ | ✅ | ✅ | ✅ |
+| Package | .NET 6 | .NET 7 | .NET 8 | .NET 9 | .NET 10 |
+|---------|:------:|:------:|:------:|:------:|:-------:|
+| Vali-Time | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-Range | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-Calendar | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-Duration | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-CountDown | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-Age | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-Schedule | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-Holiday | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-TimeZone | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-BusinessHours | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-Bucket | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Vali-Tempo | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 > **Note:** .NET 6 and .NET 7 reached end-of-life in November 2024 and May 2024 respectively.
 > While these runtimes are no longer receiving security updates from Microsoft, the packages
 > remain compatible for teams that have not yet migrated. For new projects, .NET 8 (LTS) or
-> .NET 9 is strongly recommended.
+> .NET 10 (LTS) is strongly recommended.
 
 ### .NET Version Reference
 
@@ -175,6 +175,7 @@ available target framework without requiring a separate build.
 | .NET 7 | STS | May 2024 (EOL) |
 | .NET 8 | LTS | November 2026 ✅ |
 | .NET 9 | STS | May 2026 ✅ |
+| .NET 10 | LTS | November 2028 ✅ |
 
 ## Individual Package READMEs
 

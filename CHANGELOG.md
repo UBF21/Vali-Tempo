@@ -7,38 +7,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added — Vali-Bucket (new package)
-- `IValiBucket.Bucketize`/`Aggregate<T>`/`GetBucketFor` — fixed-size, anchor-aligned time-series bucketing for reporting/analytics, reusing `Vali-Range`'s `DateRange`
+---
 
-### Added — Vali-BusinessHours (new package)
-- `IValiBusinessHours.Overlap`/`OverlapOnWorkday` — cross-timezone business-hours overlap, DST-correct and midnight-crossing aware, composing `Vali-Calendar` and `Vali-TimeZone` without coupling them to each other
+## Vali-Time — 1.1.0
 
-### Added — Vali-Holiday
+### Added
+- `DurationStringParser` — public parser extracted from `ValiTime`'s duration-string grammar, reused by `Vali-Duration`'s `IParsable<ValiDuration>`
+- `HumanizeCulture` enum (`En`/`Es`), reused by `Vali-Age`'s `Humanize()`
+- `Constants.IsClampedMonthEnd(originalDay, candidate)` — shared month-end-clamp detection, reused by `ValiAge.Exact()`
+
+### Changed
+- `StartOfWeek`/`IsWeekend`/`IsWeekday` consolidated into `DateTimeExtensions` as the single source of truth (previously duplicated across packages)
+
+## Vali-Range — 1.1.0
+
+### Added
+- `IValiRange.Subtract(DateRange a, DateRange b)` — set-theoretic difference A \ B, completing the Intersection/Union/Subtract trio
+
+### Changed
+- Updated `Vali-Time` dependency to 1.1.0
+
+## Vali-CountDown — 1.0.1
+
+### Changed
+- Updated `Vali-Time` dependency to 1.1.0 (internal dedupe of duplicated date/constant logic, no public API change)
+
+## Vali-Holiday — 1.1.0
+
+### Added
 - `IValiHoliday.IsHoliday(DateTime, params string[])` (ANY) and `IsHolidayInAll(DateTime, params string[])` (ALL) multi-country overloads
 - `HolidayInfo.TryToDateTime(int year, out DateTime result)` — safe `(Month, Day, year)` conversion that returns `false` instead of throwing for Feb 29 in a non-leap year
 - `ObservedRule` enum and `IHolidayProvider.GetObservedDate(HolidayInfo, int)` / `IValiHoliday.GetObservedHoliday(DateTime, string)` — official weekend-shift ("observed"/"substitute" day) resolution, implemented for USA (Saturday→previous Friday, Sunday→following Monday) and United Kingdom (weekend→next available weekday, with coordinated Christmas Day/Boxing Day collision handling). No other provider declares a rule in this release.
 
-### Changed — Vali-Holiday
+### Changed
 - `IsHoliday(DateTime, params string[])` and `IsHolidayInAll(DateTime, params string[])` now throw `ArgumentNullException` instead of `NullReferenceException` when called with a `null` array
 - `BaseHolidayProvider.GetHolidaysInRange` and `ValiHoliday.GetNextHolidayWithYear`/`GetPreviousHolidayWithYear` now share a single Feb-29/non-leap-year guard (via `HolidayInfo.TryToDateTime`) instead of three independently-written checks
 - `HolidayInfo` is now a `sealed record` (previously a `sealed class`) — adds structural equality; `ToString()` format is unchanged. Note: `Names` is still compared by reference, since records do not deep-compare collections
 - Moved `UsaHolidayProvider.cs`/`CanadaHolidayProvider.cs` to `Providers/NorthAmerica/` and `AustraliaHolidayProvider.cs` to `Providers/Oceania/`, matching their already-declared namespaces (no namespace or behavior change)
+- Updated `Vali-Time` dependency to 1.1.0
 
-### Added — Vali-Range
-- `IValiRange.Subtract(DateRange a, DateRange b)` — set-theoretic difference A \ B, completing the Intersection/Union/Subtract trio
+## Vali-TimeZone — 1.1.0
 
-### Added — Vali-Schedule
+### Changed
+- `ValiZoneInfo` is now a `sealed record` (previously a `sealed class`) — adds structural equality; `ToString()` format is unchanged
+- Updated `Vali-Time` dependency to 1.1.0
+
+## Vali-Age — 1.1.0
+
+### Added
+- `Humanize()` relative-time formatting (es/en) via `HumanizeEngine`, built on `Vali-Time`'s `HumanizeCulture`
+
+### Changed
+- Updated `Vali-Time` dependency to 1.1.0
+
+## Vali-Duration — 1.1.0
+
+### Added
+- `IParsable<ValiDuration>`/`IFormattable` via the shared `DurationStringParser`
+
+### Changed
+- Updated `Vali-Time` dependency to 1.1.0
+
+## Vali-Calendar — 1.0.1
+
+### Changed
+- Updated `Vali-Time` dependency to 1.1.0 and `Vali-Holiday` dependency to 1.1.0 (no public API change)
+
+## Vali-Schedule — 1.1.0
+
+### Added
 - `IValiSchedule.SkipWeekends()` and `SkipHolidays(IHolidayProvider, HolidaySkipStrategy)` to exclude weekend/holiday occurrences, resolved via `NextWorkday`/`PreviousWorkday`/`Skip`
 - `HolidaySkipStrategy` enum
 - `IValiSchedule.OccurrencePeriods(DateTime from, DateTime to)` — pairs consecutive occurrences into `Vali_Range.Models.DateRange` periods
-
-### Added — Vali-Schedule (cron)
 - `Vali_Schedule.Cron.CronSchedule` — zero-dependency 5-field cron expression support (`Parse`/`TryParse`), implementing `IValiSchedule`
 - `Vali_Schedule.Cron.CronFormatException` — field/token-attributed parse errors
 
-### Changed — Vali-Schedule
+### Changed
 - New cross-package dependencies: `Vali-Schedule` now references `Vali-Holiday` and `Vali-Range` (`PackageReference`, same pattern already used by `Vali-Calendar`). Only `SkipHolidays()` requires a concrete `IHolidayProvider`; `SkipWeekends()` has no such requirement.
+- Updated `Vali-Time` dependency to 1.1.0
 - Internal cleanup (no observable behavior change): extracted `OccurrenceSkipResolver` (SkipWeekends/SkipHolidays resolution) out of `ValiSchedule`; deduplicated the resolve→budget→dedup→emit sequence shared by `Occurrences`/`OccurrencesInRange` into a single `TryResolveEmission` helper; unified the "Weekly without days" validation between `Build()` and direct query calls into `EnsureWeeklyConfigured()`; removed the dead, `[Obsolete]`, unused `CountOccurrencesBetween`; named the `OccurrencesInRange` scan ceiling as `MaxRangeScanDays`
+
+## Vali-Bucket — 1.0.0 (new package)
+
+### Added
+- `IValiBucket.Bucketize`/`Aggregate<T>`/`GetBucketFor` — fixed-size, anchor-aligned time-series bucketing for reporting/analytics, reusing `Vali-Range`'s `DateRange`
+
+## Vali-BusinessHours — 1.0.0 (new package)
+
+### Added
+- `IValiBusinessHours.Overlap`/`OverlapOnWorkday` — cross-timezone business-hours overlap, DST-correct and midnight-crossing aware, composing `Vali-Calendar` and `Vali-TimeZone` without coupling them to each other
+
+## Vali-Tempo — 1.1.0
+
+### Added
+- Registers `Vali-BusinessHours` and `Vali-Bucket` in `AddValiTempo()`
+
+### Changed
+- Updated every module dependency to its latest version
+
+---
 
 ## [1.0.0] - 2025-07-01
 

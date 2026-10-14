@@ -13,7 +13,7 @@
 - **PreviousBirthday** — returns the `DateTime` of the most recent past birthday
 - **DaysUntilBirthday** — integer count of days until the next birthday
 - `AgeResult.ToString()` uses correct singular/plural: `"1 year"` vs `"2 years"`, `"1 month"` vs `"4 months"`, etc.
-- Compiled targets: `net8.0` · `net9.0` — compatible with **.NET 6+** via NuGet backward compatibility
+- Compiled targets: `net8.0` · `net9.0` · `net10.0` — compatible with **.NET 6+** via NuGet backward compatibility
 - Registered as a **singleton** via `AddValiAge()`
 
 ## Installation

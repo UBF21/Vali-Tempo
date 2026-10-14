@@ -125,6 +125,7 @@ Open an issue with the `enhancement` label. Describe:
 - **No magic numbers**: Use `Constants.cs` or named constants — never inline numeric literals for time factors
 - **XML docs**: Public API members must have `<summary>` documentation
 - **Formatting**: Follow existing brace style and indentation (4 spaces)
+- **Cross-package references**: every package that depends on another Vali-Tempo package must use a pinned `PackageReference`, never a `ProjectReference` — even while the dependency hasn't been published yet. A feature that spans two packages ships as a sequenced rollout: publish and confirm the dependency on NuGet.org first, then bump the dependent's pin to that live version in a follow-up change. `main` is expected to build against already-published versions at all times; see "Release Process" below for how CI/release.yml enforces the actual publish order.
 
 ---
 
@@ -205,6 +206,23 @@ Before opening a PR, make sure:
 - [ ] PR description explains the *why*, not just the *what*
 
 ---
+
+## Release Process
+
+`main` is branch-protected: every change lands via PR, and the `CI OK` status check (build + test
+on net8.0/net9.0/net10.0 across Linux/Windows + a per-library coverage gate + pack) must pass
+before merging.
+
+Publishing to NuGet.org is manual (`.github/workflows/release.yml`, `workflow_dispatch`) and
+requires approval of the `nuget` environment plus the `NUGET_API_KEY` secret. A release that spans
+multiple packages publishes in dependency-ordered waves, waiting for NuGet.org to index each wave
+before the next one's `PackageReference` pins can resolve:
+
+1. **Vali-Time** (the foundation, no dependency of its own)
+2. **Vali-Range, Vali-CountDown, Vali-Holiday, Vali-TimeZone, Vali-Age, Vali-Duration** (depend only on Vali-Time)
+3. **Vali-Calendar, Vali-Schedule, Vali-Bucket** (depend on Vali-Holiday and/or Vali-Range)
+4. **Vali-BusinessHours** (depends on Vali-Calendar and Vali-TimeZone)
+5. **Vali-Tempo** (the meta-package; depends on everything above)
 
 ## License
 
