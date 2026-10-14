@@ -1,5 +1,7 @@
 # Changelog
 
+**English** | [Español](CHANGELOG.es.md)
+
 All notable changes to the Vali-Tempo ecosystem will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
