@@ -1,0 +1,158 @@
+name: Release
+
+# Manual only. By default it runs the full CI (net8.0/net9.0/net10.0 on Linux and Windows) and
+# uploads the packed NuGet packages as a workflow artifact; it publishes NOTHING. Publishing needs
+# BOTH `publish: true` and an approval of the `nuget` environment (Settings > Environments > nuget
+# > Required reviewers), and uses the NUGET_API_KEY secret of that environment.
+#
+# Publication order — 5 waves, matching the real dependency graph (every cross-package reference
+# is a PackageReference pinned to the version being released in THIS run, never a ProjectReference
+# -- see CONTRIBUTING.md). Each wave waits until NuGet.org has indexed every package the next wave
+# needs before it starts, because the next wave's `dotnet restore` depends on it being live:
+#   Wave 1: Vali-Time alone (the foundation, no Vali-* dependency of its own).
+#   Wave 2: Vali-Range, Vali-CountDown, Vali-Holiday, Vali-TimeZone, Vali-Age, Vali-Duration
+#           (all depend only on Vali-Time).
+#   Wave 3: Vali-Calendar, Vali-Schedule, Vali-Bucket
+#           (depend on Vali-Holiday and/or Vali-Range from wave 2, plus Vali-Time).
+#   Wave 4: Vali-BusinessHours (depends on Vali-Calendar from wave 3 and Vali-TimeZone from wave 2).
+#   Wave 5: Vali-Tempo (the meta-package; depends on every other package).
+on:
+  workflow_dispatch:
+    inputs:
+      version-suffix:
+        description: Prerelease label appended to every package version, for example rc.1 (empty = versions from the csproj files)
+        type: string
+        required: false
+        default: ''
+      publish:
+        description: Publish the packages to NuGet.org after the approval of the nuget environment
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    name: CI (build, test on net8.0/net9.0/net10.0, coverage gate, pack)
+    uses: ./.github/workflows/ci.yml
+    with:
+      version-suffix: ${{ inputs.version-suffix }}
+
+  publish:
+    name: Publish to NuGet (needs approval)
+    needs: ci
+    if: ${{ inputs.publish }}
+    runs-on: ubuntu-latest
+    environment: nuget
+    env:
+      NUGET_SOURCE: https://api.nuget.org/v3/index.json
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nuget-packages
+          path: artifacts
+
+      - name: Every package must contain net8.0, net9.0 and net10.0
+        run: |
+          for package in artifacts/*.nupkg; do
+            for tfm in net8.0 net9.0 net10.0; do
+              unzip -l "$package" | grep -q "lib/$tfm/" || { echo "::error::$package has no lib/$tfm"; exit 1; }
+            done
+          done
+
+      - name: Check NUGET_API_KEY is configured
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -z "$NUGET_API_KEY" ]; then
+            echo "::error::NUGET_API_KEY is not set in the nuget environment"
+            exit 1
+          fi
+
+      - name: Wait until NuGet.org lists a package at a version
+        # Reusable step logic, invoked inline per wave below (bash function, not a composite action --
+        # this repo has no other workflow that would justify extracting one).
+        run: |
+          cat > /tmp/wait-for-index.sh <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          id_lower="$1"   # e.g. vali-time
+          version="$2"    # e.g. 1.1.0
+          for attempt in $(seq 1 40); do
+            if curl -fsS "https://api.nuget.org/v3-flatcontainer/$id_lower/index.json" | grep -q "\"$version\""; then
+              echo "$id_lower $version is indexed"
+              exit 0
+            fi
+            echo "attempt $attempt/40: $id_lower $version not indexed yet"
+            sleep 30
+          done
+          echo "::error::$id_lower $version was not indexed in time; re-run this job (--skip-duplicate makes it safe)"
+          exit 1
+          SH
+          chmod +x /tmp/wait-for-index.sh
+
+      # ---- Wave 1: Vali-Time alone ----
+      - name: 'Wave 1: push Vali-Time'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push artifacts/Vali-Time.[0-9]*.nupkg --source "$NUGET_SOURCE" --api-key "$NUGET_API_KEY" --skip-duplicate
+
+      - name: 'Wave 1: wait for Vali-Time'
+        run: |
+          version=$(basename artifacts/Vali-Time.[0-9]*.nupkg .nupkg)
+          /tmp/wait-for-index.sh vali-time "${version#Vali-Time.}"
+
+      # ---- Wave 2: Vali-Range, Vali-CountDown, Vali-Holiday, Vali-TimeZone, Vali-Age, Vali-Duration ----
+      - name: 'Wave 2: push Vali-Range, Vali-CountDown, Vali-Holiday, Vali-TimeZone, Vali-Age, Vali-Duration'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          for pattern in 'Vali-Range.[0-9]*' 'Vali-CountDown.[0-9]*' 'Vali-Holiday.[0-9]*' 'Vali-TimeZone.[0-9]*' 'Vali-Age.[0-9]*' 'Vali-Duration.[0-9]*'; do
+            dotnet nuget push artifacts/$pattern.nupkg --source "$NUGET_SOURCE" --api-key "$NUGET_API_KEY" --skip-duplicate
+          done
+
+      - name: 'Wave 2: wait for Vali-Range, Vali-Holiday (the two wave-3 depends on)'
+        run: |
+          range_version=$(basename artifacts/Vali-Range.[0-9]*.nupkg .nupkg)
+          /tmp/wait-for-index.sh vali-range "${range_version#Vali-Range.}"
+          holiday_version=$(basename artifacts/Vali-Holiday.[0-9]*.nupkg .nupkg)
+          /tmp/wait-for-index.sh vali-holiday "${holiday_version#Vali-Holiday.}"
+
+      # ---- Wave 3: Vali-Calendar, Vali-Schedule, Vali-Bucket ----
+      - name: 'Wave 3: push Vali-Calendar, Vali-Schedule, Vali-Bucket'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          for pattern in 'Vali-Calendar.[0-9]*' 'Vali-Schedule.[0-9]*' 'Vali-Bucket.[0-9]*'; do
+            dotnet nuget push artifacts/$pattern.nupkg --source "$NUGET_SOURCE" --api-key "$NUGET_API_KEY" --skip-duplicate
+          done
+
+      - name: 'Wave 3: wait for Vali-Calendar (the one wave 4 depends on)'
+        run: |
+          version=$(basename artifacts/Vali-Calendar.[0-9]*.nupkg .nupkg)
+          /tmp/wait-for-index.sh vali-calendar "${version#Vali-Calendar.}"
+
+      # ---- Wave 4: Vali-BusinessHours ----
+      - name: 'Wave 4: push Vali-BusinessHours'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push artifacts/Vali-BusinessHours.[0-9]*.nupkg --source "$NUGET_SOURCE" --api-key "$NUGET_API_KEY" --skip-duplicate
+
+      - name: 'Wave 4: wait for Vali-BusinessHours'
+        run: |
+          version=$(basename artifacts/Vali-BusinessHours.[0-9]*.nupkg .nupkg)
+          /tmp/wait-for-index.sh vali-businesshours "${version#Vali-BusinessHours.}"
+
+      # ---- Wave 5: Vali-Tempo (the meta-package, depends on everything above) ----
+      - name: 'Wave 5: push Vali-Tempo'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push artifacts/Vali-Tempo.[0-9]*.nupkg --source "$NUGET_SOURCE" --api-key "$NUGET_API_KEY" --skip-duplicate
