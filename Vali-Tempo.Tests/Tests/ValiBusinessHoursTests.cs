@@ -51,6 +51,8 @@ public class ValiBusinessHoursTests
         result.StartInZoneA!.Value.TimeOfDay.Should().Be(new TimeSpan(9, 0, 0));
         // 16:00 UTC in Madrid (UTC+2 summer) is 18:00 local — the end of Madrid's window.
         result.EndInZoneB!.Value.TimeOfDay.Should().Be(new TimeSpan(18, 0, 0));
+        // 14:00 UTC in Madrid (UTC+2 summer) is 16:00 local — the start of the overlap in zone B.
+        result.StartInZoneB!.Value.TimeOfDay.Should().Be(new TimeSpan(16, 0, 0));
     }
 
     [Fact]

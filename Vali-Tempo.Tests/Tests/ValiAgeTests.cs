@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Vali_Age.Core;
 using Vali_Age.Models;
+using Vali_Time.Abstractions;
 using Vali_Time.Enums;
 using Xunit;
 
@@ -9,6 +10,14 @@ namespace Vali_Time.Tests.Tests;
 public class ValiAgeTests
 {
     private readonly ValiAge _vali = new();
+
+    private sealed class FixedClock : IClock
+    {
+        private readonly DateTime _fixed;
+        public FixedClock(DateTime fixedValue) => _fixed = fixedValue;
+        public DateTime Now => _fixed;
+        public DateTime Today => _fixed.Date;
+    }
 
     // ── Years ───────────────────────────────────────────────────────────────
 
@@ -449,5 +458,198 @@ public class ValiAgeTests
         result.Years.Should().Be(0);
         result.Months.Should().Be(0);
         result.Days.Should().Be(28);
+    }
+
+    // ── One-arg overloads (use injected clock's Today/Now) ─────────────────
+
+    [Fact]
+    public void Years_OneArgOverload_UsesClockToday()
+    {
+        var clock = new FixedClock(new DateTime(2025, 6, 15));
+        var vali = new ValiAge(clock);
+        vali.Years(new DateTime(1995, 6, 15)).Should().Be(30);
+    }
+
+    [Fact]
+    public void Exact_OneArgOverload_UsesClockToday()
+    {
+        var clock = new FixedClock(new DateTime(2025, 6, 20));
+        var vali = new ValiAge(clock);
+        AgeResult result = vali.Exact(new DateTime(1990, 3, 15));
+        result.Years.Should().Be(35);
+    }
+
+    [Fact]
+    public void Format_OneArgOverload_UsesClockToday()
+    {
+        var clock = new FixedClock(new DateTime(2025, 6, 20));
+        var vali = new ValiAge(clock);
+        vali.Format(new DateTime(1990, 3, 15)).Should().Be(vali.Exact(new DateTime(1990, 3, 15)).ToString());
+    }
+
+    [Fact]
+    public void Relative_OneArgOverload_UsesClockNow()
+    {
+        var clock = new FixedClock(new DateTime(2025, 6, 15, 12, 0, 0));
+        var vali = new ValiAge(clock);
+        vali.Relative(new DateTime(2025, 6, 14, 12, 0, 0)).Should().Be("1 day ago");
+    }
+
+    [Fact]
+    public void IsAtLeast_OneArgOverload_UsesClockToday()
+    {
+        var clock = new FixedClock(new DateTime(2025, 6, 15));
+        var vali = new ValiAge(clock);
+        vali.IsAtLeast(new DateTime(1995, 6, 15), 18, DatePart.Year).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsBirthday_OneArgOverload_UsesClockToday()
+    {
+        var clock = new FixedClock(new DateTime(2025, 6, 15));
+        var vali = new ValiAge(clock);
+        vali.IsBirthday(new DateTime(1990, 6, 15)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void NextBirthday_OneArgOverload_UsesClockToday()
+    {
+        var clock = new FixedClock(new DateTime(2025, 6, 16));
+        var vali = new ValiAge(clock);
+        vali.NextBirthday(new DateTime(1990, 6, 15)).Year.Should().Be(2026);
+    }
+
+    [Fact]
+    public void PreviousBirthday_OneArgOverload_UsesClockToday()
+    {
+        var clock = new FixedClock(new DateTime(2025, 6, 15));
+        var vali = new ValiAge(clock);
+        vali.PreviousBirthday(new DateTime(1990, 6, 15)).Should().Be(new DateTime(2025, 6, 15));
+    }
+
+    [Fact]
+    public void DaysUntilBirthday_OneArgOverload_UsesClockToday()
+    {
+        var clock = new FixedClock(new DateTime(2025, 6, 15));
+        var vali = new ValiAge(clock);
+        vali.DaysUntilBirthday(new DateTime(1990, 6, 16)).Should().Be(1);
+    }
+
+    // ── Validation guards ────────────────────────────────────────────────
+
+    [Fact]
+    public void Years_BirthDateAfterReference_ThrowsArgumentOutOfRange()
+    {
+        var birthDate = new DateTime(2025, 6, 16);
+        var reference = new DateTime(2025, 6, 15);
+        var act = () => _vali.Years(birthDate, reference);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void Exact_BirthDateAfterReference_ThrowsArgumentOutOfRange()
+    {
+        var birthDate = new DateTime(2025, 6, 16);
+        var reference = new DateTime(2025, 6, 15);
+        var act = () => _vali.Exact(birthDate, reference);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void NextBirthday_ReferenceYear9999_ThrowsArgumentOutOfRange()
+    {
+        var birthDate = new DateTime(1990, 6, 15);
+        var reference = new DateTime(9999, 6, 15);
+        var act = () => _vali.NextBirthday(birthDate, reference);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void IsAtLeast_InvalidDatePart_ThrowsArgumentOutOfRange()
+    {
+        var birthDate = new DateTime(1995, 6, 15);
+        var reference = new DateTime(2025, 6, 15);
+        var act = () => _vali.IsAtLeast(birthDate, 18, (DatePart)999, reference);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    // ── IsAtLeast — Month / Day parts ───────────────────────────────────────
+
+    [Fact]
+    public void IsAtLeast_MonthPart_EnoughMonths_ReturnsTrue()
+    {
+        // born 2024-01-15, reference 2025-06-15 → 17 months old
+        var birthDate = new DateTime(2024, 1, 15);
+        var reference = new DateTime(2025, 6, 15);
+        _vali.IsAtLeast(birthDate, 17, DatePart.Month, reference).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsAtLeast_MonthPart_NotEnoughMonths_ReturnsFalse()
+    {
+        var birthDate = new DateTime(2024, 1, 15);
+        var reference = new DateTime(2025, 6, 15);
+        _vali.IsAtLeast(birthDate, 18, DatePart.Month, reference).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsAtLeast_DayPart_EnoughDays_ReturnsTrue()
+    {
+        var birthDate = new DateTime(2025, 6, 1);
+        var reference = new DateTime(2025, 6, 15);
+        _vali.IsAtLeast(birthDate, 14, DatePart.Day, reference).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsAtLeast_DayPart_NotEnoughDays_ReturnsFalse()
+    {
+        var birthDate = new DateTime(2025, 6, 1);
+        var reference = new DateTime(2025, 6, 15);
+        _vali.IsAtLeast(birthDate, 15, DatePart.Day, reference).Should().BeFalse();
+    }
+
+    // ── Relative — week / month / year buckets ──────────────────────────────
+
+    [Fact]
+    public void Relative_FifteenDaysAgo_ReturnsWeeksAgo()
+    {
+        var reference = new DateTime(2025, 6, 15, 12, 0, 0);
+        var date      = reference.AddDays(-15);
+        string result = _vali.Relative(date, reference);
+        result.Should().EndWith("weeks ago");
+    }
+
+    [Fact]
+    public void Relative_SeventyDaysAgo_ReturnsMonthsAgo()
+    {
+        var reference = new DateTime(2025, 6, 15, 12, 0, 0);
+        var date      = reference.AddDays(-70);
+        string result = _vali.Relative(date, reference);
+        result.Should().EndWith("months ago");
+    }
+
+    [Fact]
+    public void Relative_TwoYearsAgo_ReturnsYearsAgo()
+    {
+        var reference = new DateTime(2025, 6, 15, 12, 0, 0);
+        var date      = reference.AddDays(-800);
+        string result = _vali.Relative(date, reference);
+        result.Should().EndWith("years ago");
+    }
+
+    // ── AgeResult.ToString() — singular/plural grammar ──────────────────────
+
+    [Fact]
+    public void AgeResult_ToString_SingularValues_UsesSingularGrammar()
+    {
+        var result = new AgeResult(1, 1, 1, 397);
+        result.ToString().Should().Be("1 year, 1 month, 1 day");
+    }
+
+    [Fact]
+    public void AgeResult_ToString_PluralValues_UsesPluralGrammar()
+    {
+        var result = new AgeResult(2, 3, 4, 823);
+        result.ToString().Should().Be("2 years, 3 months, 4 days");
     }
 }

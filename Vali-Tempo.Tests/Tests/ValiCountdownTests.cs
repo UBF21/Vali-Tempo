@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Vali_CountDown.Core;
+using Vali_Time.Abstractions;
 using Vali_Time.Enums;
 using Xunit;
 
@@ -8,6 +9,14 @@ namespace Vali_Time.Tests.Tests;
 public class ValiCountdownTests
 {
     private readonly ValiCountdown _vali = new();
+
+    private sealed class FixedClock : IClock
+    {
+        private readonly DateTime _fixed;
+        public FixedClock(DateTime fixedValue) => _fixed = fixedValue;
+        public DateTime Now => _fixed;
+        public DateTime Today => _fixed.Date;
+    }
 
     // ── IsExpired ───────────────────────────────────────────────────────────
 
@@ -251,5 +260,182 @@ public class ValiCountdownTests
     {
         // A point 1 hour in the future has not yet started
         _vali.IsStarted(DateTime.Now.AddHours(1)).Should().BeFalse();
+    }
+
+    // ── IsExpired single-arg overload (uses injected clock) ──────────────────
+
+    [Fact]
+    public void IsExpired_SingleArgOverload_PastDeadline_ReturnsTrue()
+    {
+        var reference = new DateTime(2025, 6, 15, 12, 0, 0);
+        var deadline  = new DateTime(2025, 6, 14, 12, 0, 0);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.IsExpired(deadline).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsExpired_SingleArgOverload_FutureDeadline_ReturnsFalse()
+    {
+        var reference = new DateTime(2025, 6, 15, 12, 0, 0);
+        var deadline  = new DateTime(2025, 6, 16, 12, 0, 0);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.IsExpired(deadline).Should().BeFalse();
+    }
+
+    // ── Progress single-overload (uses injected clock) ───────────────────────
+
+    [Fact]
+    public void Progress_TwoArgOverload_UsesClockNow_ReturnsExpectedValue()
+    {
+        var start = new DateTime(2025, 1, 1);
+        var end   = new DateTime(2025, 1, 11);
+        var mid   = new DateTime(2025, 1, 6);
+        var vali = new ValiCountdown(new FixedClock(mid));
+        vali.Progress(start, end).Should().BeApproximately(0.5m, 0.02m);
+    }
+
+    [Fact]
+    public void Progress_EndBeforeOrEqualStart_ThrowsArgumentException()
+    {
+        var start = new DateTime(2025, 1, 11);
+        var end   = new DateTime(2025, 1, 1);
+        var reference = new DateTime(2025, 1, 5);
+        Action act = () => _vali.Progress(start, end, reference);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    // ── ProgressPercent two-arg overload (uses injected clock) ───────────────
+
+    [Fact]
+    public void ProgressPercent_TwoArgOverload_UsesClockNow_ReturnsExpected50()
+    {
+        var start = new DateTime(2025, 1, 1);
+        var end   = new DateTime(2025, 1, 11);
+        var mid   = new DateTime(2025, 1, 6);
+        var vali = new ValiCountdown(new FixedClock(mid));
+        vali.ProgressPercent(start, end).Should().BeApproximately(50m, 2m);
+    }
+
+    // ── Breakdown — expired deadline branch ───────────────────────────────────
+
+    [Fact]
+    public void Breakdown_ExpiredDeadline_ReturnsAllZeroParts()
+    {
+        var reference = new DateTime(2025, 6, 15, 12, 0, 0);
+        var deadline  = new DateTime(2025, 6, 14, 12, 0, 0);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        var breakdown = vali.Breakdown(deadline);
+
+        breakdown[TimeUnit.Days].Should().Be(0m);
+        breakdown[TimeUnit.Hours].Should().Be(0m);
+        breakdown[TimeUnit.Minutes].Should().Be(0m);
+        breakdown[TimeUnit.Seconds].Should().Be(0m);
+        breakdown[TimeUnit.Milliseconds].Should().Be(0m);
+    }
+
+    [Fact]
+    public void Breakdown_DeadlineExactlyAtReference_ReturnsAllZeroParts()
+    {
+        var reference = new DateTime(2025, 6, 15, 12, 0, 0);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        var breakdown = vali.Breakdown(reference);
+
+        breakdown[TimeUnit.Days].Should().Be(0m);
+        breakdown[TimeUnit.Hours].Should().Be(0m);
+    }
+
+    // ── TimeUntil — ConvertTicks unit branches ────────────────────────────────
+
+    [Fact]
+    public void TimeUntil_Milliseconds_ReturnsExpectedValue()
+    {
+        var reference = new DateTime(2025, 1, 1);
+        var deadline  = reference.AddMilliseconds(5000);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.TimeUntil(deadline, TimeUnit.Milliseconds).Should().Be(5000m);
+    }
+
+    [Fact]
+    public void TimeUntil_Minutes_ReturnsExpectedValue()
+    {
+        var reference = new DateTime(2025, 1, 1);
+        var deadline  = reference.AddMinutes(10);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.TimeUntil(deadline, TimeUnit.Minutes).Should().Be(10m);
+    }
+
+    [Fact]
+    public void TimeUntil_Days_ReturnsExpectedValue()
+    {
+        var reference = new DateTime(2025, 1, 1);
+        var deadline  = reference.AddDays(3);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.TimeUntil(deadline, TimeUnit.Days).Should().Be(3m);
+    }
+
+    [Fact]
+    public void TimeUntil_Weeks_ReturnsExpectedValue()
+    {
+        var reference = new DateTime(2025, 1, 1);
+        var deadline  = reference.AddDays(14);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.TimeUntil(deadline, TimeUnit.Weeks).Should().Be(2m);
+    }
+
+    [Fact]
+    public void TimeUntil_Months_ReturnsApproximateValue()
+    {
+        var reference = new DateTime(2025, 1, 1);
+        var deadline  = reference.AddDays(60.875); // ~2 average months
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.TimeUntil(deadline, TimeUnit.Months).Should().BeApproximately(2m, 0.02m);
+    }
+
+    [Fact]
+    public void TimeUntil_Years_ReturnsApproximateValue()
+    {
+        var reference = new DateTime(2025, 1, 1);
+        var deadline  = reference.AddDays(365.25); // ~1 average year
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.TimeUntil(deadline, TimeUnit.Years).Should().BeApproximately(1m, 0.02m);
+    }
+
+    [Fact]
+    public void TimeUntil_WithDecimalPlaces_RoundsResult()
+    {
+        var reference = new DateTime(2025, 1, 1);
+        var deadline  = reference.AddMinutes(10.333);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.TimeUntil(deadline, TimeUnit.Minutes, 1).Should().Be(10.3m);
+    }
+
+    // ── TimeElapsed — future "from" clamps to zero ────────────────────────────
+
+    [Fact]
+    public void TimeElapsed_FromInFuture_ReturnsZero()
+    {
+        var reference = new DateTime(2025, 1, 1);
+        var from      = reference.AddHours(1);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.TimeElapsed(from, TimeUnit.Hours).Should().Be(0m);
+    }
+
+    [Fact]
+    public void TimeElapsed_WithDecimalPlaces_RoundsResult()
+    {
+        var reference = new DateTime(2025, 1, 1);
+        var from      = reference.AddMinutes(-10.333);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        vali.TimeElapsed(from, TimeUnit.Minutes, 1).Should().Be(10.3m);
+    }
+
+    [Fact]
+    public void TimeUntil_UnsupportedUnit_ThrowsArgumentOutOfRangeException()
+    {
+        var reference = new DateTime(2025, 1, 1);
+        var deadline  = reference.AddHours(1);
+        var vali = new ValiCountdown(new FixedClock(reference));
+        Action act = () => vali.TimeUntil(deadline, (TimeUnit)999);
+        act.Should().Throw<ArgumentOutOfRangeException>();
     }
 }

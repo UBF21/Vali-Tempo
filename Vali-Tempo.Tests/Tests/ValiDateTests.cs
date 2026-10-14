@@ -613,4 +613,429 @@ public class ValiDateTests
         act.Should().NotThrow();
         _vali.StartOf(date, DatePart.Week, weekStart).Should().BeOnOrAfter(DateTime.MinValue);
     }
+
+    // ── Diff: remaining units + invalid unit ─────────────────────────────────
+
+    [Fact]
+    public void Diff_Minutes_ReturnsCorrect()
+    {
+        var from = new DateTime(2025, 1, 1, 0, 0, 0);
+        var to = new DateTime(2025, 1, 1, 1, 0, 0);
+        _vali.Diff(from, to, TimeUnit.Minutes).Should().Be(60m);
+    }
+
+    [Fact]
+    public void Diff_Seconds_ReturnsCorrect()
+    {
+        var from = new DateTime(2025, 1, 1, 0, 0, 0);
+        var to = new DateTime(2025, 1, 1, 0, 1, 0);
+        _vali.Diff(from, to, TimeUnit.Seconds).Should().Be(60m);
+    }
+
+    [Fact]
+    public void Diff_Milliseconds_ReturnsCorrect()
+    {
+        var from = new DateTime(2025, 1, 1, 0, 0, 0);
+        var to = new DateTime(2025, 1, 1, 0, 0, 1);
+        _vali.Diff(from, to, TimeUnit.Milliseconds).Should().Be(1000m);
+    }
+
+    [Fact]
+    public void Diff_Weeks_ReturnsCorrect()
+    {
+        var from = new DateTime(2025, 1, 1);
+        var to = new DateTime(2025, 1, 15);
+        _vali.Diff(from, to, TimeUnit.Weeks).Should().Be(2m);
+    }
+
+    [Fact]
+    public void Diff_NegativeDirection_ReturnsNegativeValue()
+    {
+        var from = new DateTime(2025, 1, 31);
+        var to = new DateTime(2025, 1, 1);
+        _vali.Diff(from, to, TimeUnit.Days).Should().Be(-30m);
+    }
+
+    [Fact]
+    public void Diff_InvalidUnit_ThrowsArgumentOutOfRangeException()
+    {
+        Action act = () => _vali.Diff(DateTime.MinValue, DateTime.MaxValue, (TimeUnit)999);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void Diff_WithDecimalPlaces_Rounds()
+    {
+        var from = new DateTime(2025, 1, 1);
+        var to = new DateTime(2025, 1, 2, 6, 0, 0);
+        decimal result = _vali.Diff(from, to, TimeUnit.Days, 2);
+        result.Should().Be(1.25m);
+    }
+
+    // ── Add: remaining units + invalid unit ──────────────────────────────────
+
+    [Fact]
+    public void Add_Hours_ReturnsCorrectDate()
+    {
+        var date = new DateTime(2025, 1, 1, 0, 0, 0);
+        _vali.Add(date, 5, TimeUnit.Hours).Should().Be(new DateTime(2025, 1, 1, 5, 0, 0));
+    }
+
+    [Fact]
+    public void Add_Minutes_ReturnsCorrectDate()
+    {
+        var date = new DateTime(2025, 1, 1, 0, 0, 0);
+        _vali.Add(date, 30, TimeUnit.Minutes).Should().Be(new DateTime(2025, 1, 1, 0, 30, 0));
+    }
+
+    [Fact]
+    public void Add_Seconds_ReturnsCorrectDate()
+    {
+        var date = new DateTime(2025, 1, 1, 0, 0, 0);
+        _vali.Add(date, 45, TimeUnit.Seconds).Should().Be(new DateTime(2025, 1, 1, 0, 0, 45));
+    }
+
+    [Fact]
+    public void Add_Milliseconds_ReturnsCorrectDate()
+    {
+        var date = new DateTime(2025, 1, 1, 0, 0, 0);
+        _vali.Add(date, 500, TimeUnit.Milliseconds).Should().Be(date.AddMilliseconds(500));
+    }
+
+    [Fact]
+    public void Add_Weeks_ReturnsCorrectDate()
+    {
+        var date = new DateTime(2025, 1, 1);
+        _vali.Add(date, 2, TimeUnit.Weeks).Should().Be(new DateTime(2025, 1, 15));
+    }
+
+    [Fact]
+    public void Add_InvalidUnit_ThrowsArgumentOutOfRangeException()
+    {
+        Action act = () => _vali.Add(DateTime.MinValue, 1, (TimeUnit)999);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    // ── StartOf / EndOf: invalid part + Week via EndOf ───────────────────────
+
+    [Fact]
+    public void StartOf_InvalidPart_ThrowsArgumentOutOfRangeException()
+    {
+        Action act = () => _vali.StartOf(DateTime.Now, (DatePart)999);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void EndOf_InvalidPart_ThrowsArgumentOutOfRangeException()
+    {
+        Action act = () => _vali.EndOf(DateTime.Now, (DatePart)999);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void EndOf_Week_ReturnsLastInstantOfWeek()
+    {
+        var wednesday = new DateTime(2025, 1, 15);
+        var result = _vali.EndOf(wednesday, DatePart.Week);
+        result.Date.Should().Be(new DateTime(2025, 1, 19));
+        result.TimeOfDay.Should().Be(TimeSpan.FromTicks(TimeSpan.TicksPerDay - 1));
+    }
+
+    [Fact]
+    public void EndOf_Week_NearMaxValue_DoesNotOverflow()
+    {
+        var date = DateTime.MaxValue.AddDays(-1);
+        Action act = () => _vali.EndOf(date, DatePart.Week);
+        act.Should().NotThrow();
+        _vali.EndOf(date, DatePart.Week).Should().Be(DateTime.MaxValue);
+    }
+
+    // ── IsBefore / IsAfter ────────────────────────────────────────────────────
+
+    [Fact]
+    public void IsBefore_EarlierDate_ReturnsTrue()
+    {
+        _vali.IsBefore(new DateTime(2025, 1, 1), new DateTime(2025, 1, 2)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsBefore_LaterDate_ReturnsFalse()
+    {
+        _vali.IsBefore(new DateTime(2025, 1, 2), new DateTime(2025, 1, 1)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsAfter_LaterDate_ReturnsTrue()
+    {
+        _vali.IsAfter(new DateTime(2025, 1, 2), new DateTime(2025, 1, 1)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsAfter_EarlierDate_ReturnsFalse()
+    {
+        _vali.IsAfter(new DateTime(2025, 1, 1), new DateTime(2025, 1, 2)).Should().BeFalse();
+    }
+
+    // ── IsSamePeriod: Day/Quarter + invalid part ─────────────────────────────
+
+    [Fact]
+    public void IsSamePeriod_Day_SameDay_ReturnsTrue()
+    {
+        _vali.IsSamePeriod(new DateTime(2025, 1, 1, 1, 0, 0), new DateTime(2025, 1, 1, 23, 0, 0), DatePart.Day)
+            .Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsSamePeriod_Day_DifferentDay_ReturnsFalse()
+    {
+        _vali.IsSamePeriod(new DateTime(2025, 1, 1), new DateTime(2025, 1, 2), DatePart.Day)
+            .Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsSamePeriod_Quarter_SameQuarter_ReturnsTrue()
+    {
+        _vali.IsSamePeriod(new DateTime(2025, 1, 10), new DateTime(2025, 3, 20), DatePart.Quarter)
+            .Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsSamePeriod_Quarter_DifferentQuarter_ReturnsFalse()
+    {
+        _vali.IsSamePeriod(new DateTime(2025, 1, 10), new DateTime(2025, 4, 1), DatePart.Quarter)
+            .Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsSamePeriod_InvalidPart_ThrowsArgumentOutOfRangeException()
+    {
+        Action act = () => _vali.IsSamePeriod(DateTime.Now, DateTime.Now, (DatePart)999);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void IsSamePeriod_Week_SameWeek_ReturnsTrue()
+    {
+        _vali.IsSamePeriod(new DateTime(2025, 1, 6), new DateTime(2025, 1, 8), DatePart.Week)
+            .Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsSamePeriod_Week_DifferentWeek_ReturnsFalse()
+    {
+        _vali.IsSamePeriod(new DateTime(2025, 1, 6), new DateTime(2025, 1, 13), DatePart.Week)
+            .Should().BeFalse();
+    }
+
+    // ── PreviousQuarterStart ──────────────────────────────────────────────────
+
+    [Fact]
+    public void PreviousQuarterStart_NormalDate_ReturnsStartOfPriorQuarter()
+    {
+        _vali.PreviousQuarterStart(new DateTime(2025, 5, 15))
+            .Should().Be(new DateTime(2025, 1, 1));
+    }
+
+    [Fact]
+    public void PreviousQuarterStart_NearMinValue_ReturnsMinValueSentinel()
+    {
+        _vali.PreviousQuarterStart(new DateTime(1, 2, 1))
+            .Should().Be(DateTime.MinValue);
+    }
+
+    // ── IsWeekday ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void IsWeekday_Monday_ReturnsTrue()
+    {
+        _vali.IsWeekday(new DateTime(2025, 1, 13)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsWeekday_Saturday_ReturnsFalse()
+    {
+        _vali.IsWeekday(new DateTime(2025, 1, 18)).Should().BeFalse();
+    }
+
+    // ── DaysInMonth ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public void DaysInMonth_February_LeapYear_Returns29()
+    {
+        _vali.DaysInMonth(2024, 2).Should().Be(29);
+    }
+
+    [Fact]
+    public void DaysInMonth_February_NonLeapYear_Returns28()
+    {
+        _vali.DaysInMonth(2025, 2).Should().Be(28);
+    }
+
+    // ── WeekOfYear (instance, Sunday branch) / WeekYear ──────────────────────
+
+    [Fact]
+    public void WeekOfYear_SundayStart_UsesGregorianFirstDayRule()
+    {
+        int week = _vali.WeekOfYear(new DateTime(2025, 1, 1), WeekStart.Sunday);
+        week.Should().Be(1);
+    }
+
+    [Fact]
+    public void WeekYear_Monday_UsesIsoYear()
+    {
+        // Dec 29, 2025 (Monday) belongs to ISO week 1 of 2026.
+        _vali.WeekYear(new DateTime(2025, 12, 29), WeekStart.Monday).Should().Be(2026);
+    }
+
+    [Fact]
+    public void WeekYear_Sunday_UsesCalendarYear()
+    {
+        _vali.WeekYear(new DateTime(2025, 12, 29), WeekStart.Sunday).Should().Be(2025);
+    }
+
+    // ── DayOfYear ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void DayOfYear_Jan1_Returns1()
+    {
+        _vali.DayOfYear(new DateTime(2025, 1, 1)).Should().Be(1);
+    }
+
+    [Fact]
+    public void DayOfYear_Dec31_LeapYear_Returns366()
+    {
+        _vali.DayOfYear(new DateTime(2024, 12, 31)).Should().Be(366);
+    }
+
+    // ── ProgressInYear / ProgressInMonth ──────────────────────────────────────
+
+    [Fact]
+    public void ProgressInYear_Jan1_ReturnsZero()
+    {
+        _vali.ProgressInYear(new DateTime(2025, 1, 1)).Should().Be(0m);
+    }
+
+    [Fact]
+    public void ProgressInYear_LeapYear_UsesDivisorOf366()
+    {
+        decimal result = _vali.ProgressInYear(new DateTime(2024, 12, 31));
+        result.Should().Be(365m / 366m);
+    }
+
+    [Fact]
+    public void ProgressInMonth_FirstDay_ReturnsZero()
+    {
+        _vali.ProgressInMonth(new DateTime(2025, 3, 1)).Should().Be(0m);
+    }
+
+    [Fact]
+    public void ProgressInMonth_LastDayOfMonth_ReturnsFraction()
+    {
+        decimal result = _vali.ProgressInMonth(new DateTime(2025, 4, 30));
+        result.Should().Be(29m / 30m);
+    }
+
+    // ── QuarterNameFull ───────────────────────────────────────────────────────
+
+    [Fact]
+    public void QuarterNameFull_ReturnsFormattedString()
+    {
+        _vali.QuarterNameFull(new DateTime(2025, 5, 1)).Should().Be("Quarter 2 - 2025");
+    }
+
+    // ── Days elapsed / remaining / progress in quarter ───────────────────────
+
+    [Fact]
+    public void DaysElapsedInQuarter_FirstDay_ReturnsZero()
+    {
+        _vali.DaysElapsedInQuarter(new DateTime(2025, 1, 1)).Should().Be(0);
+    }
+
+    [Fact]
+    public void DaysElapsedInQuarter_MidQuarter_ReturnsPositive()
+    {
+        _vali.DaysElapsedInQuarter(new DateTime(2025, 1, 11)).Should().Be(10);
+    }
+
+    [Fact]
+    public void DayOfQuarter_FirstDay_Returns1()
+    {
+        _vali.DayOfQuarter(new DateTime(2025, 1, 1)).Should().Be(1);
+    }
+
+    [Fact]
+    public void DaysRemainingInQuarter_LastDay_ReturnsZero()
+    {
+        _vali.DaysRemainingInQuarter(new DateTime(2025, 3, 31)).Should().Be(0);
+    }
+
+    [Fact]
+    public void DaysRemainingInQuarter_FirstDay_ReturnsPositive()
+    {
+        _vali.DaysRemainingInQuarter(new DateTime(2025, 1, 1)).Should().Be(89);
+    }
+
+    // ── IsFirstDayOfQuarter / IsLastDayOfQuarter ──────────────────────────────
+
+    [Fact]
+    public void IsFirstDayOfQuarter_JanuaryFirst_ReturnsTrue()
+    {
+        _vali.IsFirstDayOfQuarter(new DateTime(2025, 1, 1)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsFirstDayOfQuarter_MidQuarter_ReturnsFalse()
+    {
+        _vali.IsFirstDayOfQuarter(new DateTime(2025, 1, 15)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsLastDayOfQuarter_March31_ReturnsTrue()
+    {
+        _vali.IsLastDayOfQuarter(new DateTime(2025, 3, 31)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsLastDayOfQuarter_MidQuarter_ReturnsFalse()
+    {
+        _vali.IsLastDayOfQuarter(new DateTime(2025, 3, 15)).Should().BeFalse();
+    }
+
+    // ── WeeksInQuarter ────────────────────────────────────────────────────────
+
+    [Fact]
+    public void WeeksInQuarter_Q1_NonLeapYear_ReturnsCeilingOf90Over7()
+    {
+        _vali.WeeksInQuarter(new DateTime(2025, 1, 15)).Should().Be(13);
+    }
+
+    // ── NextQuarterStart / TryNextQuarterStart ────────────────────────────────
+
+    [Fact]
+    public void NextQuarterStart_NormalDate_ReturnsFirstDayOfNextQuarter()
+    {
+        _vali.NextQuarterStart(new DateTime(2025, 2, 15)).Should().Be(new DateTime(2025, 4, 1));
+    }
+
+    [Fact]
+    public void NextQuarterStart_Q4Year9999_ReturnsMaxValueSentinel()
+    {
+        _vali.NextQuarterStart(new DateTime(9999, 11, 1)).Should().Be(DateTime.MaxValue.Date);
+    }
+
+    [Fact]
+    public void TryNextQuarterStart_NormalDate_ReturnsTrueAndCorrectDate()
+    {
+        bool ok = _vali.TryNextQuarterStart(new DateTime(2025, 2, 15), out var result);
+        ok.Should().BeTrue();
+        result.Should().Be(new DateTime(2025, 4, 1));
+    }
+
+    [Fact]
+    public void TryNextQuarterStart_Q4Year9999_ReturnsFalse()
+    {
+        bool ok = _vali.TryNextQuarterStart(new DateTime(9999, 11, 1), out var result);
+        ok.Should().BeFalse();
+        result.Should().Be(DateTime.MaxValue.Date);
+    }
 }

@@ -336,4 +336,241 @@ public class CronScheduleTests
 
         cronResults.Should().BeEquivalentTo(nativeResults);
     }
+
+    // ── CronFieldParser edge cases, reached via the public Parse surface ─────
+
+    [Fact]
+    public void Parse_EmptyComponentFromDoubleComma_ThrowsCronFormatException()
+    {
+        // "1,,2" splits into ["1", "", "2"] — the empty component hits CronFieldParser's
+        // zero-length guard (ParseComponent).
+        var act = () => CronSchedule.Parse("0 0 1,,2 * *");
+
+        act.Should().Throw<CronFormatException>()
+            .Which.Field.Should().Be("day-of-month");
+    }
+
+    [Fact]
+    public void Parse_TooManySlashParts_ThrowsCronFormatException()
+    {
+        // "1/2/3" has more than one '/' — hits ParseComponent's slashParts.Length > 2 guard.
+        var act = () => CronSchedule.Parse("1/2/3 * * * *");
+
+        act.Should().Throw<CronFormatException>()
+            .Which.Field.Should().Be("minute");
+    }
+
+    // ── CronFormatException.Expression property ──────────────────────────────
+
+    [Fact]
+    public void Parse_InvalidExpression_ExceptionExposesOriginalExpression()
+    {
+        var act = () => CronSchedule.Parse("0 25 * * *");
+
+        act.Should().Throw<CronFormatException>()
+            .Which.Expression.Should().Be("0 25 * * *");
+    }
+
+    // ── TryParse: blank input (distinct from a parse failure) ────────────────
+
+    [Fact]
+    public void TryParse_Whitespace_ReturnsFalseWithBlankSpecificMessage()
+    {
+        bool ok = CronSchedule.TryParse("   ", out var schedule, out var error);
+
+        ok.Should().BeFalse();
+        schedule.Should().BeNull();
+        error.Should().Be("Cron expression must not be null or whitespace.");
+    }
+
+    // ── EffectiveStartDate default (StartingFrom never called) ───────────────
+
+    [Fact]
+    public void OccursOn_WithoutStartingFrom_DefaultsToToday()
+    {
+        var schedule = CronSchedule.Parse("* * * * *");
+
+        schedule.OccursOn(DateTime.Today).Should().BeTrue();
+    }
+
+    // ── EndsAfter / SkipHolidays argument validation ──────────────────────────
+
+    [Fact]
+    public void EndsAfter_ZeroOccurrences_ThrowsArgumentOutOfRangeException()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *");
+        var act = () => schedule.EndsAfter(0);
+        act.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [Fact]
+    public void SkipHolidays_NullProvider_ThrowsArgumentNullException()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *");
+        var act = () => schedule.SkipHolidays(null!);
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public void Build_ReturnsSameInstance()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *");
+
+        var built = schedule.Build();
+
+        built.Should().BeSameAs(schedule);
+    }
+
+    // ── OccursOn: EndsOn and WithCustomPredicate branches ─────────────────────
+
+    [Fact]
+    public void OccursOn_PastEndsOn_ReturnsFalse()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *")
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .EndsOn(new DateTime(2025, 1, 3));
+
+        schedule.OccursOn(new DateTime(2025, 1, 4)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void OccursOn_CustomPredicateRejects_ReturnsFalse()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *")
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .WithCustomPredicate(d => d.Day % 2 == 1);
+
+        schedule.OccursOn(new DateTime(2025, 1, 2)).Should().BeFalse(); // even day, predicate rejects
+        schedule.OccursOn(new DateTime(2025, 1, 1)).Should().BeTrue();  // odd day, predicate accepts -> reaches final true
+    }
+
+    // ── PreviousOccurrence: not covered anywhere yet (BackwardMatches/TimesDescending iterators) ──
+
+    [Fact]
+    public void PreviousOccurrence_DailySchedule_ReturnsDayBeforeReference()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *").StartingFrom(new DateTime(2025, 1, 1));
+
+        var result = schedule.PreviousOccurrence(new DateTime(2025, 1, 5, 9, 0, 0));
+
+        result.Should().Be(new DateTime(2025, 1, 4, 9, 0, 0));
+    }
+
+    [Fact]
+    public void PreviousOccurrence_PastEndsOn_SkipsCandidatesBeyondEndDate()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *")
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .EndsOn(new DateTime(2025, 1, 3));
+
+        // Reference is after EndsOn; candidates on Jan 4/5/etc. (if any existed above reference)
+        // would be skipped by the `candidate.Date > _endsOn.Value.Date` continue — here it
+        // simply confirms the last in-range occurrence (Jan 3) is still returned.
+        var result = schedule.PreviousOccurrence(new DateTime(2025, 1, 10));
+
+        result.Should().Be(new DateTime(2025, 1, 3, 9, 0, 0));
+    }
+
+    [Fact]
+    public void PreviousOccurrence_EndsAfterBudgetExceeded_SkipsOverBudgetCandidates()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *")
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .EndsAfter(2); // only Jan 1 and Jan 2 count toward the budget
+
+        var result = schedule.PreviousOccurrence(new DateTime(2025, 1, 10));
+
+        result.Should().Be(new DateTime(2025, 1, 2, 9, 0, 0));
+    }
+
+    [Fact]
+    public void PreviousOccurrence_NoMatchWithinWindow_ReturnsNull()
+    {
+        var schedule = CronSchedule.Parse("0 0 29 2 *"); // Feb 29 only, StartingFrom defaults to today
+
+        var result = schedule.PreviousOccurrence(new DateTime(2025, 1, 1));
+
+        result.Should().BeNull();
+    }
+
+    // ── CountForward: multi-day iteration before its break condition trips ───
+
+    [Fact]
+    public void NextOccurrence_EndsAfterWithReferenceAfterStart_PreCountsMultipleDays()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *")
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .EndsAfter(10);
+
+        // CountForward(Jan 1, Jan 5) iterates Jan1..Jan4 before breaking on Jan 5.
+        var next = schedule.NextOccurrence(new DateTime(2025, 1, 5));
+
+        next.Should().Be(new DateTime(2025, 1, 5, 9, 0, 0));
+    }
+
+    // ── OccurrencesInRange: argument validation and natural loop exhaustion ──
+
+    [Fact]
+    public void OccurrencesInRange_FromAfterTo_ThrowsArgumentException()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *").StartingFrom(new DateTime(2025, 1, 1));
+
+        var act = () => schedule.OccurrencesInRange(new DateTime(2025, 1, 10), new DateTime(2025, 1, 1)).ToList();
+
+        act.Should().Throw<ArgumentException>().WithParameterName("from");
+    }
+
+    [Fact]
+    public void OccurrencesInRange_NeverMatchingExpression_ExhaustsForwardMatchesNaturally()
+    {
+        // Feb 30 never matches — ForwardMatches runs out its MaxScanDays window and the
+        // enumerator falls off the end of the loop naturally, instead of hitting a yield break.
+        var schedule = CronSchedule.Parse("30 2 30 2 *").StartingFrom(new DateTime(2025, 1, 1));
+
+        var results = schedule.OccurrencesInRange(new DateTime(2025, 1, 1), new DateTime(2030, 1, 1)).ToList();
+
+        results.Should().BeEmpty();
+    }
+
+    // ── OccurrencePeriods: entirely uncovered iterator ────────────────────────
+
+    [Fact]
+    public void OccurrencePeriods_DailySchedule_PairsConsecutiveOccurrencesExactly()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *").StartingFrom(new DateTime(2025, 1, 1));
+
+        var periods = schedule.OccurrencePeriods(new DateTime(2025, 1, 1), new DateTime(2025, 1, 3)).ToList();
+
+        periods.Should().HaveCount(3);
+        periods[0].Start.Should().Be(new DateTime(2025, 1, 1, 9, 0, 0));
+        periods[0].End.Should().Be(new DateTime(2025, 1, 2, 9, 0, 0).AddTicks(-1));
+        // Last occurrence in range (Jan 3) closes with the real next occurrence (Jan 4),
+        // even though it falls beyond `to` — a period is never truncated at the query boundary.
+        periods[2].Start.Should().Be(new DateTime(2025, 1, 3, 9, 0, 0));
+        periods[2].End.Should().Be(new DateTime(2025, 1, 4, 9, 0, 0).AddTicks(-1));
+    }
+
+    [Fact]
+    public void OccurrencePeriods_EndsAfterExhaustedMidRange_ExcludesLastOccurrenceWithoutPeriod()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *")
+            .StartingFrom(new DateTime(2025, 1, 1))
+            .EndsAfter(2);
+
+        var periods = schedule.OccurrencePeriods(new DateTime(2025, 1, 1), new DateTime(2025, 1, 10)).ToList();
+
+        periods.Should().ContainSingle();
+        periods[0].Start.Should().Be(new DateTime(2025, 1, 1, 9, 0, 0));
+        periods[0].End.Should().Be(new DateTime(2025, 1, 2, 9, 0, 0).AddTicks(-1));
+    }
+
+    [Fact]
+    public void OccurrencePeriods_FromAfterTo_ThrowsArgumentException()
+    {
+        var schedule = CronSchedule.Parse("0 9 * * *").StartingFrom(new DateTime(2025, 1, 1));
+
+        var act = () => schedule.OccurrencePeriods(new DateTime(2025, 1, 10), new DateTime(2025, 1, 1)).ToList();
+
+        act.Should().Throw<ArgumentException>().WithParameterName("from");
+    }
 }

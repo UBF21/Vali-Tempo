@@ -1,5 +1,9 @@
 using FluentAssertions;
 using Vali_Calendar.Core;
+using Vali_Holiday.Core;
+using Vali_Holiday.Models;
+using Vali_Holiday.Providers.LatinAmerica;
+using Vali_Time.Abstractions;
 using Vali_Time.Enums;
 using Xunit;
 
@@ -8,6 +12,30 @@ namespace Vali_Time.Tests.Tests;
 public class ValiCalendarTests
 {
     private readonly ValiCalendar _calendar = new(WeekStart.Monday);
+
+    private sealed class FixedClock : IClock
+    {
+        private readonly DateTime _fixed;
+        public FixedClock(DateTime fixedValue) => _fixed = fixedValue;
+        public DateTime Now => _fixed;
+        public DateTime Today => _fixed.Date;
+    }
+
+    // Fake provider that marks every single date as a holiday, forcing workday-scan
+    // loops (AddWorkdays/NextWorkday/PreviousWorkday) to exhaust MaxWorkdayScan.
+    private sealed class AlwaysHolidayProvider : IHolidayProvider
+    {
+        public string CountryCode => "XX";
+        public string CountryName => "Nowhere";
+        public string PrimaryLanguage => "en";
+        public IEnumerable<HolidayInfo> GetHolidays(int year) => Enumerable.Empty<HolidayInfo>();
+        public bool IsHoliday(DateTime date) => true;
+        public bool IsHoliday(DateOnly date) => true;
+        public HolidayInfo? GetHoliday(DateTime date) => null;
+        public IEnumerable<HolidayInfo> GetHolidaysInRange(DateTime from, DateTime to) => Enumerable.Empty<HolidayInfo>();
+        public string GetName(HolidayInfo holiday, string languageCode) => holiday.Name;
+        public DateTime? GetObservedDate(HolidayInfo holiday, int year) => null;
+    }
 
     // ── WeekCountInMonth ─────────────────────────────────────────────────────
 
@@ -174,5 +202,225 @@ public class ValiCalendarTests
         // January 2025: starts on Wednesday; 31 days total → 23 weekdays
         int result = _calendar.WorkdaysInMonth(2025, 1);
         result.Should().Be(23);
+    }
+
+    // ── CalendarWeek.ToString ───────────────────────────────────────────────
+
+    [Fact]
+    public void CalendarWeek_ToString_FormatsAsWeekNumberAndYear()
+    {
+        var week = _calendar.WeekOf(new DateTime(2025, 3, 10));
+
+        week.ToString().Should().Be($"W{week.WeekNumber:D2} {week.Year}");
+    }
+
+    // ── WeekOf (Sunday-based) ────────────────────────────────────────────────
+
+    [Fact]
+    public void WeekOf_SundayWeekStart_UsesGregorianCalendarYear()
+    {
+        var date = new DateTime(2025, 6, 15); // Sunday
+        var week = _calendar.WeekOf(date, WeekStart.Sunday);
+
+        week.Year.Should().Be(2025);
+        week.Start.DayOfWeek.Should().Be(DayOfWeek.Sunday);
+    }
+
+    // ── CurrentWeek ──────────────────────────────────────────────────────────
+
+    [Fact]
+    public void CurrentWeek_UsesInjectedClock()
+    {
+        var fixedDate = new DateTime(2025, 3, 10); // Monday
+        var calendar = new ValiCalendar(WeekStart.Monday, clock: new FixedClock(fixedDate));
+
+        var week = calendar.CurrentWeek();
+
+        week.Start.Should().Be(fixedDate.Date);
+    }
+
+    // ── IsFirstDayOfMonth / IsLastDayOfMonth ─────────────────────────────────
+
+    [Fact]
+    public void IsFirstDayOfMonth_FirstDay_ReturnsTrue()
+    {
+        _calendar.IsFirstDayOfMonth(new DateTime(2025, 5, 1)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsFirstDayOfMonth_NotFirstDay_ReturnsFalse()
+    {
+        _calendar.IsFirstDayOfMonth(new DateTime(2025, 5, 2)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsLastDayOfMonth_LastDayOfFebruaryLeapYear_ReturnsTrue()
+    {
+        _calendar.IsLastDayOfMonth(new DateTime(2024, 2, 29)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsLastDayOfMonth_NotLastDay_ReturnsFalse()
+    {
+        _calendar.IsLastDayOfMonth(new DateTime(2025, 5, 2)).Should().BeFalse();
+    }
+
+    // ── DaysInMonth ──────────────────────────────────────────────────────────
+
+    [Fact]
+    public void DaysInMonth_FebruaryLeapYear_Returns29()
+    {
+        _calendar.DaysInMonth(new DateTime(2024, 2, 1)).Should().Be(29);
+    }
+
+    // ── DaysOfMonth (iterator) ───────────────────────────────────────────────
+
+    [Fact]
+    public void DaysOfMonth_January2025_Enumerates31DaysFromFirstToLast()
+    {
+        var days = _calendar.DaysOfMonth(2025, 1).ToList();
+
+        days.Should().HaveCount(31);
+        days.First().Should().Be(new DateTime(2025, 1, 1));
+        days.Last().Should().Be(new DateTime(2025, 1, 31));
+    }
+
+    // ── WorkdaysBetween (guard clauses) ──────────────────────────────────────
+
+    [Fact]
+    public void WorkdaysBetween_FromAfterTo_ThrowsArgumentException()
+    {
+        var from = new DateTime(2025, 1, 10);
+        var to = new DateTime(2025, 1, 1);
+
+        Action act = () => _calendar.WorkdaysBetween(from, to);
+
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void WorkdaysBetween_SpanExceedsMaxScan_ThrowsInvalidOperationException()
+    {
+        var from = new DateTime(2000, 1, 1);
+        var to = new DateTime(2015, 1, 1); // > 3660 days apart
+
+        Action act = () => _calendar.WorkdaysBetween(from, to);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    // ── AddWorkdays / NextWorkday / PreviousWorkday (scan-limit guard) ───────
+
+    [Fact]
+    public void AddWorkdays_NoWorkdaysEverAvailable_ThrowsInvalidOperationException()
+    {
+        var calendar = new ValiCalendar(WeekStart.Monday, new AlwaysHolidayProvider());
+
+        Action act = () => calendar.AddWorkdays(new DateTime(2025, 1, 1), 1);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void NextWorkday_NoWorkdaysEverAvailable_ThrowsInvalidOperationException()
+    {
+        var calendar = new ValiCalendar(WeekStart.Monday, new AlwaysHolidayProvider());
+
+        Action act = () => calendar.NextWorkday(new DateTime(2025, 1, 1));
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void PreviousWorkday_NoWorkdaysEverAvailable_ThrowsInvalidOperationException()
+    {
+        var calendar = new ValiCalendar(WeekStart.Monday, new AlwaysHolidayProvider());
+
+        Action act = () => calendar.PreviousWorkday(new DateTime(2025, 1, 1));
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    // ── WorkdaysInYear ───────────────────────────────────────────────────────
+
+    [Fact]
+    public void WorkdaysInYear_2025_ReturnsPositiveCountUnderTotalDays()
+    {
+        int result = _calendar.WorkdaysInYear(2025);
+
+        result.Should().BeInRange(250, 262);
+    }
+
+    // ── HasHolidayProvider ───────────────────────────────────────────────────
+
+    [Fact]
+    public void HasHolidayProvider_NoProviderConfigured_ReturnsFalse()
+    {
+        _calendar.HasHolidayProvider.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasHolidayProvider_ProviderConfigured_ReturnsTrue()
+    {
+        var calendar = new ValiCalendar(WeekStart.Monday, new PeruHolidayProvider());
+
+        calendar.HasHolidayProvider.Should().BeTrue();
+    }
+
+    // ── HolidaysInMonth / HolidaysInYear ─────────────────────────────────────
+
+    [Fact]
+    public void HolidaysInMonth_NoProviderConfigured_ThrowsInvalidOperationException()
+    {
+        Action act = () => _calendar.HolidaysInMonth(2025, 1).ToList();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void HolidaysInMonth_ProviderConfigured_ReturnsJanuaryHolidaysIncludingNewYear()
+    {
+        var calendar = new ValiCalendar(WeekStart.Monday, new PeruHolidayProvider());
+
+        var holidays = calendar.HolidaysInMonth(2025, 1).ToList();
+
+        holidays.Should().NotBeEmpty();
+        holidays.Should().OnlyContain(h => h.Month == 1);
+    }
+
+    [Fact]
+    public void HolidaysInYear_NoProviderConfigured_ThrowsInvalidOperationException()
+    {
+        Action act = () => _calendar.HolidaysInYear(2025).ToList();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void HolidaysInYear_ProviderConfigured_ReturnsNonEmptySequence()
+    {
+        var calendar = new ValiCalendar(WeekStart.Monday, new PeruHolidayProvider());
+
+        var holidays = calendar.HolidaysInYear(2025).ToList();
+
+        holidays.Should().NotBeEmpty();
+    }
+
+    // ── IsLeapYear / DaysInYear ──────────────────────────────────────────────
+
+    [Theory]
+    [InlineData(2024, true)]
+    [InlineData(2025, false)]
+    public void IsLeapYear_ReturnsExpectedResult(int year, bool expected)
+    {
+        _calendar.IsLeapYear(year).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(2024, 366)]
+    [InlineData(2025, 365)]
+    public void DaysInYear_ReturnsExpectedResult(int year, int expected)
+    {
+        _calendar.DaysInYear(year).Should().Be(expected);
     }
 }
