@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <RootNamespace>Vali_Schedule</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -11,7 +11,7 @@
         <PackageId>Vali-Schedule</PackageId>
         <Title>Vali-Schedule</Title>
         <Product>Vali-Schedule</Product>
-        <Version>1.0.0</Version>
+        <Version>1.1.0</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
         <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
 
@@ -37,7 +37,9 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-Schedule is a .NET library for defining and querying recurring time schedules. Supports daily, weekly, monthly, yearly, and custom recurrence patterns with fluent builder API, next/previous occurrence calculation, and occurrence enumeration.</Description>
-        <PackageReleaseNotes>Vali-Schedule v1.0.0 — initial release: ValiSchedule fluent builder with Every, On, At, StartingFrom, EndsAfter, EndsOn, WithCustomPredicate; NextOccurrence, PreviousOccurrence, OccursOn, Occurrences, OccurrencesInRange.</PackageReleaseNotes>
+        <PackageReleaseNotes>Vali-Schedule v1.1.0 — add CronSchedule (5-field cron expression support), SkipWeekends/SkipHolidays with HolidaySkipStrategy, and OccurrencePeriods. Updated Vali-Time, Vali-Holiday and Vali-Range dependencies to their latest versions. No breaking changes.
+
+            Vali-Schedule v1.0.0 — initial release: ValiSchedule fluent builder with Every, On, At, StartingFrom, EndsAfter, EndsOn, WithCustomPredicate; NextOccurrence, PreviousOccurrence, OccursOn, Occurrences, OccurrencesInRange.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -46,9 +48,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Vali-Time" Version="1.0.1" />
-        <PackageReference Include="Vali-Holiday" Version="1.0.0" />
-        <PackageReference Include="Vali-Range" Version="1.0.0" />
+        <PackageReference Include="Vali-Time" Version="1.1.0" />
+        <PackageReference Include="Vali-Holiday" Version="1.1.0" />
+        <PackageReference Include="Vali-Range" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>

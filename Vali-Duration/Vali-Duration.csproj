@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <RootNamespace>Vali_Duration</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -11,7 +11,7 @@
         <PackageId>Vali-Duration</PackageId>
         <Title>Vali-Duration</Title>
         <Product>Vali-Duration</Product>
-        <Version>1.0.0</Version>
+        <Version>1.1.0</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
         <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
 
@@ -37,7 +37,9 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-Duration is a lightweight .NET library providing a high-precision decimal-based duration value type. Supports arithmetic operators (+, -, *, /), comparison operators, implicit conversions to/from TimeSpan, unit-based factories and conversions, and human-readable formatting.</Description>
-        <PackageReleaseNotes>Vali-Duration v1.0.0 — initial release: ValiDuration struct with decimal precision, all arithmetic and comparison operators, TimeSpan interop, unit factories (FromHours, FromMinutes, etc.), As(TimeUnit) conversion, and Format() output.</PackageReleaseNotes>
+        <PackageReleaseNotes>Vali-Duration v1.1.0 — add IParsable&lt;ValiDuration&gt;/IFormattable via the shared DurationStringParser. Updated Vali-Time dependency to 1.1.0. No breaking changes.
+
+            Vali-Duration v1.0.0 — initial release: ValiDuration struct with decimal precision, all arithmetic and comparison operators, TimeSpan interop, unit factories (FromHours, FromMinutes, etc.), As(TimeUnit) conversion, and Format() output.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -46,11 +48,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- ponytail: ProjectReference instead of PackageReference — the published Vali-Time
-             1.0.1 NuGet package predates Vali_Time.Utils.DurationStringParser, used by
-             ValiDuration's new IParsable/IFormattable implementation. Revert to
-             PackageReference once Vali-Time is republished with that type included. -->
-        <ProjectReference Include="..\Vali-Time\Vali-Time.csproj" />
+        <PackageReference Include="Vali-Time" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>

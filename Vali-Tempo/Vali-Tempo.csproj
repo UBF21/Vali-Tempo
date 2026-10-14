@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -10,7 +10,7 @@
         <PackageId>Vali-Tempo</PackageId>
         <Title>Vali-Tempo</Title>
         <Product>Vali-Tempo</Product>
-        <Version>1.0.0</Version>
+        <Version>1.1.0</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
         <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
 
@@ -35,8 +35,10 @@
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
-        <Description>Vali-Tempo is the all-in-one meta-package for the Vali-Tempo ecosystem. Installing it gives you every module — Vali-Time, Vali-Range, Vali-Calendar, Vali-CountDown, Vali-Age, Vali-Holiday, Vali-TimeZone, Vali-Schedule, and Vali-Duration — with a single NuGet reference and a single DI registration call.</Description>
-        <PackageReleaseNotes>Vali-Tempo v1.0.0 — meta-package for the Vali-Tempo ecosystem. Registers all Vali services via AddValiTempo().</PackageReleaseNotes>
+        <Description>Vali-Tempo is the all-in-one meta-package for the Vali-Tempo ecosystem. Installing it gives you every module — Vali-Time, Vali-Range, Vali-Calendar, Vali-CountDown, Vali-Age, Vali-Holiday, Vali-TimeZone, Vali-Schedule, Vali-Duration, Vali-BusinessHours, and Vali-Bucket — with a single NuGet reference and a single DI registration call.</Description>
+        <PackageReleaseNotes>Vali-Tempo v1.1.0 — add Vali-BusinessHours and Vali-Bucket to the meta-package registration. Updated every module dependency to its latest version. No breaking changes.
+
+            Vali-Tempo v1.0.0 — meta-package for the Vali-Tempo ecosystem. Registers all Vali services via AddValiTempo().</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -44,22 +46,17 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Vali-Time" Version="1.0.1" />
-        <PackageReference Include="Vali-Range" Version="1.0.0" />
-        <PackageReference Include="Vali-Calendar" Version="1.0.0" />
-        <PackageReference Include="Vali-CountDown" Version="1.0.0" />
-        <PackageReference Include="Vali-Age" Version="1.0.0" />
-        <PackageReference Include="Vali-Holiday" Version="1.0.0" />
-        <PackageReference Include="Vali-TimeZone" Version="1.0.0" />
-        <PackageReference Include="Vali-Schedule" Version="1.0.0" />
-        <PackageReference Include="Vali-Duration" Version="1.0.0" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <!-- ponytail: ProjectReference instead of PackageReference — neither package has been
-             published to NuGet yet. Switch to a pinned PackageReference once they are. -->
-        <ProjectReference Include="..\Vali-BusinessHours\Vali-BusinessHours.csproj" />
-        <ProjectReference Include="..\Vali-Bucket\Vali-Bucket.csproj" />
+        <PackageReference Include="Vali-Time" Version="1.1.0" />
+        <PackageReference Include="Vali-Range" Version="1.1.0" />
+        <PackageReference Include="Vali-Calendar" Version="1.0.1" />
+        <PackageReference Include="Vali-CountDown" Version="1.0.1" />
+        <PackageReference Include="Vali-Age" Version="1.1.0" />
+        <PackageReference Include="Vali-Holiday" Version="1.1.0" />
+        <PackageReference Include="Vali-TimeZone" Version="1.1.0" />
+        <PackageReference Include="Vali-Schedule" Version="1.1.0" />
+        <PackageReference Include="Vali-Duration" Version="1.1.0" />
+        <PackageReference Include="Vali-BusinessHours" Version="1.0.0" />
+        <PackageReference Include="Vali-Bucket" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>

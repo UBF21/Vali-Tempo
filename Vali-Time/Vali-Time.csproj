@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <RootNamespace>Vali_Time</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -11,7 +11,7 @@
         <PackageId>Vali-Time</PackageId>
         <Title>Vali-Time</Title>
         <Product>Vali-Time</Product>
-        <Version>1.0.1</Version>
+        <Version>1.1.0</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
         <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
 
@@ -41,6 +41,8 @@
         </Description>
 
         <PackageReleaseNotes>
+            Vali-Time v1.1.0 — add DurationStringParser (public parser extracted from ValiTime's duration-string grammar, reused by Vali-Duration), HumanizeCulture enum (En/Es, reused by Vali-Age), Constants.IsClampedMonthEnd helper (shared month-end-clamp detection, reused by ValiAge), and consolidate StartOfWeek/IsWeekend/IsWeekday into DateTimeExtensions as the single source of truth. No breaking changes.
+
             Vali-Time v1.0.0 — initial release:
             - Time unit conversions with full decimal precision: milliseconds, seconds, minutes, hours, days, weeks, months, and years.
             - SumTimes: aggregate multiple time values across different units into a single result.

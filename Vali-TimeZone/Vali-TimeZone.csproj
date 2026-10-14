@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <RootNamespace>Vali_TimeZone</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -11,7 +11,7 @@
         <PackageId>Vali-TimeZone</PackageId>
         <Title>Vali-TimeZone</Title>
         <Product>Vali-TimeZone</Product>
-        <Version>1.0.0</Version>
+        <Version>1.1.0</Version>
         <Authors>Felipe Rafael Montenegro Morriberon</Authors>
         <Copyright>Copyright © 2025 - FM. All rights reserved.</Copyright>
 
@@ -37,7 +37,9 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
         <Description>Vali-TimeZone is a .NET library for timezone-aware date and time operations. Provides conversion between timezones, UTC offset calculations, DST detection, local/UTC interoperability, and a curated list of IANA-compatible timezone identifiers for 30+ countries.</Description>
-        <PackageReleaseNotes>Vali-TimeZone v1.0.0 — initial release: ValiTimeZone class with Convert, ToUtc, FromUtc, GetOffset, IsDst, FindZone, AllZones, ZonesForCountry, IsValidZone, Now, Today, IsSameInstant, FormatWithZone, and DateTimeOffset interoperability.</PackageReleaseNotes>
+        <PackageReleaseNotes>Vali-TimeZone v1.1.0 — ValiZoneInfo is now a record (structural equality), its custom ToString() preserved unchanged. Updated Vali-Time dependency to 1.1.0. No breaking changes.
+
+            Vali-TimeZone v1.0.0 — initial release: ValiTimeZone class with Convert, ToUtc, FromUtc, GetOffset, IsDst, FindZone, AllZones, ZonesForCountry, IsValidZone, Now, Today, IsSameInstant, FormatWithZone, and DateTimeOffset interoperability.</PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -46,7 +48,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Vali-Time" Version="1.0.1" />
+        <PackageReference Include="Vali-Time" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>
